@@ -1,0 +1,125 @@
+{
+  "id": "typescript",
+  "title": "TypeScript quickstart",
+  "group": "Integration guides",
+  "repo": "marmot-ts",
+  "path": "docs/getting-started.md",
+  "route": "/docs/typescript.html",
+  "version": "0.9.0",
+  "sha": "89eb7a12fda6219d36d7914cee68fd054eef6424",
+  "sourceUrl": "https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/getting-started.md",
+  "html": "<div id=\"getting-started\" class=\"mm-source-title\">Getting Started</div>\n<h2 id=\"what-is-marmot\">What is Marmot?</h2>\n<p>Marmot is a privacy-preserving group messaging protocol that combines <strong>MLS (Message Layer Security)</strong> for end-to-end encryption with <strong>Nostr</strong> for decentralized message distribution.</p>\n<p><strong>Key Features:</strong></p>\n<ul>\n<li><strong>End-to-End Encrypted:</strong> Messages are encrypted using MLS, providing forward secrecy and post-compromise security</li>\n<li><strong>Decentralized:</strong> Built on Nostr relays, no central server required</li>\n<li><strong>Privacy-First:</strong> Ephemeral signing keys and gift-wrapped welcome messages protect metadata</li>\n</ul>\n<h2 id=\"core-concepts\">Core Concepts</h2>\n<h3 id=\"mls-message-layer-security\">MLS (Message Layer Security)</h3>\n<p>MLS is an IETF standard (RFC 9420) for group messaging security. It provides:</p>\n<ul>\n<li><strong>Forward Secrecy:</strong> Past messages remain secure even if current keys are compromised</li>\n<li><strong>Post-Compromise Security:</strong> Security is restored after a compromise through key rotation</li>\n<li><strong>Efficient Group Operations:</strong> Add/remove members without re-encrypting for everyone</li>\n</ul>\n<h3 id=\"nostr\">Nostr</h3>\n<p>Nostr is a decentralized protocol for distributing signed events over relays. Marmot uses Nostr for:</p>\n<ul>\n<li><strong>Key Package Distribution:</strong> Publishing cryptographic material for adding members</li>\n<li><strong>Message Delivery:</strong> Distributing encrypted group messages</li>\n<li><strong>Welcome Messages:</strong> Onboarding new members to groups</li>\n</ul>\n<h3 id=\"key-terms\">Key Terms</h3>\n<ul>\n<li><strong>Group:</strong> A collection of members who can exchange encrypted messages</li>\n<li><strong>Key Package:</strong> Cryptographic material needed to add someone to a group</li>\n<li><strong>Proposal:</strong> A suggested change to the group (add member, remove member, update metadata)</li>\n<li><strong>Commit:</strong> A finalized set of proposals that advances the group's encryption state</li>\n<li><strong>Welcome:</strong> A message sent to new members containing the group state</li>\n<li><strong>Rumor:</strong> An unsigned Nostr event used as application message content</li>\n</ul>\n<h2 id=\"installation\">Installation</h2>\n<pre><code class=\"language-bash\">npm install @internet-privacy/marmot-ts\n</code></pre>\n<pre><code class=\"language-bash\">pnpm add @internet-privacy/marmot-ts\n</code></pre>\n<pre><code class=\"language-bash\">yarn add @internet-privacy/marmot-ts\n</code></pre>\n<p>The examples below also import types from <code>applesauce-core</code>. It is a dependency of marmot-ts, but package managers such as pnpm won't let your app import it unless you add it too (<code>pnpm add applesauce-core@^7</code>). marmot-ts v0.8 uses Applesauce v7; upgrade any Applesauce packages your application uses to v7 together. Nostr-specific gift-wrap helpers and factories live in <code>applesauce-common</code>.</p>\n<h2 id=\"setup-storage\">Setup Storage</h2>\n<p>Marmot stores serialized MLS state and key package metadata in key/value stores that your app provides. For development, use the in-memory store from the <code>extra</code> subpath:</p>\n<pre><code class=\"language-typescript\">import type {\n  SerializedClientState,\n  StoredKeyPackage,\n} from &quot;@internet-privacy/marmot-ts&quot;;\nimport { InMemoryKeyValueStore } from &quot;@internet-privacy/marmot-ts/extra&quot;;\n\nconst groupStateStore = new InMemoryKeyValueStore&lt;SerializedClientState&gt;();\nconst keyPackageStore = new InMemoryKeyValueStore&lt;StoredKeyPackage&gt;();\n</code></pre>\n<p><strong>Production storage</strong></p>\n<p>Production apps need durable stores: IndexedDB in the browser, the file system in Node.js, or SQLite in React Native. Also pass <code>ingestStateStore</code>, <code>inviteStore</code>, <code>rewindStore</code> and <code>removedMarkerStore</code>, backed by the same durable storage. Any store you leave out falls back to memory and is lost on restart. Without <code>ingestStateStore</code>, <code>client.ingestPersistence.kind</code> is <code>&quot;ephemeral&quot;</code>. See <a href=\"__MARMOT_BASE__docs/typescript-storage.html\">Storage</a>.</p>\n<h2 id=\"setup-network-interface\">Setup Network Interface</h2>\n<p>Implement the <code>NostrNetworkInterface</code> so the client can talk to relays. It has four methods. In this sketch, <code>myPool</code> represents your adapter: its <code>publish</code> returns a record of relay outcomes and its <code>request</code> returns a promise of events. A raw Applesauce <code>RelayPool</code> needs conversion because its <code>publish</code> returns an array and its <code>request</code> returns an RxJS observable.</p>\n<pre><code class=\"language-typescript\">import type {\n  NostrNetworkInterface,\n  PublishResponse,\n  Subscribable,\n} from &quot;@internet-privacy/marmot-ts/client&quot;;\nimport { getInboxRelays } from &quot;@internet-privacy/marmot-ts&quot;;\nimport type { NostrEvent } from &quot;applesauce-core/helpers/event&quot;;\nimport type { Filter } from &quot;applesauce-core/helpers/filter&quot;;\n\n// Relays used to look up other users' relay lists (kind 10002 / 10050)\nconst lookupRelays = [&quot;wss://purplepag.es&quot;, &quot;wss://relay.example.com&quot;];\n\nconst network: NostrNetworkInterface = {\n  // Publish an event and report the per-relay outcome.\n  async publish(\n    relays: string[],\n    event: NostrEvent,\n  ): Promise&lt;Record&lt;string, PublishResponse&gt;&gt; {\n    // { [relayUrl]: { from, ok, message? } }\n    return await myPool.publish(relays, event);\n  },\n\n  // Resolve a one-shot query to an array of events.\n  async request(\n    relays: string[],\n    filters: Filter | Filter[],\n  ): Promise&lt;NostrEvent[]&gt; {\n    return await myPool.request(relays, filters);\n  },\n\n  // Open a live subscription that emits events as they arrive.\n  subscription(\n    relays: string[],\n    filters: Filter | Filter[],\n  ): Subscribable&lt;NostrEvent&gt; {\n    return myPool.subscription(relays, filters);\n  },\n\n  // Resolve a user's kind 10050 inbox relays (where their Welcomes are delivered).\n  async getUserInboxRelays(pubkey: string): Promise&lt;string[]&gt; {\n    const lists = await myPool.request(lookupRelays, [\n      { kinds: [10050], authors: [pubkey] },\n    ]);\n    const newest = lists.sort((a, b) =&gt; b.created_at - a.created_at)[0];\n    return newest ? getInboxRelays(newest) : [];\n  },\n};\n</code></pre>\n<p><strong>Reference adapter</strong></p>\n<p>The <a href=\"https://github.com/marmot-protocol/marmot-ts/tree/master/examples/opentui\"><code>opentui</code> example</a> wraps <a href=\"https://applesauce.build/\"><code>applesauce-relay</code></a> in a complete <code>NostrNetworkInterface</code>. See <a href=\"__MARMOT_BASE__docs/typescript-network.html\">Network</a> for the full contract and Applesauce v7 authentication guidance.</p>\n<h2 id=\"initialize-the-client\">Initialize the Client</h2>\n<p>The signer must implement <code>nip44</code> encryption and decryption as well as <code>signEvent</code>. Marmot uses NIP-44 to seal outgoing Welcome gift wraps and to open incoming ones. In applesauce's <code>EventSigner</code> type, <code>nip44</code> is optional, so check that your signer provides it.</p>\n<p>Each install also needs a <strong>KeyPackage slot id</strong>. This is the <code>d</code> tag of your kind 30443 key package event. The spec (<a href=\"https://github.com/marmot-protocol/marmot/blob/master/transports/nostr.md\"><code>transports/nostr.md</code></a>) requires 32 random bytes, written as lowercase hex. Generate it once, persist it, and reuse it. Never derive it from a device name or any identity key.</p>\n<pre><code class=\"language-typescript\">import { MarmotClient } from &quot;@internet-privacy/marmot-ts&quot;;\n\nconst toHex = (bytes: Uint8Array) =&gt;\n  Array.from(bytes, (b) =&gt; b.toString(16).padStart(2, &quot;0&quot;)).join(&quot;&quot;);\n\n// Generate once per install, persist, and reuse forever\nlet clientId = await settings.get(&quot;marmotKeyPackageSlot&quot;);\nif (!clientId) {\n  clientId = toHex(crypto.getRandomValues(new Uint8Array(32)));\n  await settings.set(&quot;marmotKeyPackageSlot&quot;, clientId);\n}\n\nconst client = new MarmotClient({\n  signer: yourNostrSigner, // applesauce EventSigner with nip44 support\n  network,\n  groupStateStore,\n  keyPackageStore,\n  clientId, // default kind 30443 `d` slot\n});\n\nconst myPubkey = await client.signer.getPublicKey();\n</code></pre>\n<p><strong>Spec deviation</strong></p>\n<p>The spec requires the slot id to be random 32-byte hex (<code>transports/nostr.md</code>). marmot-ts rejects identifiers unless they are exactly 64 lowercase hex characters. Persist the generated slot; migrate device labels by generating a new conformant slot.</p>\n<p><strong>Multi-Account Applications</strong></p>\n<p>If your app supports multiple user accounts, give each account its own isolated storage so key material can't leak between accounts. See <a href=\"https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/client/marmot-client.md\">MarmotClient</a> for the multi-account pattern.</p>\n<h2 id=\"publish-your-relay-lists\">Publish Your Relay Lists</h2>\n<p>Peers look for your key packages on your kind 10002 (NIP-65) <strong>write</strong> relays. There is no dedicated key package relay list. They deliver Welcomes to your kind 10050 inbox relays. Publish both lists before you expect invites (<a href=\"https://github.com/marmot-protocol/marmot/blob/master/transports/nostr.md\"><code>transports/nostr.md</code></a>):</p>\n<pre><code class=\"language-typescript\">import {\n  createInboxRelayListEvent,\n  createNip65RelayListEvent,\n} from &quot;@internet-privacy/marmot-ts&quot;;\n\nconst outboxRelays = [&quot;wss://relay.example.com&quot;]; // your NIP-65 write relays\nconst inboxRelays = [&quot;wss://inbox.example.com&quot;]; // where you receive Welcomes\n\nconst nip65 = await client.signer.signEvent(\n  createNip65RelayListEvent({ pubkey: myPubkey, relays: outboxRelays }),\n);\nconst inbox = await client.signer.signEvent(\n  createInboxRelayListEvent({ pubkey: myPubkey, relays: inboxRelays }),\n);\nawait client.network.publish([...outboxRelays, ...lookupRelays], nip65);\nawait client.network.publish([...outboxRelays, ...lookupRelays], inbox);\n</code></pre>\n<h2 id=\"publish-a-key-package\">Publish a Key Package</h2>\n<p>Before others can add you to groups, publish a key package to your NIP-65 write relays:</p>\n<pre><code class=\"language-typescript\">const keyPackage = await client.keyPackages.create({\n  relays: outboxRelays, // your kind 10002 write relays\n  client: &quot;my-chat-app&quot;,\n  // `d` slot defaults to the client's `clientId`\n});\n</code></pre>\n<p>To publish on startup only when you don't already hold an unused key package, call <code>client.keyPackages.ensurePublished({ relays: outboxRelays })</code>.</p>\n<p><strong>Spec deviation</strong></p>\n<p>The kind 30443 tag set in <code>transports/nostr.md</code> has no <code>relays</code> tag. marmot-ts still adds one, listing the relays you pass.</p>\n<h2 id=\"create-a-group\">Create a Group</h2>\n<pre><code class=\"language-typescript\">const group = await client.groups.create(&quot;Engineering Team&quot;, {\n  description: &quot;Secure team communications&quot;,\n  relays: [&quot;wss://relay.example.com&quot;],\n  // The creator is always an admin; list *additional* admins in `adminPubkeys`\n});\n\nconsole.log(`Created group (MLS group_id): ${group.idStr}`);\nconsole.log(`Routing tag (nostr_group_id): ${group.info.nostr.groupIdHex}`);\n</code></pre>\n<p>A solo create only builds local state. Nothing is published until you invite someone or send a message.</p>\n<h2 id=\"invite-a-member\">Invite a Member</h2>\n<p>Get the invitee's key packages from their kind 10002 write relays. Then choose one that the group can actually add:</p>\n<pre><code class=\"language-typescript\">import { getNip65Relays } from &quot;@internet-privacy/marmot-ts&quot;;\n\nconst memberPubkey = &quot;&lt;64-char hex pubkey&gt;&quot;;\n\n// 1. Their NIP-65 write relays are where their key packages live\nconst relayLists = await client.network.request(lookupRelays, [\n  { kinds: [10002], authors: [memberPubkey] },\n]);\nconst relayList = relayLists.sort((a, b) =&gt; b.created_at - a.created_at)[0];\nconst keyPackageRelays = relayList ? getNip65Relays(relayList, &quot;write&quot;) : [];\n\n// 2. Fetch their key packages and keep the newest one this group can add\nconst candidates = await client.network.request(keyPackageRelays, [\n  { kinds: [30443], authors: [memberPubkey] },\n]);\nconst keyPackageEvent = candidates\n  .sort((a, b) =&gt; b.created_at - a.created_at)\n  .find((event) =&gt; group.evaluateKeyPackage(event).eligible);\n\n// 3. Commit the Add. Once relays ack the commit, the Welcome is gift-wrapped\n//    to the invitee's kind 10050 inbox relays (via network.getUserInboxRelays)\nif (keyPackageEvent) await client.groups.invite(group.id, keyPackageEvent);\n</code></pre>\n<p><code>client.groups.invite()</code> builds the commit with <code>createInviteIntent()</code>. The commit verifies the key package event's signature, tags and lifetime before anything is published. To add several people at once, or to add the first members while creating a group, see <a href=\"https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/client/marmot-client.md\">MarmotClient</a> and <a href=\"https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/client/proposals.md\">Proposals</a>.</p>\n<h2 id=\"send-a-message\">Send a Message</h2>\n<p>Build the chat rumor in your app, turn it into an application-message intent, and send it with the manager's <code>send</code> helper:</p>\n<pre><code class=\"language-typescript\">import {\n  createApplicationMessageIntent,\n  createChatRumor,\n} from &quot;@internet-privacy/marmot-ts/client&quot;;\n\nconst rumor = createChatRumor({\n  pubkey: myPubkey,\n  content: &quot;Hello team!&quot;,\n});\n\nawait client.groups.send(group.id, createApplicationMessageIntent(rumor));\n</code></pre>\n<p>If the group is still resolving concurrent commits, <code>send()</code> queues the message and sends it once the group settles.</p>\n<h2 id=\"receive-messages\">Receive Messages</h2>\n<p><code>client.groups.connectAll()</code> connects every loaded group to its relays. It fetches past kind 445 events, subscribes for new ones, verifies each event's signature and <code>h</code> tag, drops duplicates, and feeds the rest to the group. Decrypted messages are emitted as <code>applicationMessage</code> events:</p>\n<pre><code class=\"language-typescript\">import { deserializeApplicationData } from &quot;@internet-privacy/marmot-ts&quot;;\n\ngroup.on(&quot;applicationMessage&quot;, (data) =&gt; {\n  const message = deserializeApplicationData(data);\n  console.log(`${message.pubkey}: ${message.content}`);\n});\n\n// Start once at app startup; groups created or joined later connect automatically\nconst groupSync = client.groups.connectAll();\n// On shutdown: groupSync.unsubscribe();\n</code></pre>\n<p>See <a href=\"https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/client/marmot-group.md\">MarmotGroup</a> for ingest results and other group events.</p>\n<h2 id=\"join-a-group\">Join a Group</h2>\n<p>Listen for gift-wrapped Welcomes on your kind 10050 inbox relays, then join from the decrypted invite:</p>\n<pre><code class=\"language-typescript\">const inviteSync = await client.invites.listen(inboxRelays);\n\nfor await (const invites of client.watchInvites()) {\n  for (const { invite, joinable } of invites) {\n    if (!joinable) continue; // we no longer hold the key package it was sent to\n\n    const preview = await client.previewWelcome(invite);\n    console.log(`Invited to ${preview.group?.name ?? &quot;a group&quot;}`);\n\n    const { group } = await client.joinGroupFromWelcome({\n      welcomeRumor: invite,\n    });\n    await client.invites.markAsRead(invite.id);\n\n    // Rotate your leaf key for forward secrecy. connectAll() catches the group up;\n    // the commit is queued until the group settles.\n    await group.selfUpdate();\n\n    // Replace the consumed key package. This also deletes its private material.\n    for (const kp of await client.keyPackages.list()) {\n      if (kp.used) await client.keyPackages.rotate(kp.keyPackageRef);\n    }\n\n    console.log(`Joined group: ${group.idStr}`);\n  }\n}\n</code></pre>\n<p><code>joinGroupFromWelcome()</code> does not do either post-join step for you. <a href=\"https://github.com/marmot-protocol/marmot/blob/master/protocol-core/joining.md\"><code>protocol-core/joining.md</code></a> asks joiners to self-update as soon as practical, before sending application messages. They should also rotate the consumed key package.</p>\n<p><strong>Spec deviation</strong></p>\n<p><code>foundation/key-packages.md</code> requires deleting a consumed key package's private material. <code>joinGroupFromWelcome()</code> only marks the key package as <code>used</code>. Call <code>client.keyPackages.rotate()</code> or <code>remove()</code> to delete it, as shown above.</p>\n<h2 id=\"next-steps\">Next Steps</h2>\n<ul>\n<li><strong><a href=\"https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/client/index.md\">Client Module</a></strong>: the full client API (groups, key packages, invites, history)</li>\n<li><strong><a href=\"https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/client/ui-frameworks.md\">UI Framework Integration</a></strong>: using MarmotClient with React, Svelte, or vanilla JavaScript</li>\n<li><strong><a href=\"https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/client/best-practices.md\">Best Practices</a></strong>: commits, persistence, and relay selection</li>\n<li><strong><a href=\"https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/core/index.md\">Core Module</a></strong>: the protocol layer and its building blocks</li>\n<li><strong><a href=\"https://github.com/marmot-protocol/marmot\">Protocol Specs</a></strong>: the Marmot protocol specification (start with <code>layout.md</code>)</li>\n</ul>\n<h2 id=\"architecture-overview\">Architecture Overview</h2>\n<pre><code>┌─────────────────────────────────────┐\n│      Your Application               │\n└─────────────────────────────────────┘\n                 ↓\n┌─────────────────────────────────────┐\n│      Client Module                  │\n│  (MarmotClient, MarmotGroup)        │\n└─────────────────────────────────────┘\n                 ↓\n┌─────────────────────────────────────┐\n│      Engine Module                  │\n│  (convergence &amp; ingest)             │\n└─────────────────────────────────────┘\n                 ↓\n┌─────────────────────────────────────┐\n│      Core Module                    │\n│  (Protocol, Crypto, Messages)       │\n└─────────────────────────────────────┘\n                 ↓\n┌─────────────────────────────────────┐\n│      MLS (ts-mls) + Nostr           │\n└─────────────────────────────────────┘\n</code></pre>\n<p>The <strong>Client Module</strong> gives you the high-level APIs and Nostr I/O. The <strong>Engine</strong> is a transport-independent group state machine that handles convergence and ingest. The <strong>Core Module</strong> implements the Marmot protocol on top of MLS and Nostr primitives. See <a href=\"https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/guide/architecture.md\">Architecture</a> for details.</p>\n",
+  "headings": [
+    {
+      "id": "what-is-marmot",
+      "title": "What is Marmot?",
+      "level": 2
+    },
+    {
+      "id": "core-concepts",
+      "title": "Core Concepts",
+      "level": 2
+    },
+    {
+      "id": "mls-message-layer-security",
+      "title": "MLS (Message Layer Security)",
+      "level": 3
+    },
+    {
+      "id": "nostr",
+      "title": "Nostr",
+      "level": 3
+    },
+    {
+      "id": "key-terms",
+      "title": "Key Terms",
+      "level": 3
+    },
+    {
+      "id": "installation",
+      "title": "Installation",
+      "level": 2
+    },
+    {
+      "id": "setup-storage",
+      "title": "Setup Storage",
+      "level": 2
+    },
+    {
+      "id": "setup-network-interface",
+      "title": "Setup Network Interface",
+      "level": 2
+    },
+    {
+      "id": "initialize-the-client",
+      "title": "Initialize the Client",
+      "level": 2
+    },
+    {
+      "id": "publish-your-relay-lists",
+      "title": "Publish Your Relay Lists",
+      "level": 2
+    },
+    {
+      "id": "publish-a-key-package",
+      "title": "Publish a Key Package",
+      "level": 2
+    },
+    {
+      "id": "create-a-group",
+      "title": "Create a Group",
+      "level": 2
+    },
+    {
+      "id": "invite-a-member",
+      "title": "Invite a Member",
+      "level": 2
+    },
+    {
+      "id": "send-a-message",
+      "title": "Send a Message",
+      "level": 2
+    },
+    {
+      "id": "receive-messages",
+      "title": "Receive Messages",
+      "level": 2
+    },
+    {
+      "id": "join-a-group",
+      "title": "Join a Group",
+      "level": 2
+    },
+    {
+      "id": "next-steps",
+      "title": "Next Steps",
+      "level": 2
+    },
+    {
+      "id": "architecture-overview",
+      "title": "Architecture Overview",
+      "level": 2
+    }
+  ],
+  "anchors": [
+    "getting-started",
+    "what-is-marmot",
+    "core-concepts",
+    "mls-message-layer-security",
+    "nostr",
+    "key-terms",
+    "installation",
+    "setup-storage",
+    "setup-network-interface",
+    "initialize-the-client",
+    "publish-your-relay-lists",
+    "publish-a-key-package",
+    "create-a-group",
+    "invite-a-member",
+    "send-a-message",
+    "receive-messages",
+    "join-a-group",
+    "next-steps",
+    "architecture-overview"
+  ]
+}

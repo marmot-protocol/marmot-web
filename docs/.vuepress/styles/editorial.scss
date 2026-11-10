@@ -1,0 +1,574 @@
+@use '@vuepress/theme-default/styles/variables' as *;
+
+// Opt-in layouts for the developer, community, donation, and resource pages.
+// The existing homepage and Contact retain their own composition.
+.mm-editorial {
+  .vp-hero #main-title {
+    margin: 0 0 var(--mm-space-16);
+    font-size: var(--mm-text-title);
+    font-weight: 600;
+    line-height: var(--mm-leading-heading);
+  }
+
+  .vp-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mm-space-12);
+  }
+
+  .vp-hero-action-button {
+    text-align: center;
+    text-decoration: none;
+    &::after { display: none; }
+
+    &.secondary {
+      .mm-cta-arrow { filter: invert(1); }
+    }
+  }
+
+  [vp-content] {
+    .mm-section {
+      display: block;
+      margin: 0 0 var(--mm-section-space);
+
+      h2 {
+        border: 0;
+        padding: 0;
+        margin: 0 0 var(--mm-space-24);
+      }
+
+      > :last-child { margin-bottom: 0; }
+
+    }
+
+    .mm-section-intro,
+    .mm-closing > p,
+    .mm-panel > p {
+      max-width: var(--mm-prose-width);
+    }
+
+    .mm-section-intro {
+      color: var(--mm-toner-600);
+      margin-bottom: var(--mm-space-32);
+    }
+
+    .mm-card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--mm-space-24) var(--mm-space-40);
+    }
+
+    .mm-grid-three {
+      @media (min-width: ($MQMobile + 1)) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      @media (max-width: $MQMobile) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .mm-resource-card {
+      --mm-card-bg: var(--mm-toner-50);
+      --mm-card-title-bg: var(--mm-toner-100);
+      --mm-card-text: var(--mm-toner-900);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 0;
+      padding: var(--mm-card-padding);
+      color: var(--mm-card-text);
+      background: var(--mm-card-bg);
+
+      > h3, > h4 {
+        align-self: stretch;
+        margin: calc(-1 * var(--mm-card-padding)) calc(-1 * var(--mm-card-padding)) var(--mm-space-24);
+        padding: var(--mm-space-16) var(--mm-card-padding);
+        background: var(--mm-card-title-bg);
+        color: inherit;
+        font-size: var(--mm-text-heading);
+      }
+
+      > h4 { font-size: var(--mm-text-subheading); }
+      > :last-child { margin-bottom: 0; }
+
+      .mm-card-link { margin-top: auto; }
+
+      > h3 + p, > h4 + p { margin-top: 0; }
+
+      .mm-copy-value { margin-bottom: var(--mm-space-24); }
+    }
+
+    .mm-card-actions {
+      margin-top: auto;
+      width: 100%;
+    }
+
+    .mm-card-marine {
+      --mm-card-bg: var(--mm-marine-50);
+      --mm-card-title-bg: var(--mm-marine-100);
+      --mm-card-text: var(--mm-marine-900);
+    }
+
+    .mm-card-berry {
+      --mm-card-bg: var(--mm-berry-50);
+      --mm-card-title-bg: var(--mm-berry-100);
+      --mm-card-text: var(--mm-berry-900);
+    }
+
+    .mm-capabilities {
+      gap: var(--mm-space-32) var(--mm-space-40);
+      margin-bottom: var(--mm-space-24);
+
+      article {
+        min-width: 0;
+        > :last-child { margin-bottom: 0; }
+      }
+
+      h3 {
+        margin: 0 0 var(--mm-space-12);
+        color: var(--mm-toner-900);
+      }
+    }
+
+    .mm-panel {
+      padding: var(--mm-space-32);
+      background: var(--mm-toner-50);
+    }
+
+    .mm-panel-marine { background: var(--mm-marine-50); }
+    .mm-panel-berry { background: var(--mm-berry-50); }
+
+    .mm-caption {
+      font-size: var(--mm-text-nav);
+      color: var(--mm-toner-600);
+    }
+
+    .mm-inline-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--mm-space-12) var(--mm-space-24);
+
+      > p { margin: 0; }
+    }
+
+    a:not(.mm-button) { text-underline-offset: 0.15em; }
+
+    .mm-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--mm-space-8);
+      box-sizing: border-box;
+      min-height: 3rem;
+      max-width: 100%;
+      padding: var(--mm-space-12) var(--mm-space-16);
+      border: 2px solid var(--mm-black);
+      color: var(--mm-white);
+      background: var(--mm-black);
+      font-size: var(--mm-text-button);
+      line-height: 1.45;
+      text-align: center;
+      text-decoration: none;
+      transition: background-color var(--vp-t-color), border-color var(--vp-t-color);
+
+      &::after { display: none; }
+      .mm-button-external-icon {
+        flex-shrink: 0;
+        width: 1em;
+        height: 1em;
+        background: currentColor;
+        mask: var(--external-link-icon) center / contain no-repeat;
+      }
+
+      &:hover {
+        background: var(--mm-toner-800);
+        border-color: var(--mm-toner-800);
+      }
+
+      + a { margin-top: var(--mm-space-16); }
+    }
+
+    .mm-implementation {
+      display: grid;
+      grid-template-columns: minmax(12rem, 1fr) minmax(0, 2fr);
+      gap: var(--mm-space-40);
+      padding-block: var(--mm-space-24);
+      border-top: 1px solid var(--mm-toner-200);
+
+      h3 { margin: 0 0 var(--mm-space-8); color: var(--mm-toner-900); }
+      p { margin: 0 0 var(--mm-space-12); }
+      > div { min-width: 0; }
+    }
+
+    .mm-closing {
+      padding-top: var(--mm-space-32);
+      border-top: 1px solid var(--mm-toner-200);
+    }
+
+    @media (max-width: 749px) {
+      .mm-card-grid { grid-template-columns: 1fr; }
+      .mm-resource-card {
+        margin-inline: calc(-1 * var(--mm-gutter));
+      }
+      .mm-implementation { grid-template-columns: 1fr; gap: var(--mm-space-12); }
+      .mm-panel {
+        margin-inline: calc(-1 * var(--mm-gutter));
+        padding: var(--mm-card-padding);
+      }
+      .mm-resource-card .mm-button { width: 100%; }
+    }
+  }
+
+  @media (min-width: ($MQMobileNarrow + 1)) and (max-width: $MQMobile) {
+    .vp-hero-actions { justify-content: center; }
+  }
+}
+
+.mm-text-hero .vp-hero {
+  .mm-container { justify-content: flex-start; align-items: flex-start; }
+  .mm-hero-content { max-width: 48rem; }
+  .vp-hero-description {
+    max-width: none;
+    margin-inline: 0;
+    text-align: left;
+    color: var(--mm-toner-600);
+  }
+  .vp-hero-actions { justify-content: flex-start; }
+}
+
+.mm-editorial [vp-content] {
+  .mm-directory-controls {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: var(--mm-space-24);
+    margin-bottom: var(--mm-space-24);
+
+    .mm-search-field {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 12rem;
+      gap: var(--mm-space-8);
+      min-width: 0;
+      color: var(--mm-toner-900);
+      font-size: var(--mm-text-nav);
+    }
+    .mm-search-field { flex-grow: 2; }
+    input {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 3rem;
+      border: 1px solid var(--mm-toner-200);
+      border-radius: 0;
+      padding: var(--mm-space-8) var(--mm-space-12);
+      background: var(--mm-white);
+      color: var(--mm-toner-900);
+      font: inherit;
+      font-size: var(--mm-text-body);
+    }
+    input:focus-visible { outline: 2px solid var(--mm-black); outline-offset: 2px; }
+  }
+  .mm-catalog-search, .mm-catalog-filters { display: contents; }
+  .mm-filter-toggle, .mm-filter-panel-heading { display: none; }
+
+  @media (max-width: $MQMobile) {
+    .mm-catalog-controls {
+      display: block;
+      .mm-catalog-search {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 48px;
+        gap: var(--mm-space-12);
+        align-items: center;
+      }
+      .mm-search-field > span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+      .mm-filter-toggle {
+        position: relative;
+        display: grid;
+        place-items: center;
+        box-sizing: border-box;
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border: 1px solid var(--mm-toner-200);
+        border-radius: 0;
+        background: var(--mm-white);
+        color: var(--mm-black);
+        cursor: pointer;
+        svg { width: 24px; height: 24px; }
+        &[aria-expanded='true'] { background: var(--mm-toner-100); border-color: var(--mm-black); }
+        &:focus-visible { outline: 2px solid var(--mm-black); outline-offset: 2px; }
+      }
+      .mm-filter-count {
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        min-width: 18px;
+        padding: 1px 3px;
+        box-sizing: border-box;
+        background: var(--mm-black);
+        color: var(--mm-white);
+        font-size: 12px;
+        line-height: 16px;
+      }
+      .mm-catalog-filters {
+        display: none;
+        &.is-open { display: grid; }
+        gap: var(--mm-space-16);
+        margin-top: var(--mm-space-12);
+        padding: var(--mm-card-padding);
+        border: 1px solid var(--mm-toner-200);
+        background: var(--mm-toner-50);
+      }
+      .mm-filter-panel-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--mm-space-12);
+        font-size: var(--mm-text-body);
+        button {
+          border: 0;
+          padding: 0;
+          background: transparent;
+          color: var(--mm-black);
+          font: inherit;
+          font-size: var(--mm-text-nav);
+          text-decoration: underline;
+          cursor: pointer;
+          &:disabled { color: var(--mm-toner-600); text-decoration: none; cursor: default; }
+        }
+      }
+    }
+  }
+  .mm-update-controls { max-width: 20rem; }
+  @media (max-width: $MQMobile) {
+    .mm-update-controls { max-width: none; }
+  }
+  .mm-catalog-list {
+    h2, h3 {
+      margin: 0 0 var(--mm-space-8);
+      padding: 0;
+      border: 0;
+      font-size: var(--mm-text-heading);
+      color: var(--mm-toner-900);
+      overflow-wrap: anywhere;
+
+      a[href*='://']::after {
+        width: 0.85em;
+        height: 0.85em;
+        margin-inline-start: 0.25em;
+        vertical-align: -0.08em;
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        background-color: currentColor;
+      }
+    }
+    .mm-project-description { margin: 0; }
+  }
+  .mm-project-labels, .mm-update-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mm-space-8);
+    font-size: var(--mm-text-nav);
+    color: var(--mm-toner-600);
+  }
+  .mm-project-labels span {
+    padding: 0.125rem 0.5rem;
+    background: var(--mm-toner-100);
+    color: var(--mm-toner-700);
+
+    &[data-label='v2'] {
+      background: var(--mm-marmot-200);
+      color: var(--mm-marmot-800);
+    }
+    &[data-label='active'] {
+      background: var(--mm-moss-100);
+      color: var(--mm-moss-900);
+    }
+    &[data-label='inactive'] {
+      background: var(--mm-blush-100);
+      color: var(--mm-blush-900);
+    }
+  }
+  .mm-project-labels .mm-team-label {
+    background: var(--mm-marine-100);
+    color: var(--mm-marine-900);
+    font-weight: 600;
+  }
+  .mm-source-note { max-width: var(--mm-prose-width); margin-top: var(--mm-space-32); }
+  .mm-update-entry {
+    padding-block: var(--mm-space-32);
+    border-top: 1px solid var(--mm-toner-200);
+    scroll-margin-top: calc(var(--navbar-height) + var(--mm-space-24));
+
+    h2 { margin: var(--mm-space-12) 0; padding: 0; border: 0; }
+    .mm-update-summary { max-width: var(--mm-prose-width); }
+  }
+  .mm-update-meta { gap: var(--mm-space-8) var(--mm-space-24); }
+  .mm-release-details {
+    margin-top: var(--mm-space-24);
+    summary { cursor: pointer; color: var(--mm-toner-900); }
+  }
+  .mm-release-body {
+    max-width: var(--mm-prose-width);
+    margin-top: var(--mm-space-24);
+    overflow-wrap: anywhere;
+    h3, h4, h5, h6 { color: var(--mm-toner-900); }
+    ul, ol { padding-left: var(--mm-space-24); }
+    li + li { margin-top: var(--mm-space-8); }
+    pre { max-width: 100%; overflow-x: auto; }
+    pre { white-space: pre-wrap; }
+    code { overflow-wrap: anywhere; }
+  }
+  .mm-text-button, .mm-load-more {
+    border: 1px solid var(--mm-black);
+    border-radius: 0;
+    background: var(--mm-white);
+    color: var(--mm-black);
+    padding: var(--mm-space-8) var(--mm-space-24);
+    min-height: 3rem;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color var(--vp-t-color);
+    &:hover { background: var(--mm-toner-50); }
+  }
+  @media (max-width: 749px) {
+    .mm-catalog-list .mm-implementation { grid-template-columns: 1fr; gap: var(--mm-space-16); }
+    .mm-directory-controls { gap: var(--mm-space-16); }
+    .mm-directory-controls label { flex-basis: 100%; }
+  }
+}
+
+// Hosted documentation uses the site's type, colours, gutters and native sidebar.
+.mm-docs {
+  .mm-doc-source {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    font-size: 16px;
+    color: var(--mm-toner-600);
+  }
+
+  .mm-doc-version-note {
+    font-size: 16px;
+    color: var(--mm-toner-600);
+    margin-block: 16px 40px;
+  }
+
+  .mm-source-title { display: none; }
+  .mm-doc-body { overflow-wrap: anywhere; }
+  .mm-doc-body > :first-child { margin-top: 0; }
+  .mm-doc-body h2 { margin-top: 40px; }
+  .mm-doc-body h3 { margin-top: 32px; }
+  .mm-doc-body pre {
+    padding: 20px;
+    background: var(--mm-toner-50);
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .mm-doc-body pre code { padding: 0; background: transparent; color: inherit; }
+  .mm-doc-body blockquote { margin-inline: 0; }
+}
+
+
+// Tables wrap within the prose column; long identifiers never widen the page.
+[vp-content] table {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+  border-collapse: collapse;
+  font-size: 16px;
+  line-height: 1.5;
+
+  th, td {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 16px 12px;
+    border: 1px solid var(--mm-toner-200);
+    vertical-align: top;
+    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+  th { background: var(--mm-toner-100); font-weight: 600; }
+  tr { border: 0; background: var(--mm-white); }
+  tr:nth-child(2n) { background: var(--mm-toner-50); }
+  code {
+    padding: 2px 4px;
+    font-size: 0.875em;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  p:first-child { margin-top: 0; }
+  p:last-child { margin-bottom: 0; }
+}
+
+@media (max-width: 749px) {
+  [vp-content] table.mm-responsive-table {
+    display: block;
+    border: 0;
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    tbody {
+      display: block;
+      border-inline: 1px solid var(--mm-toner-200);
+    }
+    tr {
+      display: block;
+      margin: 0;
+      padding: 20px 16px;
+      border: 0;
+      border-bottom: 1px solid var(--mm-toner-200);
+      &:first-child { border-top: 1px solid var(--mm-toner-200); }
+      &:nth-child(n) { background: transparent; }
+    }
+    td {
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      + td { margin-top: 8px; }
+      &:empty { display: none; }
+      &::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 2px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--mm-toner-600);
+      }
+      &:first-child {
+        font-size: 18px;
+        font-weight: 600;
+        &::before { display: none; }
+      }
+    }
+
+    // Goal-to-guide and runtime-to-documentation tables read as simple lists.
+    // Keep labels on technical tables where values need their column context.
+    &:has(td[data-label='Start here']),
+    &:has(td[data-label='Read']),
+    &:has(td[data-label='Docs']) {
+      td::before { display: none; }
+    }
+  }
+}

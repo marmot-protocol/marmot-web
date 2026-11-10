@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import VPAutoLink from '@theme/VPAutoLink.vue'
-import { useData } from '@theme/useData'
-import type { FunctionalComponent } from 'vue'
-import { computed, ref, h } from 'vue'
-import { ClientOnly, RouteLink, withBase } from 'vuepress/client'
+import { computed } from 'vue'
+import BrandLink from './BrandLink.vue'
 import { useNavbarConfig } from '@theme/useNavbarConfig'
 import { useNavbarRepo } from '@theme/useNavbarRepo'
 
@@ -14,36 +12,6 @@ const navfootLinks = computed(() => [
   ...navbarConfig.value,
   ...navbarRepo.value,
 ])
-
-const { routeLocale, siteLocale, themeLocale } = useData()
-
-const navfootBrandLink = computed(
-  () => themeLocale.value.home || routeLocale.value,
-)
-const navfootBrandTitle = computed(() => siteLocale.value.title)
-const navfootBrandLogo = computed(() => {
-  if (themeLocale.value.logoDark !== undefined) {
-    return themeLocale.value.logoDark
-  }
-  return themeLocale.value.logo
-})
-const navfootBrandLogoAlt = computed(
-  () => themeLocale.value.logoAlt ?? navfootBrandTitle.value,
-)
-const NavfootBrandLogo: FunctionalComponent = () => {
-  if (!navfootBrandLogo.value) return null
-  const img = h('img', {
-    class: 'vp-site-logo',
-    src: withBase(navfootBrandLogo.value),
-    alt: navfootBrandLogoAlt.value,
-  })
-  if (themeLocale.value.logoDark === undefined) {
-    return img
-  }
-  // wrap brand logo with <ClientOnly> to avoid ssr-mismatch
-  // when using a different brand logo in dark mode
-  return h(ClientOnly, () => img)
-}
 </script>
 
 <template>
@@ -52,6 +20,7 @@ const NavfootBrandLogo: FunctionalComponent = () => {
       <nav
         v-if="navfootLinks.length"
         class="navfoot-items"
+        :style="{ '--mm-footer-link-rows': Math.ceil(navfootLinks.length / 2) }"
       >
         <div v-for="item in navfootLinks" :key="item.text" class="navfoot-item">
           <VPAutoLink :config="item" />
@@ -62,9 +31,7 @@ const NavfootBrandLogo: FunctionalComponent = () => {
           <span>©2025 Internet Privacy Foundation. </span>
           <span>All rights reserved.</span>
         </div>
-        <RouteLink :to="navfootBrandLink">
-          <NavfootBrandLogo />
-        </RouteLink>
+        <BrandLink />
       </div>
     </div>
   </div>
@@ -81,8 +48,18 @@ const NavfootBrandLogo: FunctionalComponent = () => {
 .navfoot-items {
   display: flex;
   flex-direction: column;
-  gap: .75rem;
-  padding: 3rem 0 1rem;
+  gap: var(--mm-space-12);
+  padding: var(--mm-space-32) 0 0;
+  font-size: var(--mm-text-nav);
+
+  @media (min-width: ($MQMobile + 1)) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(var(--mm-footer-link-rows), auto);
+    grid-auto-flow: column;
+    column-gap: var(--mm-space-40);
+    max-width: 36rem;
+  }
 }
 
 .navfoot-item {
@@ -90,10 +67,10 @@ const NavfootBrandLogo: FunctionalComponent = () => {
     color: var(--mm-toner-50);
     &:hover,
     &.route-link-active {
-      color: var(--mm-toner-10);
+      color: var(--mm-toner-200);
     }
-    &.external-link::after  {
-      display: none;
+    &.external-link::after {
+      background-color: currentColor;
     }
   }
 }
@@ -101,12 +78,11 @@ const NavfootBrandLogo: FunctionalComponent = () => {
 .bottom {
   display: flex;
   justify-content: space-between;
-  padding: 1.5rem 0 3rem;
-  gap: .75rem;
+  padding: var(--mm-space-32) 0;
+  gap: var(--mm-space-24);
 
   @media (max-width: $MQMobile) {
     flex-direction: column;
-    padding-bottom: 2rem;
 
     .copyright {
       order: 1;
@@ -114,12 +90,13 @@ const NavfootBrandLogo: FunctionalComponent = () => {
   }
 
   @media (min-width: ($MQMobile + 1)) {
-    align-items: center;
+    align-items: flex-end;
   }
 }
 
 .copyright {
-  color: var(--mm-toner-600);
+  color: var(--mm-toner-400);
+  font-size: 0.875rem;
 
   span:last-child {
     white-space: nowrap;

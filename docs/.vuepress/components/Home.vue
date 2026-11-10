@@ -22,8 +22,16 @@ import { Content } from 'vuepress/client'
     margin: 0;
     padding: 0;
 
-    > :last-child {
-      margin-bottom: 4rem;
+    .mm-container {
+      padding-block: var(--mm-section-space);
+
+      > p {
+        max-width: var(--mm-prose-width);
+      }
+
+      > :last-child {
+        margin-bottom: 0;
+      }
     }
   }
 }

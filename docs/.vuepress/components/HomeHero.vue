@@ -5,7 +5,7 @@ import { useData } from '@theme/useData'
 import type { FunctionalComponent } from 'vue'
 import { computed, h } from 'vue'
 import { ClientOnly, withBase } from 'vuepress/client'
-import type { DefaultThemeHomePageFrontmatter } from '../../shared/index.js'
+import type { DefaultThemeHomePageFrontmatter } from '@vuepress/theme-default/client'
 
 const { frontmatter, siteLocale } = useData<DefaultThemeHomePageFrontmatter>()
 const isDarkMode = useDarkMode()
@@ -57,6 +57,8 @@ const HomeHeroImage: FunctionalComponent = () => {
     class: 'vp-hero-image',
     src: withBase(heroImage.value),
     alt: heroAlt.value,
+    width: 748,
+    height: 759,
   })
 
   if (frontmatter.value.heroImageDark === undefined) {
@@ -86,14 +88,17 @@ const HomeHeroImage: FunctionalComponent = () => {
             v-for="action in actions"
             :key="action.text"
             class="vp-hero-action-button"
-            :class="[action.type]"
+            :class="[action.type, { 'no-external-link-icon': frontmatter.pageClass?.includes('mm-editorial') }]"
             :config="action"
           >
             <template #after>
               <img
-                src="/images/arrow-right.svg"
-                alt="→"
-                style="margin-left: 0.5rem; width: 1em; height: 1em;">
+                :src="withBase('/images/arrow-right.svg')"
+                alt=""
+                aria-hidden="true"
+                width="32"
+                height="32"
+                class="mm-cta-arrow">
             </template>
           </VPAutoLink>
         </div>
@@ -109,22 +114,17 @@ const HomeHeroImage: FunctionalComponent = () => {
   color: var(--mm-header-text);
   background: var(--mm-header-bg);
   transition: color var(--vp-t-color), background-color var(--vp-t-color);
-  padding: 1.5rem var(--navbar-padding-h) 2.5rem;
-
-  @media (min-width: ($MQMobile + 1)) {
-    padding: 3rem var(--navbar-padding-h) 4rem;
-  }
+  padding-block: var(--mm-section-space);
 
   .mm-container {
     display: flex;
     align-items: center;
-    max-width: 39rem;
-    margin: 0 auto;
-    gap: 3rem;
+    justify-content: center;
+    gap: var(--mm-space-40);
 
     @media (max-width: $MQMobile) {
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--mm-space-24);
     }
   }
 
@@ -133,9 +133,20 @@ const HomeHeroImage: FunctionalComponent = () => {
   }
 }
 
+.mm-hero-content {
+  min-width: 0;
+  max-width: 36rem;
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+}
+
 .vp-hero-image {
   display: block;
+  flex-shrink: 0;
   max-width: 100%;
+  width: auto;
   height: calc(69px * 4);
 
   @media (max-width: $MQMobileNarrow) {
@@ -148,31 +159,31 @@ const HomeHeroImage: FunctionalComponent = () => {
 }
 
 .vp-hero-description {
-  font-size: 1.16rem;
-  line-height: 1.21;
+  font-size: var(--mm-text-hero);
+  line-height: 1.4;
   max-width: 21em;
-  margin: 0 auto 1.5rem;
-
-  @media (max-width: $MQMobileNarrow) {
-    font-size: 1.2rem;
-  }
+  margin: 0 auto var(--mm-space-24);
   @media (min-width: ($MQMobileNarrow + 1)) and (max-width: $MQMobile) {
     text-align: center;
   }
 
   p {
-    margin: .5rem 0;
+    margin: 0;
+
+    + p {
+      margin-top: var(--mm-space-16);
+    }
 
     span:nth-child(1) {
-      color: var(--mm-lilac-500);
+      color: var(--mm-lilac-900);
     }
 
     span:nth-child(2) {
-      color: var(--mm-marine-500);
+      color: var(--mm-marine-700);
     }
 
     span:nth-child(3) {
-      color: var(--mm-moss-500);
+      color: var(--mm-moss-900);
     }
   }
 }
@@ -189,24 +200,29 @@ const HomeHeroImage: FunctionalComponent = () => {
   justify-content: center;
 
   box-sizing: border-box;
-  padding: 0.5em 1.5em;
+  min-height: 3rem;
+  padding: var(--mm-space-8) var(--mm-space-24);
   border: 2px solid var(--vp-c-accent-bg);
 
   background-color: var(--vp-c-bg);
   color: var(--vp-c-accent);
 
-  font-size: 1.2rem;
+  font-size: var(--mm-text-button);
+  font-weight: 500;
+  line-height: 1.5;
 
-  transition: background-color border-color color var(--vp-t-color);
+  transition:
+    background-color var(--vp-t-color),
+    border-color var(--vp-t-color),
+    color var(--vp-t-color);
 
   @media (max-width: $MQMobileNarrow) {
-    font-size: 1rem;
     width: 100%;
   }
 
   &:hover {
-    background-color: var(--vp-c-accent-hover);
-    color: var(--vp-c-accent-text);
+    background-color: var(--mm-toner-50);
+    color: var(--vp-c-accent);
   }
 
   &.primary {
@@ -217,6 +233,19 @@ const HomeHeroImage: FunctionalComponent = () => {
       border-color: var(--vp-c-accent-hover);
       background-color: var(--vp-c-accent-hover);
     }
+  }
+}
+
+.mm-cta-arrow {
+  margin-left: var(--mm-space-8);
+  width: 1em;
+  height: 1em;
+  transition: transform var(--mm-motion-fast) ease;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .vp-hero-action-button:hover .mm-cta-arrow {
+    transform: translateX(3px);
   }
 }
 </style>

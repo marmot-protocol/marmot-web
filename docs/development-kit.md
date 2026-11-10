@@ -1,52 +1,103 @@
 ---
+title: Development Kit
+description: Build with MDK, choose a native or web integration, and explore independent Marmot implementations.
 home: true
 heroImage: /images/marmot-marine.svg
-heroText: null
-tagline: Marmot Development Kit is the official Rust implementation of the Marmot protocol. It gives you the building blocks for secure, end to end encrypted group messaging without having to reimplement the protocol yourself.
-pageClass: devkit
+heroText: Build with Marmot.
+tagline: Build private messaging into your app. The Marmot Development Kit brings together the Rust runtime, encrypted storage, networking, and native bindings used to build Marmot clients.
+pageClass: devkit mm-editorial
+sidebar: false
 actions:
   - text: Documentation
     link: /docs/
     type: primary
+  - text: View on GitHub
+    link: https://github.com/marmot-protocol/mdk
+    type: secondary
 ---
-<!-- markdownlint-disable MD033 MD041 -->
+
 <div class="mm-container">
 
-<section>
-<div class="box toner">
+<section class="mm-section">
 
-### Why use Marmot Development Kit?
+## Choose how you want to build
 
-Marmot Development Kit is the official Rust implementation of the Marmot protocol. It gives you the core pieces for secure, end to end encrypted group messaging so you do not have to reimplement the protocol yourself.
+<p class="mm-section-intro">Start with the integration that fits your project. Each guide covers the setup and responsibilities of your application.</p>
 
-</div>
-<div>
+<DeveloperPaths />
 
-Handles keys, groups, and message formats correctly
-
-Wraps MLS in a clear, predictable Rust API
-
-Works with multiple relays and clients out of the box
-
-Favors small, composable building blocks, not a heavy framework
-
-Built to be readable, testable, and production ready
-
-</div>
 </section>
 
-<section>
-<div class="box berry">
+<section class="mm-section">
 
-### Other Implementations
+## What MDK handles
 
-Marmot is protocol first, not tied to a single library or language. The Rust Development Kit is the official reference, but there are other implementations that follow the same spec and interoperate with it. As the ecosystem grows, more language bindings and libraries can plug into the same network, all speaking the same protocol.
+<div class="mm-card-grid mm-capabilities">
+<article>
 
+### Accounts and identities
+
+Account management, signing integration, public-key discovery, and the lifecycle of the KeyPackages people use to invite one another.
+
+</article>
+<article>
+
+### Groups and membership
+
+Group creation, invitations, member and administrator changes, and processing the group’s shared state.
+
+</article>
+<article>
+
+### Messages and media
+
+Encrypted messaging, attachment handling, and conversation data your application can present to its users.
+
+</article>
+<article>
+
+### Storage and application state
+
+Encrypted local persistence, multiple accounts, and APIs that provide current state and updates to your interface.
+
+</article>
+<article>
+
+### Delivery and recovery
+
+Relay connections, reconnect handling, catch-up, and mechanisms for recovering group state.
+
+</article>
+<article>
+
+### Integration tools
+
+Native bindings, command-line tools, agent connectors, diagnostics, and versioned upgrade guides.
+
+</article>
 </div>
+
+[Explore the application runtime](/docs/rust-runtime.html)
+
 </section>
 
-#### TypeScript
+<section class="mm-section">
 
-A TypeScript implementation of Marmot is available for browser and Node environments. It follows the same protocol spec as the Rust MDK and can interoperate with Rust-based clients.
+## SDKs, tools, and integrations
 
+Explore implementations, libraries, agent integrations, and supporting tools from Awesome Marmot. For applications you can use, [browse Apps](/apps.html).
+
+<CatalogDirectory audience="developers" />
+
+</section>
+
+<section class="mm-section mm-closing">
+
+## Bring your questions. Share what you build.
+
+You don’t need a finished project to join the conversation. Meet other developers, discuss an integration, or help improve the protocol.
+
+[Join the community →](/community.html)
+
+</section>
 </div>

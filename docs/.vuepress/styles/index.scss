@@ -1,6 +1,9 @@
 @use '@vuepress/theme-default/styles/variables' as *;
+@use './editorial';
 
 :root {
+  // Route scrolling opts into smooth motion only for same-page section links.
+  scroll-behavior: auto;
   /* Marmot */
   --mm-black: #1a1716;
   --mm-white: #ffffff;
@@ -112,26 +115,56 @@
   --badge-c-important-bg: var(--mm-ember-100);
   --badge-c-info-text: var(--mm-marine-900);
   --badge-c-info-bg: var(--mm-marine-100);
-  --badge-c-note-text: var(--vp-c-grey-text);
+  --badge-c-note-text: var(--mm-toner-900);
   --badge-c-note-bg: var(--vp-c-grey-soft);
 
-  // font vars
-  --font-family: 'Zilla Slab', -apple-system, 'BlinkMacSystemFont', 'Segoe UI', roboto, oxygen, ubuntu, cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  // Typography is independent of the root size used for layout.
+  --font-family: 'Zilla Slab', Georgia, 'Times New Roman', serif;
+  --code-font-family: 'JetBrains Mono', Consolas, monospace;
+  --mm-text-body: 1.125rem;
+  --mm-text-nav: 1rem;
+  --mm-text-button: 1.125rem;
+  --mm-text-section: 1.75rem;
+  --mm-text-heading: 1.5rem;
+  --mm-text-subheading: 1.25rem;
+  --mm-text-heading-minor: 1.125rem;
+  --mm-text-heading-detail: 1rem;
+  --mm-text-statement: 2rem;
+  --mm-text-title: 2rem;
+  --mm-text-hero: 1.375rem;
+  --mm-leading-body: 1.45;
+  --mm-leading-heading: 1.25;
+
+  --mm-space-8: 0.5rem;
+  --mm-space-12: 0.75rem;
+  --mm-space-16: 1rem;
+  --mm-space-24: 1.5rem;
+  --mm-space-32: 2rem;
+  --mm-space-40: 2.5rem;
+  --mm-space-48: 3rem;
+  --mm-space-64: 4rem;
+  --mm-container-width: 75rem;
+  --mm-prose-width: 65ch;
+  --mm-gutter: 1.25rem;
+  --mm-card-padding: 1.25rem;
+  --mm-section-space: var(--mm-space-40);
 
   // layout vars
   --navbar-height: 4rem;
-  --navbar-padding-v: 0.7rem;
-  --navbar-padding-h: 1rem;
-  --sidebar-width: 20rem;
-  --sidebar-width-mobile: calc(var(--sidebar-width) * 0.82);
-  --content-width: 40rem;
+  --navbar-padding-v: var(--mm-space-16);
+  --navbar-padding-h: var(--mm-gutter);
+  --sidebar-width: 15rem;
+  --sidebar-width-mobile: 17rem;
+  --content-width: var(--mm-prose-width);
 
   // header offset
-  --header-offset: 0;//var(--navbar-height);
+  --header-offset: 0;
 
   // transition vars
-  --vp-t-color: 0.3s ease;
-  --vp-t-transform: 0.3s ease;
+  --mm-motion-fast: 160ms;
+  --mm-motion-drawer: 180ms;
+  --vp-t-color: var(--mm-motion-fast) ease;
+  --vp-t-transform: var(--mm-motion-drawer) ease;
 
   // external-link-icon
   --external-link-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z'/%3E%3C/svg%3E");
@@ -139,29 +172,103 @@
 
   @media (min-width: ($MQMobile + 1)) {
     --navbar-height: 5rem;
-    --sidebar-width: 17rem;
-    --navbar-padding-h: 1.5rem;
+    --mm-gutter: var(--mm-space-32);
+    --mm-card-padding: var(--mm-space-24);
+    --mm-section-space: var(--mm-space-64);
+    --mm-text-section: 2rem;
+    --mm-text-heading: 1.625rem;
+    --mm-text-subheading: 1.375rem;
+    --mm-text-heading-minor: 1.25rem;
+    --mm-text-heading-detail: 1.125rem;
+    --mm-text-statement: 3.25rem;
+    --mm-text-title: 2.25rem;
+    --mm-text-hero: 1.75rem;
   }
 }
 
-// Custom classen
 .devkit {
   --mm-header-bg: var(--mm-marine-100);
   --mm-header-text: var(--mm-marine-700);
+
+}
+
+.contact {
+  .vp-hero .mm-container {
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .vp-hero-description {
+    color: var(--mm-toner-600);
+    text-align: left;
+  }
+
+  .vp-hero #main-title {
+    margin: 0 0 var(--mm-space-16);
+    font-size: var(--mm-text-title);
+    font-weight: 600;
+    line-height: var(--mm-leading-heading);
+  }
+
+  [vp-content] .mm-contact-methods {
+    display: grid;
+    gap: var(--mm-space-32);
+
+    h2 {
+      font-size: var(--mm-text-heading);
+      margin: 0 0 var(--mm-space-8);
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
 }
 
 [vp-content] {
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: var(--mm-leading-heading);
+    margin: var(--mm-space-32) 0 var(--mm-space-16);
+    padding-top: 0;
+
+    &:first-child {
+      margin-top: 0;
+
+      + p, + pre, + .custom-container {
+        margin-top: var(--mm-space-16);
+      }
+    }
+  }
+
+  h1 { font-size: var(--mm-text-title); }
+  // Group titles must remain larger than their item and subsection titles.
+  h2 { font-size: var(--mm-text-section); }
+  h3 { font-size: var(--mm-text-heading); }
+  h4 { font-size: var(--mm-text-subheading); }
+  h5 { font-size: var(--mm-text-heading-minor); }
+  h6 { font-size: var(--mm-text-heading-detail); }
+
+  p, ul, ol {
+    margin-block: 0 var(--mm-space-16);
+  }
+
   .lead {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 3rem auto 4rem;
+    font-size: var(--mm-text-statement);
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 auto var(--mm-section-space);
+    padding-block: calc(var(--mm-section-space) / 2);
     text-align: center;
     max-width: 20em;
   }
   section {
-    margin-bottom: 2rem;
+    margin: 0 0 var(--mm-section-space);
     display: flex;
     flex-direction: column;
+    gap: var(--mm-space-24);
 
     > div:not(.box) {
       color: var(--mm-toner-600);
@@ -177,14 +284,17 @@
     }
 
     @media (min-width: 750px) {
-      --gap-size: 3rem;
-      flex-direction: row;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: start;
-      margin: 3rem 0 4rem;
-      gap: var(--gap-size);
+      gap: var(--mm-space-40);
 
       > div {
-        flex: 1 0 calc(50% - var(--gap-size));
+        min-width: 0;
+      }
+
+      > div:only-child {
+        grid-column: 1 / -1;
       }
     }
 
@@ -195,15 +305,11 @@
 
       color: var(--box-text);
       background: var(--box-bg);
-      padding: 1rem var(--navbar-padding-h);
+      padding: var(--mm-card-padding);
 
       @media (max-width: 749px) {
-        margin: 0 calc(var(--navbar-padding-h) * -1) 1rem;
+        margin-inline: calc(-1 * var(--mm-gutter));
         order: 0;
-
-        &:nth-child(2) {
-          margin-bottom: 1rem;
-        }
       }
 
       &.blush {
@@ -238,20 +344,20 @@
       }
 
       h3 {
-        color: var(--box-heading-text);
+        color: var(--box-text);
         background: var(--box-heading-bg);
-        font-size: 1.5rem;
-        font-weight: 700;
-        padding: 1rem var(--navbar-padding-h);
-        margin: -1rem calc(var(--navbar-padding-h) * -1) 1rem;
+        font-size: var(--mm-text-heading);
+        font-weight: 600;
+        padding: var(--mm-space-16) var(--mm-card-padding);
+        margin: calc(-1 * var(--mm-card-padding)) calc(-1 * var(--mm-card-padding)) var(--mm-space-24);
       }
 
       p {
         margin-top: 0;
-        max-width: 30em;
+        max-width: var(--mm-prose-width);
       }
 
-      :last-child {
+      > :last-child {
         margin-bottom: 0;
       }
     }
@@ -260,25 +366,28 @@
       margin-top: 0;
     }
 
-    :last-child {
+    > div > :last-child {
       margin-bottom: 0;
     }
   }
 }
 
-// Overrides and additions to https://github.com/vuepress/ecosystem/blob/main/tools/helper/src/client/styles/normalize.scss
-html {
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.3;
-  scroll-padding-top: var(--navbar-height);
+html,
+body {
+  // Keep both background surfaces solid and in sync for native overscroll.
+  background: var(--mm-page-edge-bg, var(--mm-header-bg));
+  transition: none;
+}
 
-  @media (max-width: $MQMobile) {
-    font-size: 20px;
-  }
-  @media (max-width: $MQMobileNarrow) {
-    font-size: 18px;
-  }
+html {
+  font-size: 100%;
+  scroll-padding-top: calc(var(--navbar-height) + var(--mm-space-16));
+}
+
+body {
+  font-size: var(--mm-text-body);
+  font-weight: 500;
+  line-height: var(--mm-leading-body);
 }
 
 p,
@@ -289,4 +398,33 @@ ol {
 
 a.header-anchor::before {
   content: none;
+}
+
+a {
+  transition: color var(--vp-t-color);
+}
+
+// Keep inline code backgrounds clear of neighbouring lines when text wraps.
+[vp-content] :not(pre) > code {
+  color: var(--mm-toner-900);
+  padding: 0 0.25em;
+  border-radius: 0.15em;
+  font-size: 0.875em;
+  line-height: inherit;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.vp-navbar-item,
+.navfoot-item {
+  // A heavier version of the same compact arrow for navigation links.
+  --external-link-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z' stroke='black' stroke-width='1'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mm-motion-fast: 0ms;
+    --mm-motion-drawer: 0ms;
+    scroll-behavior: auto;
+  }
 }

@@ -4,9 +4,18 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+  repository_dispatch:
+    types: [marmot-content-updated]
+  schedule:
+    - cron: '0 6,18 * * *'
 
 permissions:
   contents: write
+
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: false
 
 jobs:
   deploy-gh-pages:
@@ -22,7 +31,25 @@ jobs:
           node-version: 24
       - name: Install Deps
         run: npm ci
+      - name: Check content importers
+        run: npm run test:content
+      - name: Restore last deployed content
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            docs/.vuepress/data/github-content.json
+            docs/.vuepress/data/catalog.json
+            docs/.vuepress/data/releases.json
+            docs/.vuepress/data/documentation
+          key: marmot-content-v3-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: marmot-content-v3-${{ github.ref_name }}-
+      - name: Sync GitHub content
+        id: sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run sync:github
       - name: Build Docs
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.sync.outputs.changed == 'true'
         env:
           NODE_OPTIONS: --max_old_space_size=8192
           NODE_ENV: production
@@ -30,7 +57,18 @@ jobs:
           npm run build
           > docs/.vuepress/dist/.nojekyll
       - name: Deploy Docs
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.sync.outputs.changed == 'true'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: docs/.vuepress/dist
+      - name: Save deployed content
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.sync.outputs.changed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            docs/.vuepress/data/github-content.json
+            docs/.vuepress/data/catalog.json
+            docs/.vuepress/data/releases.json
+            docs/.vuepress/data/documentation
+          key: marmot-content-v3-${{ github.ref_name }}-${{ github.run_id }}
