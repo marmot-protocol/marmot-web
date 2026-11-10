@@ -186,6 +186,16 @@
         border-color: var(--mm-toner-800);
       }
 
+      &.mm-button-secondary {
+        color: var(--mm-black);
+        background: var(--mm-white);
+
+        &:hover {
+          background: var(--mm-toner-50);
+          border-color: var(--mm-black);
+        }
+      }
+
       + a { margin-top: var(--mm-space-16); }
     }
 
@@ -270,6 +280,12 @@
     input:focus-visible { outline: 2px solid var(--mm-black); outline-offset: 2px; }
   }
   .mm-catalog-search, .mm-catalog-filters { display: contents; }
+  .mm-catalog-controls { align-items: flex-start; }
+  .mm-protocol-filter {
+    flex: 1 1 12rem;
+    min-width: 0;
+    .mm-caption { margin: var(--mm-space-8) 0 0; }
+  }
   .mm-filter-toggle, .mm-filter-panel-heading { display: none; }
 
   @media (max-width: $MQMobile) {
@@ -402,7 +418,13 @@
     color: var(--mm-marine-900);
     font-weight: 600;
   }
-  .mm-source-note { max-width: var(--mm-prose-width); margin-top: var(--mm-space-32); }
+  .mm-catalog-actions {
+    margin-top: var(--mm-space-32);
+
+    @media (max-width: $MQMobile) {
+      .mm-button { width: 100%; }
+    }
+  }
   .mm-update-entry {
     padding-block: var(--mm-space-32);
     border-top: 1px solid var(--mm-toner-200);

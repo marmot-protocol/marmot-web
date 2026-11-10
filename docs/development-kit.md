@@ -91,13 +91,4 @@ Explore implementations, libraries, agent integrations, and supporting tools fro
 
 </section>
 
-<section class="mm-section mm-closing">
-
-## Bring your questions. Share what you build.
-
-You don’t need a finished project to join the conversation. Meet other developers, discuss an integration, or help improve the protocol.
-
-[Join the community →](/community.html)
-
-</section>
 </div>

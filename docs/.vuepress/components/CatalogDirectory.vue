@@ -22,7 +22,6 @@ const filtered = computed(() => entries.value.filter(item =>
   (generation.value === 'All' || item.labels[0] === generation.value) &&
   `${item.name} ${item.description} ${item.labels.join(' ')}`.toLowerCase().includes(query.value.trim().toLowerCase()),
 ).sort(compareProjects))
-const syncedDate = new Date(content.syncedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 function clearFilters() { category.value = 'All'; activity.value = 'All'; generation.value = 'All'; maintainer.value = 'All' }
 function reset() { query.value = ''; clearFilters() }
 </script>
@@ -49,8 +48,11 @@ function reset() { query.value = ''; clearFilters() }
         :options="[{ value: 'All', label: 'All projects' }, { value: 'IPF', label: 'IPF team' }, { value: 'Community', label: 'Community' }]" />
       <SelectField v-if="audience === 'developers'" v-model="category" label="Category"
         :options="[{ value: 'All', label: 'All' }, ...categories.map(value => ({ value, label: value }))]" />
-      <SelectField v-else v-model="generation" label="Protocol"
+      <div v-else class="mm-protocol-filter">
+      <SelectField v-model="generation" label="Protocol"
         :options="[{ value: 'All', label: 'All versions' }, { value: 'v2', label: 'Marmot v2' }, { value: 'v1', label: 'Marmot v1' }, { value: 'unknown', label: 'Unconfirmed' }]" />
+      <p class="mm-caption">Marmot v1 and v2 are not interchangeable.</p>
+      </div>
       <SelectField v-model="activity" label="Activity"
         :options="[{ value: 'All', label: 'All projects' }, { value: 'active', label: 'Recently updated' }, { value: 'inactive', label: 'No recent commits' }, { value: 'archived', label: 'Archived' }, { value: 'unverified', label: 'Unverified' }]" />
       </div>
@@ -71,7 +73,10 @@ function reset() { query.value = ''; clearFilters() }
       <p>No projects match these filters.</p>
       <button class="mm-text-button" type="button" @click="reset">Clear filters</button>
     </div>
-    <p class="mm-caption mm-source-note">Synced {{ syncedDate }} from <a :href="content.catalogSource">Awesome Marmot</a>. Labels describe the upstream source review; recent activity does not establish compatibility or production readiness. Marmot v1 and v2 are not interchangeable.</p>
-    <a href="https://github.com/marmot-protocol/awesome-marmot#contributing">Suggest a project or correction</a>
+    <div class="mm-catalog-actions">
+      <a class="mm-button mm-button-secondary no-external-link-icon" href="https://github.com/marmot-protocol/awesome-marmot">
+        Suggest a project <span class="mm-button-external-icon" aria-hidden="true"></span>
+      </a>
+    </div>
   </div>
 </template>
