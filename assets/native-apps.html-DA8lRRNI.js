@@ -1,4 +1,4 @@
-import{c as a,b as t,d as i,u as e,r,o as s}from"./app-C1yp260q.js";const d="mdk",c="0.15.0",l="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/marmot-uniffi/README.md",h=`<div id="marmot-uniffi" class="mm-source-title">marmot-uniffi</div>
+import{c as a,b as t,d as i,u as e,r,o as s}from"./app-DZvVNV9l.js";const d="mdk",c="0.15.0",l="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/marmot-uniffi/README.md",h=`<div id="marmot-uniffi" class="mm-source-title">marmot-uniffi</div>
 <p>MarmotKit: UniFFI bindings for the Marmot app runtime (<code>marmot-app</code>), generated as Swift for iOS/macOS and Kotlin for
 Android from one Rust API. This README is the entry point for app developers integrating MDK: what MDK owns, which
 API to choose, the contracts behind each feature family, and how to build bindings locally. C and other raw-FFI hosts
