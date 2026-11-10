@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="generator" content="VuePress 2.0.0-rc.26" />
+    <style>
+      :root {
+        --vp-c-bg: #fff;
+      }
+
+      [data-theme='dark'] {
+        --vp-c-bg: #1b1b1f;
+      }
+
+      html,
+      body {
+        background-color: var(--vp-c-bg);
+      }
+    </style>
+    <script>
+      const useChoice = localStorage.getItem('vuepress-color-scheme')
+      const systemStatus =
+        'matchMedia' in window
+          ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          : false
+
+      if (useChoice === 'light') {
+        document.documentElement.dataset.theme = 'light'
+      } else if (useChoice === 'dark' || systemStatus) {
+        document.documentElement.dataset.theme = 'dark'
+      }
+    </script>
+    <link rel="icon" href="/marmot-web/favicon.ico" sizes="16x16 32x32 48x48"><link rel="icon" href="/marmot-web/favicon-32x32.png" type="image/png" sizes="32x32"><link rel="icon" href="/marmot-web/favicon.svg" type="image/svg+xml" sizes="any"><link rel="apple-touch-icon" href="/marmot-web/apple-touch-icon.png" sizes="180x180"><link rel="manifest" href="/marmot-web/site.webmanifest"><link rel="preload" href="/marmot-web/fonts/zilla-slab-v12-latin-500.woff2" as="font" type="font/woff2" crossorigin="anonymous"><link rel="preload" href="/marmot-web/fonts/zilla-slab-v12-latin-600.woff2" as="font" type="font/woff2" crossorigin="anonymous"><style>@font-face {
+  font-display: swap;
+  font-family: 'Zilla Slab';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/marmot-web/fonts/zilla-slab-v12-latin-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: swap;
+  font-family: 'Zilla Slab';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/marmot-web/fonts/zilla-slab-v12-latin-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: swap;
+  font-family: 'Zilla Slab';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/marmot-web/fonts/zilla-slab-v12-latin-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: swap;
+  font-family: 'Zilla Slab';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/marmot-web/fonts/zilla-slab-v12-latin-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: swap;
+  font-family: 'Zilla Slab';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/marmot-web/fonts/zilla-slab-v12-latin-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: swap;
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/marmot-web/fonts/jetbrains-mono-v24-latin-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: swap;
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/marmot-web/fonts/jetbrains-mono-v24-latin-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: swap;
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/marmot-web/fonts/jetbrains-mono-v24-latin-600.woff2') format('woff2');
+}
+</style><title>Releases | Marmot</title><meta name="description" content="Published release notes for MDK and Marmot TypeScript, mirrored from their GitHub projects.">
+    <link rel="preload" href="/marmot-web/assets/style-F-O_CzWH.css" as="style"><link rel="stylesheet" href="/marmot-web/assets/style-F-O_CzWH.css">
+    <link rel="modulepreload" href="/marmot-web/assets/app-C1yp260q.js"><link rel="modulepreload" href="/marmot-web/assets/updates.html-G-yzAzpo.js">
+    
+  </head>
+  <body>
+    <div id="app"><!--[--><div class="vp-theme-container no-sidebar external-link-icon updates mm-editorial mm-text-hero" vp-container><!--[--><header class="vp-navbar" vp-navbar><div class="mm-container"><div class="vp-toggle-sidebar-button" title="toggle sidebar" aria-expanded="false" role="button" tabindex="0" aria-controls="mm-site-menu"><div class="icon" aria-hidden="true"><span></span><span></span><span></span></div></div><span><a class="route-link" href="/marmot-web/"><img class="vp-site-logo" src="/marmot-web/images/logo-light.svg" alt="Marmot" width="238" height="36"></a></span><div class="vp-navbar-items-wrapper" style=""><!--[--><!--]--><nav class="vp-navbar-items vp-hide-mobile" aria-label="site navigation"><!--[--><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/" aria-label="Protocol"><!--[--><!--[--><!--]--><!--]-->Protocol<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/development-kit.html" aria-label="Development Kit"><!--[--><!--[--><!--]--><!--]-->Development Kit<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/docs/" aria-label="Documentation"><!--[--><!--[--><!--]--><!--]-->Documentation<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/apps.html" aria-label="Apps"><!--[--><!--[--><!--]--><!--]-->Apps<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link route-link-active auto-link" href="/marmot-web/updates.html" aria-label="Releases"><!--[--><!--[--><!--]--><!--]-->Releases<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/community.html" aria-label="Community"><!--[--><!--[--><!--]--><!--]-->Community<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="auto-link external-link" href="https://github.com/marmot-protocol" aria-label="GitHub" rel="noopener noreferrer" target="_blank"><!--[--><!--[--><!--]--><!--]-->GitHub<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/donate.html" aria-label="Donate"><!--[--><!--[--><!--]--><!--]-->Donate<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/contact.html" aria-label="Contact"><!--[--><!--[--><!--]--><!--]-->Contact<!--[--><!--[--><!--]--><!--]--></a></div><!--]--></nav><!--[--><!--]--><!----><!----></div></div></header><!--]--><div id="mm-page-wrap"><div class="vp-sidebar-mask"></div><!--[--><aside class="vp-sidebar" vp-sidebar id="mm-site-menu"><nav class="vp-navbar-items" aria-label="site navigation"><!--[--><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/" aria-label="Protocol"><!--[--><!--[--><!--]--><!--]-->Protocol<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/development-kit.html" aria-label="Development Kit"><!--[--><!--[--><!--]--><!--]-->Development Kit<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/docs/" aria-label="Documentation"><!--[--><!--[--><!--]--><!--]-->Documentation<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/apps.html" aria-label="Apps"><!--[--><!--[--><!--]--><!--]-->Apps<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link route-link-active auto-link" href="/marmot-web/updates.html" aria-label="Releases"><!--[--><!--[--><!--]--><!--]-->Releases<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/community.html" aria-label="Community"><!--[--><!--[--><!--]--><!--]-->Community<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="auto-link external-link" href="https://github.com/marmot-protocol" aria-label="GitHub" rel="noopener noreferrer" target="_blank"><!--[--><!--[--><!--]--><!--]-->GitHub<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/donate.html" aria-label="Donate"><!--[--><!--[--><!--]--><!--]-->Donate<!--[--><!--[--><!--]--><!--]--></a></div><div class="vp-navbar-item"><a class="route-link auto-link" href="/marmot-web/contact.html" aria-label="Contact"><!--[--><!--[--><!--]--><!--]-->Contact<!--[--><!--[--><!--]--><!--]--></a></div><!--]--></nav><!--[--><!--]--><!----><!--[--><!--]--></aside><!--]--><!--[--><main class="vp-home"><header class="vp-hero"><div class="mm-container"><!----><div class="mm-hero-content"><h1 id="main-title">Marmot releases.</h1><div class="vp-hero-description">Follow releases of the tools behind Marmot. Read the original notes, explore improvements, and check what matters before upgrading.</div><!----></div></div></header><div vp-content><div><div class="mm-container"><div class="mm-updates"><div class="mm-directory-controls mm-update-controls"><div class="mm-select-field"><label id="v-0-0-label" for="v-0-0">Project</label><div class="mm-select-anchor"><button id="v-0-0" class="mm-select-trigger" type="button" role="combobox" aria-labelledby="v-0-0-label v-0-0-value" aria-haspopup="listbox" aria-expanded="false" aria-controls="v-0-0-options"><span id="v-0-0-value">MDK</span><svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class=""><path d="m4 6 4 4 4-4"></path></svg></button><!----></div></div></div><!--[--><article id="mdk-0-15-0" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-11-09T15:40:26Z">9 November 2026</time></div><h2>0.15.0</h2><p class="mm-update-summary">MDK 0.15.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and Android), and Marmot C from one source commit. See the 0.14.0 → 0.15.0 client upgrade guide for required record, error, event, header, storage and interoperability changes.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.15.0.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.15.0">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.15.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and
+Android), and Marmot C from one source commit. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.15.0.md">0.14.0 → 0.15.0 client upgrade guide</a> for required
+record, error, event, header, storage and interoperability changes.</p>
+<h4>Highlights</h4>
+<ul>
+<li>Accounts with several devices. Creating a group or inviting adds every
+device of each account (up to 20 KeyPackages published in the last 30 days,
+or the single best valid one when none is that recent),
+and members are listed once per account with a <code>device_count</code>. A device joins
+only through the Welcome that names its own KeyPackage. New groups whose
+founding devices all support it require the account-devices component
+(<code>marmot.group.account-devices.v1</code>); an admin can turn it on in an existing
+group with <code>enable_account_devices</code>.</li>
+<li>Automatic rejoin. An account worker rejoins a group copy that became
+<code>Unrecoverable</code> through an authenticated handshake with an admin device over
+the account inbox, with bounded retries.</li>
+<li>Recovery owns account history. Catch-up after time offline is bounded and
+paced, history arrives in order, newer live messages wait until the fetched
+backlog is admitted, and <code>account_recovery_status</code> reports groups still
+catching up. A rejoined group raises one <code>BeforeRejoin</code> history notice.</li>
+<li>Chat-list queries. Typed filters (unread, pinned, archived, direct, group,
+muted, chat text, message text and more) combine with <code>AND</code>/<code>OR</code>/<code>NOT</code>, and
+hosts can select every chat a filter matches for bulk actions.</li>
+<li>Timeline search filters by sender, date range and attachment type, and
+matches non-ASCII text case-insensitively.</li>
+<li>Sonar-compatible sticker packs, NIP-51 custom emoji sets with pinned local
+installs, and custom reaction artwork lookup.</li>
+<li>Leaving as an admin. A blocked leave (the last active admin) is shown and can
+be cancelled with <code>cancel_leave</code>. <code>sign_out_and_wipe</code> steps an admin down
+and leaves the chats another account also administers before wiping.</li>
+<li>Push notifications reach every device of a member, newly added members learn
+existing tokens, and devices repair missed tokens inside each group.</li>
+<li>Sends: queued offline sends publish after reconnect, a send never overtakes
+one queued before it, a Welcome waits until its Commit is published, failed
+convergence retries back off and park, and refused queued intents are retired
+with <code>QueuedIntentRefused</code>. Oversized events report <code>EventTooLarge</code>.</li>
+<li>KeyPackages are valid for 30 days and refreshed weekly. Sign-out deletes only
+this device's KeyPackage slot instead of every device's.</li>
+<li>External signers are no longer asked to sign the identity proof again on every
+reopen.</li>
+<li>Pasted <code>note1</code>, hex and author-only <code>nevent</code> references now resolve through
+the deployment's discovery indexers and the author's write relays.</li>
+<li>WN Agent: <code>wn-agent doctor</code>, a connector-only <code>install-wn-agent.sh</code> for your
+own control-socket client, historical attachment download with leases,
+founding co-admins, and default relays with published relay-list adoption.</li>
+<li>Lower idle cost: maintenance ticks with nothing to do no longer open write
+transactions, <code>wnd</code> no longer grows about 3 MB per request, and cached user
+search ranks in SQL and finds people past the 10,000th cached identity.</li>
+<li>Security: the pinned Nostr SDK rejects tampered events even when their id is
+cached, directory events are verified before they are forwarded or stored,
+account records are written owner-only, local audit files expire after 30
+days, and <code>elliptic-curve</code>/HPKE (RUSTSEC-2026-0387), <code>openssl</code> and the
+OpenClaw plugin's npm dependencies are updated.</li>
+</ul>
+<p>Experimental device groups (pairing, linked devices, sign-in review, history
+transfer and backups) continue behind the <code>dev-device-groups</code> build feature and
+<code>new_with_experimental_device_groups</code>. Ordinary builds and constructors keep them
+off and refuse accounts that already use them.</p>
+<h4>Compatibility</h4>
+<p>Ship generated Swift/Kotlin, native libraries and C headers from this exact
+cohort together.</p>
+<ul>
+<li>Interoperability: every 0.15 device advertises the account-devices
+component. A new group requires it when the creator and every device added
+at creation advertise it, and 0.14 or older clients cannot then be invited
+into it. Existing groups are unchanged until an admin enables it.</li>
+<li><code>TimelineMessageQueryFfi</code> adds <code>sender</code>, <code>since</code>, <code>until</code> and
+<code>cursorGroupId</code> with no binding defaults. <code>MarmotDeploymentFfi</code> drops
+<code>keyPackagePreferredClients</code> and <code>keyPackageLastClients</code>.</li>
+<li><code>MarmotKitError</code> gains 22 cases, including <code>EventTooLarge</code>,
+<code>MediaReferenceStaleEpoch</code>, <code>MediaReferenceEpochUnsettled</code>, <code>LeaveNotBlocked</code>,
+<code>InvalidChatListQuery</code>, <code>AccountUnlinked</code>, the sticker and emoji-set errors,
+and <code>GroupRecoveryUnsettled</code>/<code>GroupRecoverySourceMismatch</code>. Some failures that
+used to arrive as <code>Runtime</code>, <code>Publish</code> or <code>InvalidMediaReference</code> now use them,
+and busy, closed or full storage arrives as <code>StorageBusy</code>, <code>StorageClosed</code> or
+<code>StorageFull</code>.</li>
+<li><code>MarmotEventFfi</code> gains eight cases, and <code>WelcomeDeliveryPending</code> gains
+<code>sizeClass</code>. <code>HistoryNoticeCauseFfi</code> gains <code>UnprovenHistory</code> and
+<code>BeforeRejoin</code>; <code>SelfMembershipFfi</code> and <code>ConversationParticipationFfi</code> gain
+<code>DeviceRemoved</code>; <code>GroupEventKindFfi</code> gains <code>QueuedIntentRefused</code>.</li>
+<li>Media references saved by 0.14 lack <code>sourceEpochIdentity</code>; sending one is
+refused with <code>MediaReferenceStaleEpoch</code>, so re-upload instead.</li>
+<li>Admin invitees must step down before declining an invitation, and
+<code>OnboardingIssueFfi::MultiDeviceUnsupported</code> is no longer produced.</li>
+</ul>
+<p>C hosts must recompile. <code>marmot_deployment_set_key_package_client_preference</code>
+is removed. <code>MarmotMediaAttachmentReference</code> gains <code>source_epoch_identity</code>
+mid-struct; message, timeline, chat-list preview and notification records gain
+a <code>sticker</code> pointer mid-struct; <code>MarmotTimelineMessageRecord</code> gains
+<code>recipient_confirmed</code> mid-struct; <code>MarmotClientOptions</code> and
+<code>MarmotTimelineMessageQuery</code> gain trailing fields. Statuses 108–129 and enum
+values are appended; none is renumbered.</p>
+<p>Rust hosts: <code>cgka-session</code> is now <code>marmot-session</code>, <code>TimelineMessageQuery</code> and
+chat-list query types gain fields and variants, <code>AppError</code> gains variants, and
+the diagnostics exporters move to <code>marmot-observability</code>. See the upgrade guide.</p>
+<p>Account databases migrate from schema 116 through 201 on first open.
+Downgrade is unsupported: 0.14.0 refuses the migrated database. Keep a
+device-local copy of the account directory before upgrading. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format contract</a>.</p>
+<p>Building from source now needs the Odin compiler (<code>scripts/install-odin.sh</code>, or
+set <code>ODIN</code>), because Markdown parsing moved to Odin. Published artifacts are
+unaffected.</p>
+<p>WN Agent and its plugins must be upgraded together: a 0.15.0 client sending a
+new request, such as <code>group_create_capabilities</code>, to a 0.14.0 connector sees
+the socket close without an error. The OpenClaw plugin requires OpenClaw
+2026.10.10 or newer and Node 24.22.1+ (24.x) or 26.12.1+.</p>
+<h4>Known issues</h4>
+<ul>
+<li>Still open from 0.14.0:
+<a href="https://github.com/marmot-protocol/mdk/issues/2237">#2237</a> (late messages
+more than five epochs behind),
+<a href="https://github.com/marmot-protocol/mdk/issues/2277">#2277</a>,
+<a href="https://github.com/marmot-protocol/mdk/issues/2283">#2283</a>,
+<a href="https://github.com/marmot-protocol/mdk/issues/2389">#2389</a> and
+<a href="https://github.com/marmot-protocol/mdk/issues/2286">#2286</a> (group-change
+prompts), <a href="https://github.com/marmot-protocol/mdk/issues/2253">#2253</a> (group
+data extension order), <a href="https://github.com/marmot-protocol/mdk/issues/2158">#2158</a>
+(an upload in flight across an epoch change is lost) and
+<a href="https://github.com/marmot-protocol/mdk/issues/1445">#1445</a> (WN Agent's
+control socket grants its whole API to any authenticated client).</li>
+<li>Adding every device of an account is best effort: a device whose KeyPackage a
+relay does not return in time is left out until the account is invited
+again, and an account for which one relay returns a full page (500) of
+KeyPackages or of KeyPackage deletion requests cannot be invited.</li>
+<li>Right after a reconnect, a new send can still go out ahead of older unsent
+ones.</li>
+<li>A failed legacy group create in an earlier release can have left orphaned
+MLS state; 0.15 stops creating it but does not purge it.</li>
+<li>Migration 0175 refuses to open an account whose saved outbound fanout or
+group evolution does not decode, rather than risk reusing a send reference.</li>
+<li>The automatic-rejoin handshake's inner event kind is still under discussion
+(<a href="https://github.com/marmot-protocol/marmot/issues/451">marmot#451</a>).</li>
+</ul>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.15.0</code>: MDK source snapshot; workspace crates remain unpublished to crates.io.</li>
+<li><code>wn-agent-v0.15.0</code>: WN Agent, terminal harness binaries, gateway plugins and
+checksum-paired installers, now including <code>install-wn-agent.sh</code>.</li>
+<li><code>marmotkit-v0.15.0</code>: iOS/macOS XCFrameworks, shared Swift source, platform
+privacy resources, Android Kotlin and all four JNI ABIs with
+<code>android-elf.json</code>, manifests and checksums.</li>
+<li><code>marmotc-v0.15.0</code>: C library/header bundle and checksum.</li>
+</ul>
+<p>Verify sibling SHA-256 files and source/version manifests; Apple binary ZIPs also
+have SwiftPM checksums. Follow the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/marmot-uniffi/DISTRIBUTION.md">distribution guide</a>. Dated
+<code>0.15.0-nightly.*</code> builds are for testing only; pin this release instead.</p>
+</div></details></article><article id="mdk-0-14-0" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-10-23T14:21:36Z">23 October 2026</time></div><h2>0.14.0</h2><p class="mm-update-summary">MDK 0.14.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and Android), and Marmot C from one source commit. See the 0.13.0 → 0.14.0 client upgrade guide for required constructor, record, error, header, storage and backup changes.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.14.0.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.14.0">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.14.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and
+Android), and Marmot C from one source commit. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.14.0.md">0.13.0 → 0.14.0 client upgrade guide</a> for required
+constructor, record, error, header, storage and backup changes.</p>
+<h4>Highlights</h4>
+<ul>
+<li>Encrypted media files. Attachment bodies, download checkpoints, avatars and
+group images move out of the account database into encrypted per-file storage
+under the account's <code>media/</code> directory. Bodies already in the database move in
+the background, and a one-time compaction returns the freed space when the
+account is small enough.</li>
+<li>Manage storage. Hosts can show per-account and per-chat attachment usage,
+list the largest retained attachments, and remove a chat's attachments or
+everything older than a date. &quot;Keep media&quot; removes attachments past a chosen
+window (one year, six months or thirty days) on this device.</li>
+<li>Attachment handoff leases give the OS share sheet or another app a plaintext
+copy of one attachment, released explicitly.</li>
+<li>Account-wide attachment history pages list media across every chat with
+filters, bounded pages and change tokens.</li>
+<li>Public event previews resolve and cache <code>nostr:</code> references in messages, and
+report when the author deleted the event.</li>
+<li>Faster database opens. App databases now present their derived key to
+SQLCipher as a raw key instead of a passphrase, skipping a 256,000-iteration
+KDF on every open. Each existing database is rekeyed once on first open.</li>
+<li>Group changes can pause with a prompt: <code>GroupCatchingUp</code> while the device is
+still catching up, and <code>GroupCommitUndelivered</code> when the previous commit has
+not reached its relays for two minutes. The host acknowledges and retries;
+messages and leaving are never held.</li>
+<li>Invitations explain failures: a recipient whose only KeyPackages are
+obsolete, a lookup that ran out of time, or a member with no inbox route.</li>
+<li>Follow and unfollow edit the current follow list in place, keeping petnames,
+relay hints and other tags, and refuse instead of truncating a list of 2,048
+or more.</li>
+<li>WN Agent can edit an agent's own message (<code>edit_message</code>), and OpenClaw
+exposes it. Edits of messages that cannot be edited are refused before
+anything is published.</li>
+<li>MarmotKit runs MDK on its own two-to-four-thread runtime, so async calls
+awaited from the main thread no longer run MDK work there.</li>
+<li>Deployment services that used to be compiled in for White Noise (recovery
+relays, discovery indexers, media and image servers, Open Ranking, KeyPackage
+client preference, moderation namespace, keychain service) are now one
+host-supplied deployment record with a White Noise preset.</li>
+<li>Catch-up and delivery: ordered, complete offline catch-up; live group
+subscriptions batched 50 per REQ so accounts in many groups stay under relay
+REQ limits; epoch-gap recovery pages backwards through clamped relays;
+terminal relay rejections are no longer retried; stalled recovery routes stay
+retryable; self-update commits retry every missed relay.</li>
+<li>Onboarding relay diagnostics say which check produced each finding, why it
+ran, what it found and which actions apply to it.</li>
+<li>An unreachable relay no longer fails an account's activation or group sync,
+taking the inbox and every healthy group offline; its subscription is sent
+when the relay reconnects, and a group sync re-sends only the relay sets it
+changes. Sends and group changes no longer fail when the pre-send
+subscription refresh cannot reach a group's relays; convergence retries and
+signed-out accounts still require it. Opt-in relay telemetry
+exports activation and group-sync outcome counters.</li>
+<li>Fixes: the retention sweep no longer deletes messages still counted unread;
+a quarantined group no longer stalls every conversation's receives; iOS
+suspension no longer risks <code>0xdead10cc</code> termination; a Welcome built from a
+just-replaced KeyPackage can still be joined.</li>
+<li>QUIC agent-stream brokers are verified against bundled Mozilla roots, fixing
+an Android abort on the first handshake.</li>
+<li>Security updates: <code>quinn-proto</code>, <code>rustls</code>, <code>rustls-webpki</code>, <code>webpki-roots</code>,
+<code>negentropy</code> and <code>ctutils</code>.</li>
+</ul>
+<h4>Compatibility</h4>
+<p>Ship generated Swift/Kotlin, native libraries and C headers from this exact
+cohort together.</p>
+<ul>
+<li>Every MarmotKit constructor takes a <code>MarmotDeploymentFfi</code>, and
+<code>MarmotOptions.deployment</code> is required. White Noise apps pass
+<code>marmotDeploymentWhiteNoise()</code>. Other hosts that used the platform keychain
+without a <code>SecretStore</code> must keep <code>keychainService = &quot;com.marmot.whitenoise&quot;</code>,
+or their existing account secrets are no longer found.</li>
+<li><code>MarmotKitError</code> gains <code>InvalidEditTarget</code>, <code>InvalidPublicEventReferences</code>,
+<code>DirectoryLookupIncomplete</code>, <code>FollowListTooLarge</code>, <code>GroupCatchingUp</code>,
+<code>GroupCommitUndelivered</code> and <code>StorageFull</code>; <code>MissingKeyPackage</code> gains a
+<code>reason</code>. Some failures that used to arrive as <code>Runtime</code> or
+<code>InvalidKeyPackageEvent</code> now use the new variants.</li>
+<li><code>AttachmentTransferStateFfi</code> gains <code>StorageBlocked</code> and <code>CleanedBySetting</code>;
+<code>RetentionSweepStatusFfi</code> loses <code>DeferredScanExhausted</code>.</li>
+<li><code>OnboardingFindingFfi</code> gains <code>context</code>, <code>purpose</code>, <code>outcome</code>,
+<code>declaredCapability</code>, <code>actions</code> and <code>observedRevision</code> with no binding
+defaults, and <code>OnboardingIssueFfi</code> gains <code>InspectionCompleted</code>.</li>
+</ul>
+<p>C hosts must recompile and update every <code>marmot_client_new*</code> call: each takes a
+required <code>const struct MarmotDeployment *</code>. <code>MarmotRetentionSweepStatus</code> drops
+<code>DEFERRED_SCAN_EXHAUSTED</code>, so <code>FAILED</code> moves from 5 to 4. <code>MarmotOnboardingFinding</code>
+changes layout, <code>MarmotOnboardingIssue</code> appends <code>InspectionCompleted</code> (21), and
+statuses 101–107 are new. No other existing struct layout changed.</p>
+<p>Rust hosts: <code>MarmotAppConfig::default()</code> is now the neutral deployment; use
+<code>MarmotAppConfig::white_noise()</code> to keep White Noise's services. <code>MarmotApp</code>'s
+directory methods moved to <code>app.directory()</code> and return <code>DirectoryError</code>.
+<code>AppError</code> gains six variants, ingestion borrows its input, and
+<code>NostrAdapterMetrics</code> and <code>RelayTelemetryRollup</code> gain counter fields.</p>
+<p>Account databases migrate from schema 107 through 116 on first open, the
+directory cache from 1 to 2, and every app database is rekeyed to a raw
+SQLCipher key. None of this rewrites message history, but the rekey rewrites
+every database page once. Downgrade is unsupported: 0.13.0 cannot open the
+rekeyed databases. Keep a device-local copy of the account directory before
+upgrading, and exclude the account directory, including <code>media/</code> and
+<code>handoff/</code>, from iCloud and Android backups. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format contract</a>.</p>
+<p>WN Agent and its plugins must be upgraded together: a 0.14.0 plugin calling
+<code>edit_message</code> on a 0.13.0 connector sees the socket close without an error.</p>
+<h4>Known issues</h4>
+<ul>
+<li><a href="https://github.com/marmot-protocol/mdk/issues/2237">#2237</a>: a message that
+arrives more than five epochs too late stays undecryptable without a &quot;history
+may be incomplete&quot; notice.</li>
+<li>Group-change prompts: undecryptable traffic can hold a group's changes behind
+<code>GroupCatchingUp</code> (<a href="https://github.com/marmot-protocol/mdk/issues/2277">#2277</a>),
+no bounded catch-up runs before the refusal
+(<a href="https://github.com/marmot-protocol/mdk/issues/2283">#2283</a>), and an
+acknowledgement cannot be withdrawn
+(<a href="https://github.com/marmot-protocol/mdk/issues/2389">#2389</a>). Healthy relays
+can look owed for a short time after a commit
+(<a href="https://github.com/marmot-protocol/mdk/issues/2286">#2286</a>); the two-minute
+grace keeps that from prompting.</li>
+<li><a href="https://github.com/marmot-protocol/mdk/issues/2253">#2253</a>: group data
+updates move the app-data extension to the end of the group context, which
+implementations that preserve extension order reject.</li>
+<li><a href="https://github.com/marmot-protocol/mdk/issues/2158">#2158</a>: an upload still
+in flight when the group epoch advances is lost.</li>
+<li>The one-time rekey has not been measured on large databases or on devices
+beyond a Pixel 8 Pro fixture; see the upgrade guide.</li>
+<li>WN Agent's control socket still grants its whole API to any authenticated
+client (<a href="https://github.com/marmot-protocol/mdk/issues/1445">#1445</a>), and
+reports the new group-change refusals as a generic <code>app_error</code>.</li>
+</ul>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.14.0</code>: MDK source snapshot; workspace crates remain unpublished to crates.io.</li>
+<li><code>wn-agent-v0.14.0</code>: WN Agent, terminal harness binaries, gateway plugins and
+checksum-paired installers. This track keeps its existing prerelease status.</li>
+<li><code>marmotkit-v0.14.0</code>: iOS/macOS XCFrameworks, shared Swift source, platform
+privacy resources, Android Kotlin and all four JNI ABIs with
+<code>android-elf.json</code>, manifests and checksums.</li>
+<li><code>marmotc-v0.14.0</code>: C library/header bundle and checksum.</li>
+</ul>
+<p>Verify sibling SHA-256 files and source/version manifests; Apple binary ZIPs also
+have SwiftPM checksums. Follow the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/marmot-uniffi/DISTRIBUTION.md">distribution guide</a>. Dated
+<code>0.14.0-nightly.*</code> builds are for testing only; pin this release instead.</p>
+</div></details></article><article id="mdk-0-13-0" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-10-12T12:59:24Z">12 October 2026</time></div><h2>0.13.0</h2><p class="mm-update-summary">MDK 0.13.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and Android), and Marmot C from one source commit. See the 0.12.0 → 0.13.0 client upgrade guide for required record, error, event, header and storage changes.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.13.0.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.13.0">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.13.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and
+Android), and Marmot C from one source commit. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.13.0.md">0.12.0 → 0.13.0 client upgrade guide</a> for required
+record, error, event, header and storage changes.</p>
+<h4>Highlights</h4>
+<ul>
+<li>Large attachments. <code>uploadMediaFiles</code> uploads from a file path with progress
+and cancellation instead of passing whole files as byte arrays, and large
+downloads stream into private files with resumable checkpoints.</li>
+<li>Private moderation reports. <code>submitModerationReport</code> sends a NIP-56 report,
+gift-wrapped per NIP-59, to the deployment's moderation team. Relays cannot see
+who reported whom, and reports carry no message, group or relay identifiers.</li>
+<li>Onboarding: <code>createIdentityWithInitialProfile</code> publishes the chosen name as a
+new account's first profile, so contacts never see the generated default.
+<code>proposeOnboardingRelayRepair</code> previews a lossless relay-list repair before
+approval, and manual relay edits keep untouched tags as they were.</li>
+<li>Message details: <code>messageReactions</code> returns every reaction on one message.
+Markdown gains local-time timestamp nodes. Attachment history marks inline
+custom-emoji artwork so galleries can leave it out.</li>
+<li>Polls can be created in direct conversations.</li>
+<li>Chat list: presented rows carry an opaque draft version, so a host can tell a
+newer draft from the one it captured for sending.</li>
+<li>Opt-in SOCKS5 routing (<code>WN_SOCKS5_*</code>) covers relays, media, directory reads,
+collectors and C NIP-46 sessions, and never falls back to a direct connection.</li>
+<li>Opt-in native startup diagnostics report anonymous startup and migration
+phases for slow-open investigations.</li>
+<li>Catch-up: missed group history arrives in batched requests of up to 256
+events and, when the backlog is larger than one pass, oldest first. Commits
+no longer routinely move a member more than five epochs past messages it has
+not downloaded yet (<a href="https://github.com/marmot-protocol/mdk/issues/2086">#2086</a>).</li>
+<li>Relays that refuse a live subscription with <code>CLOSED</code> no longer leave it counted
+as live. Refusals are audited and counted in relay stats, and sync drains stop
+waiting for them.</li>
+<li>Sends: a message queued while the group converged is no longer shown as
+failed after everyone else received it, and durable sends keep progressing
+through recovery and relay retries.</li>
+<li>Invitations recover a member's KeyPackage from discovery relays when their
+advertised outboxes do not have one.</li>
+<li>Marmot C adds per-account NIP-46 signer sessions (beta).</li>
+<li>WN Agent adds the <code>wn-goose</code> harness for Goose and carries account relay-list
+reads and edits on the control surface.</li>
+</ul>
+<h4>Compatibility</h4>
+<p>Ship generated Swift/Kotlin, native libraries and C headers from this exact cohort
+together. No existing exported method changed its signature, but:</p>
+<ul>
+<li><code>MarmotKitError</code> gains five moderation-report variants.</li>
+<li>Native events gain <code>LocalGroupCopyTerminated</code>, <code>LocalGroupCopyRestored</code> and
+<code>GroupMemberLeavesRemoved</code>; <code>MarkdownInlineFfi</code> gains <code>Timestamp</code>.</li>
+<li><code>AttachmentEntryFfi.role</code>, <code>PresentedChatRowFfi.draftVersion</code> and
+<code>OnboardingRepairProposalFfi.relayRepair</code> are new fields without binding
+defaults. Update exhaustive handling and host-constructed records.</li>
+</ul>
+<p>C hosts must recompile: <code>MarmotAttachmentEntry</code>, <code>MarmotPresentedChatRow</code> and
+<code>MarmotOnboardingRepairProposal</code> change layout, new event and Markdown inline
+tags are appended, statuses 96–100 are new, and relay-repair preview strings are
+JSON-encoded.</p>
+<p>Rust hosts: <code>AppError</code>, <code>GroupEvent</code>, <code>MarmotAppConfig</code>, <code>AttachmentEntry</code>,
+<code>RelaySyncSnapshot</code>, <code>NostrAdapterMetrics</code> and <code>NostrReconciliationSummary</code> gain
+variants or fields. External-signer account database keys move into the host
+<code>SecretStore</code> on first open, so those accounts cannot be downgraded either.</p>
+<p><code>relay.damus.io</code> is no longer a retired relay; <code>relay.nostr.band</code> remains retired.</p>
+<p>Account databases migrate from schema 101 through 107 on first open. The
+attachment migrations keep payloads in place, so opening does not copy message
+or attachment history. Back up before upgrading; downgrade is unsupported. See
+the <a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format contract</a>.</p>
+<h4>Known issues</h4>
+<ul>
+<li><a href="https://github.com/marmot-protocol/mdk/issues/2237">#2237</a>: batched,
+oldest-first catch-up makes the #2086 loss much rarer, but it can still happen,
+for example when the only relay holding an old message is down. A message that
+arrives more than five epochs too late stays undecryptable without a &quot;history
+may be incomplete&quot; notice.</li>
+<li>WN Agent's control socket still grants its whole API to any authenticated
+client; capability-scoped grants remain tracked in
+<a href="https://github.com/marmot-protocol/mdk/issues/1445">#1445</a>.</li>
+</ul>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.13.0</code>: MDK source snapshot; workspace crates remain unpublished to crates.io.</li>
+<li><code>wn-agent-v0.13.0</code>: WN Agent, terminal harness binaries (now including
+<code>wn-goose</code>), gateway plugins and checksum-paired installers. This track keeps
+its existing prerelease status.</li>
+<li><code>marmotkit-v0.13.0</code>: iOS/macOS XCFrameworks, shared Swift source, platform privacy
+resources, Android Kotlin and all four JNI ABIs with <code>android-elf.json</code>, manifests
+and checksums.</li>
+<li><code>marmotc-v0.13.0</code>: C library/header bundle and checksum.</li>
+</ul>
+<p>Verify sibling SHA-256 files and source/version manifests; Apple binary ZIPs also
+have SwiftPM checksums. Follow the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/marmot-uniffi/DISTRIBUTION.md">distribution guide</a>.</p>
+</div></details></article><article id="mdk-0-12-0" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-10-02T09:31:12Z">2 October 2026</time></div><h2>0.12.0</h2><p class="mm-update-summary">MDK 0.12.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and Android), and Marmot C from one source commit. See the 0.11.0 → 0.12.0 client upgrade guide for required record, error, header and storage changes.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.12.0.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.12.0">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.12.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and
+Android), and Marmot C from one source commit. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.12.0.md">0.11.0 → 0.12.0 client upgrade guide</a> for required
+record, error, header and storage changes.</p>
+<h4>Highlights</h4>
+<ul>
+<li>NIP-30 custom emoji. <code>sendTaggedText</code>, <code>sendTaggedMedia</code> and <code>reactWithMedia</code>
+send chats and reactions carrying <code>[&quot;emoji&quot;, shortcode, url]</code> tags whose images
+are encrypted Marmot media. Conversation-window chat rows keep those tags, and
+reactions name the kind-7 whose image <code>listMedia</code> returns. Peers on 0.12.0 can
+send them, so render them.</li>
+<li>Per-voter poll results. <code>pollVotes</code> pages who chose each option, using the same
+rules as the poll tally.</li>
+<li>Application-owned group components. <code>groupAppComponent</code> and
+<code>updateAppComponent</code> read and admin-update opaque settings (ids <code>0xf000</code> and
+up) carried in MLS group state, so they survive message expiry and reach new
+members in their Welcome.</li>
+<li>Hosts can declare a kind-10050 inbox relay list separately from
+<code>default_relays</code> on identity creation, login, relay-list publication and
+onboarding.</li>
+<li>Attachments: agent-sent files no longer stay downloading forever, missing-key
+deferrals end after about eight minutes, an explicit tap
+(<code>requestExplicitAttachment</code>) promotes demand without resetting retry budgets,
+and successfully sent files are retained locally for the sender.</li>
+<li>A muted chat still notifies on a direct mention of the account.</li>
+<li>Recovery: a route change no longer resets recovery for every route, recovery
+parks behind a required relay that never answers, catch-up no longer holds
+the account worker for recovery, and group creation no longer rebuilds the
+routing table.</li>
+<li>Publishing: retained per-account publishers cut a measured complete
+send-with-push call from about 1.9 s to 0.14 s mean against the operated relays.</li>
+<li>WN Agent: admin agents can rename groups and edit descriptions
+(<code>group_profile_update</code>, Hermes <code>marmot_group_profile</code>); <code>account_publish_profile</code>
+merges into the published profile instead of replacing it; files work in both
+directions for Codex, OpenCode and Pi.</li>
+</ul>
+<h4>Compatibility</h4>
+<p>Ship generated Swift/Kotlin, native libraries and C headers from this exact cohort
+together. <code>MarmotKitError</code> gains <code>InvalidAppComponent</code>, and
+<code>ConversationReactionFfi</code> gains <code>reactionMessageIdHex</code> with no binding default.
+Update exhaustive error handling and host-constructed reaction records. Six
+account methods gained a trailing <code>inboxRelays</code> parameter that defaults to empty
+in Swift and Kotlin.</p>
+<p>C hosts must recompile: the six account entry points gain trailing
+<code>inbox_relays</code> / <code>inbox_relays_len</code> arguments, <code>MarmotMediaUploadRequest</code> and
+<code>MarmotConversationReaction</code> gain trailing fields, and
+<code>MARMOT_STATUS_INVALID_APP_COMPONENT</code> (95) is new.</p>
+<p>Rust hosts: <code>AccountSetupRequest</code>, <code>AccountRelayListBootstrap</code>,
+<code>OnboardingOptions</code>, <code>MediaUploadRequest</code> and <code>ConversationReaction</code> gain fields,
+<code>AppError</code> gains <code>InvalidAppComponent</code>, and the engine's
+<code>GroupEvent::MessageReceived</code> gains <code>encrypted_media_secret</code>. An expired account
+worker ready-wait now reports <code>account worker startup timed out at &lt;stage&gt;</code>.</p>
+<p>Account databases migrate from schema 98 through 101 on first open. Back up
+before upgrading; downgrade is unsupported. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format contract</a>.</p>
+<h4>Known issues</h4>
+<ul>
+<li><a href="https://github.com/marmot-protocol/mdk/issues/2086">#2086</a>: during a large
+catch-up, a member can advance more than five epochs past application messages
+it has not yet downloaded and lose them silently. This release fixes the
+related attachment-key case but not the message case.</li>
+<li>The Apple required-reason and SDK-signing questions remain tracked in
+<a href="https://github.com/marmot-protocol/mdk/issues/1874">#1874</a>.</li>
+<li>WN Agent's control socket still grants its whole API to any authenticated
+client; capability-scoped grants remain tracked in
+<a href="https://github.com/marmot-protocol/mdk/issues/1445">#1445</a>.</li>
+</ul>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.12.0</code>: MDK source snapshot; workspace crates remain unpublished to crates.io.</li>
+<li><code>wn-agent-v0.12.0</code>: WN Agent, terminal harness binaries, gateway plugins and
+checksum-paired installers. This track keeps its existing prerelease status.</li>
+<li><code>marmotkit-v0.12.0</code>: iOS/macOS XCFrameworks, shared Swift source, platform privacy
+resources, Android Kotlin and all four JNI ABIs with <code>android-elf.json</code>, manifests
+and checksums.</li>
+<li><code>marmotc-v0.12.0</code>: C library/header bundle and checksum.</li>
+</ul>
+<p>Verify sibling SHA-256 files and source/version manifests; Apple binary ZIPs also
+have SwiftPM checksums. Follow the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/marmot-uniffi/DISTRIBUTION.md">distribution guide</a>.</p>
+</div></details></article><article id="mdk-0-11-0" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-09-29T05:31:55Z">29 September 2026</time></div><h2>0.11.0</h2><p class="mm-update-summary">MDK 0.11.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and Android), and Marmot C from one source commit. See the 0.10.4 → 0.11.0 client upgrade guide for required record, schema, configuration and host UI changes.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.11.0.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.11.0">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.11.0 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and
+Android), and Marmot C from one source commit. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.11.0.md">0.10.4 → 0.11.0 client upgrade guide</a> for required
+record, schema, configuration and host UI changes.</p>
+<p>A post-tag documentation supplement corrects both documents: polls are required, and
+v5 audit delivery replaces v4 for hosts that record audit logs. Host performance stages
+and pending-send edits are strongly recommended. Use the merged documentation commit for
+published links; the tagged copies predate this correction.</p>
+<h4>Highlights</h4>
+<ul>
+<li>Account recovery v2 completes lost or incremental history only when every
+required relay finishes an untruncated NIP-77 comparison that covers the gap.
+Recovery runs off the account worker and reuses live subscriptions instead of
+replaying history, and one comparison job replaces the inline executor.</li>
+<li>When recovery cannot prove history complete, it stops retrying and raises a
+durable &quot;history may be incomplete&quot; notice. Hosts should show these notices
+and let the user dismiss them.</li>
+<li>A full account delivery queue now spills to the account database instead of
+dropping deliveries. A relay notification lag no longer closes the account
+route, and end-of-stored-events notifications lost in a lag are repaired.</li>
+<li>The transport cursor advances on live delivery, so a restart no longer
+re-downloads what the account already received live. History REQs for post-join
+maintenance and retained routes now start from a floor instead of fetching
+full history.</li>
+<li>Encrypted NIP-88 polls. Every client must render, vote on and create them,
+because peers on 0.11.0 can send them.</li>
+<li>Audit v5 replaces v4. With audit enabled, only v5 files are written, and the
+v4 Goggles whole-file route rejects them. Hosts that record audit logs must
+deploy a v5 OTLP receiver and configure it with <code>setAuditOtlpConfigV5</code> on every
+launch. v5 adds Welcome, group-baseline, app-outcome and account recovery
+event kinds.</li>
+<li>Strongly recommended: 37 new host performance stages for <code>recordHostPerformance</code>
+and durable edits of pending token-aware sends. Stateless Nostr event
+verification is optional.</li>
+<li>OpenClaw enforces an inbound sender policy that denies every sender until one
+is configured. Hermes adds opt-in presence reactions, and Codex accepts
+non-image attachments.</li>
+<li>Android 64-bit JNI libraries use 16 KB ELF load-segment alignment. Apple
+archives no longer ship LLVM bitcode.</li>
+</ul>
+<h4>Compatibility</h4>
+<p>Ship generated Swift/Kotlin, native libraries and C headers from this exact cohort
+together. <code>MarmotEventFfi</code> / <code>MarmotEvent</code>, <code>GroupRecoveryStatusFfi</code> /
+<code>MarmotGroupRecoveryStatus</code>, timeline records (poll projection) and
+<code>HostPerformanceOperationFfi</code> changed. Rebuild consumers and update exhaustive
+matches and manually constructed records; the new timeline <code>poll</code> field has no
+binding default. No existing method signature changed.</p>
+<p>Rust hosts: <code>MarmotAppConfig</code> removes <code>dev_epoch_backfill_eose_wait_ms</code> and
+<code>dev_epoch_backfill_execution_quantum_ms</code>, adds <code>recovery_operated_relays</code> (it
+defaults to the two <code>whitenoise.chat</code> relays), and <code>AppPriorNostrRoute</code> gains
+<code>replaced_at</code>. <code>nostr</code> / <code>nostr-sdk</code> now come from a pinned fork revision.</p>
+<p>Account databases migrate from schema 89 through 98 on first open. Back up before
+upgrading; downgrade is unsupported. Re-upgrade or restore a pre-upgrade
+database/export instead of removing migration rows. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format contract</a>. After upgrade,
+an account that overflowed on 0.10.4 can show a &quot;history may be incomplete&quot; notice.
+A group that 0.10.4 already reported as automatic-recovery-failed keeps that
+warning until authenticated peer recovery or a rejoin clears it. The upgrade guide
+describes both.</p>
+<h4>Known issues</h4>
+<ul>
+<li><a href="https://github.com/marmot-protocol/mdk/issues/2086">#2086</a>: during a large
+catch-up, a member can advance more than five epochs past application messages
+it has not yet downloaded. Those messages cannot then be decrypted, and no notice
+is raised. The failure is intermittent and was already present before this
+release.</li>
+<li>The Apple required-reason and SDK-signing questions remain tracked in
+<a href="https://github.com/marmot-protocol/mdk/issues/1874">#1874</a>.</li>
+</ul>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.11.0</code>: MDK source snapshot; workspace crates remain unpublished to crates.io.</li>
+<li><code>wn-agent-v0.11.0</code>: WN Agent, terminal harness binaries, gateway plugins and
+checksum-paired installers. This track keeps its existing prerelease status.
+Install only from the versioned release; the mutable <code>wn-agent-latest</code> alias is
+retired.</li>
+<li><code>marmotkit-v0.11.0</code>: iOS/macOS XCFrameworks, shared Swift source, platform privacy
+resources, Android Kotlin and all four JNI ABIs with <code>android-elf.json</code>, manifests
+and checksums.</li>
+<li><code>marmotc-v0.11.0</code>: C library/header bundle and checksum.</li>
+</ul>
+<p>Verify sibling SHA-256 files and source/version manifests; Apple binary ZIPs also
+have SwiftPM checksums. Follow the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/marmot-uniffi/DISTRIBUTION.md">distribution guide</a>.</p>
+</div></details></article><article id="mdk-0-10-4" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-09-20T13:57:33Z">20 September 2026</time></div><h2>0.10.4</h2><p class="mm-update-summary">MDK 0.10.4 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and Android), and Marmot C from one source commit. See the 0.10.3 → 0.10.4 client upgrade guide for required record, schema and lifecycle changes.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.10.4.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.10.4">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.10.4 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and
+Android), and Marmot C from one source commit. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.10.4.md">0.10.3 → 0.10.4 client upgrade guide</a> for required
+record, schema and lifecycle changes.</p>
+<h4>Highlights</h4>
+<ul>
+<li>Token-aware text, reply, draft and media-send APIs return after durable local
+acceptance and preserve an opaque caller token through restart, engine handoff
+and timeline reprojection. Existing send APIs keep their completion semantics.</li>
+<li>Optional host-managed automatic attachment acquisition adds generation-fenced
+permission, idempotent demand and durable attempt limits. Existing clients stay
+in native automatic mode by default.</li>
+<li>Chat-list message previews carry the selected message's pinned retention duration
+and expiry so clients can hide expired content before periodic pruning.</li>
+<li>WN Agent control protocol v2 can create groups with optional founding relay routes.
+Hermes adds opt-in, sender-authorized reactions for approval prompts.</li>
+<li>Deferred pre-peel wrappers remain redeliverable, and epoch-backfill overflow uses
+execution-based exponential retry backoff. The latter is a pacing mitigation, not
+resumable or proven-lossless history recovery.</li>
+<li>MarmotKit builds compile target slices in parallel and verify their provenance
+agreement without changing published bundle names or layouts.</li>
+</ul>
+<h4>Compatibility</h4>
+<p>Ship generated Swift/Kotlin, native libraries and C headers from this exact cohort
+together. <code>MarmotOptions</code> / <code>MarmotClientOptions</code>, chat-list message previews,
+timeline rows, attachment transfer states and error/status enums changed. Rebuild
+consumers and update exhaustive matches and manually constructed records. Existing
+non-token send APIs and native automatic attachment behavior remain supported.</p>
+<p>Account databases migrate from schema 86 through 89. Migration 87 adds durable
+automatic-acquisition history and budgets, 88 adds the draft descriptor covering
+index, and 89 adds durable local submissions. Back up before upgrading; downgrade
+is unsupported. Re-upgrade or restore a pre-upgrade database/export instead of
+removing migration rows. Upgrades that skip older cohorts must also follow the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.10.3.md">previous guide</a> and
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format contract</a>.</p>
+<p>Preserve the matching Apple privacy resource in every consuming wrapper. Existing
+required-reason and SDK-signing questions remain tracked in
+<a href="https://github.com/marmot-protocol/mdk/issues/1874">#1874</a>; SDK artifact checks do
+not establish consuming-app adoption, device performance or App Store acceptance.</p>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.10.4</code>: MDK source snapshot; workspace crates remain unpublished to crates.io.</li>
+<li><code>wn-agent-v0.10.4</code>: WN Agent, terminal harness binaries, gateway plugins and
+checksum-paired installers. This track retains its existing prerelease status.</li>
+<li><code>marmotkit-v0.10.4</code>: iOS/macOS XCFrameworks, shared Swift source, platform privacy
+resources, Android Kotlin and all four JNI ABIs, manifests and checksums.</li>
+<li><code>marmotc-v0.10.4</code>: C library/header bundle and checksum.</li>
+</ul>
+<p>Verify sibling SHA-256 files and source/version manifests; Apple binary ZIPs also
+have SwiftPM checksums. Follow the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/marmot-uniffi/DISTRIBUTION.md">distribution guide</a>.</p>
+</div></details></article><article id="mdk-0-10-3" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-09-19T15:19:19Z">19 September 2026</time></div><h2>0.10.3</h2><p class="mm-update-summary">MDK 0.10.3 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and Android), and Marmot C from one source commit. See the 0.10.2 → 0.10.3 client upgrade guide for adoption steps.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.10.3.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.10.3">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.10.3 releases the Rust workspace, WN Agent, MarmotKit (iOS, macOS and
+Android), and Marmot C from one source commit. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.10.3.md">0.10.2 → 0.10.3 client upgrade guide</a> for adoption steps.</p>
+<h4>Highlights</h4>
+<ul>
+<li>Prepared chat rows select draft, message, invitation or empty previews and
+expose advisory row actions. Draft changes refresh both live list APIs without
+changing activity order or unread state. Draft previews contain bounded text
+and attachment summaries, with no attachment bytes or filenames.</li>
+<li>C client free on ordinary host threads drains worker cleanup before returning,
+preventing database teardown from racing SQLCipher process-exit cleanup.</li>
+<li>Public profile searches tolerate optional relay authentication challenges.</li>
+<li>Android identity-salt publication supports API 26 without hard links or
+<code>renameat2</code>, retaining a single canonical salt under concurrent creation.</li>
+<li>Hermes gains a privacy-safe, read-only installation doctor, connector diagnostic
+status and plugin ACK/lifecycle observations. Configuration precedence and
+welcomer behavior remain aligned with the existing adapter path.</li>
+</ul>
+<h4>Compatibility</h4>
+<p>Ship generated Swift/Kotlin, native libraries and C headers from this exact
+cohort together. Prepared chat-row records have changed layout; rebuild clients
+and update manually constructed records and exhaustive preview handling.
+Existing lower-level methods remain supported. Row actions are display hints;
+leave still requires authoritative preflight and deletion requires host confirmation.</p>
+<p>No database migration is added after 0.10.2; schema remains at migration 86.
+For upgrades skipping earlier releases, follow their backup and unsupported-
+downgrade requirements in the <a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.10.2.md">previous guide</a> and
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format contract</a>.
+Preserve the matching Apple privacy resource in every consuming wrapper. Existing
+required-reason and SDK-signing questions remain tracked in
+<a href="https://github.com/marmot-protocol/mdk/issues/1874">#1874</a>; SDK artifact validation
+is separate from consuming-app adoption and App Store acceptance.</p>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.10.3</code>: MDK source snapshot; workspace crates remain unpublished to crates.io.</li>
+<li><code>wn-agent-v0.10.3</code>: WN Agent, terminal harness binaries, gateway plugins and
+checksum-paired installers. This track retains its existing prerelease status.</li>
+<li><code>marmotkit-v0.10.3</code>: iOS/macOS XCFrameworks, shared Swift source, platform privacy
+resources, Android Kotlin and all four JNI ABIs, manifests and checksums.</li>
+<li><code>marmotc-v0.10.3</code>: C library/header bundle and checksum.</li>
+</ul>
+<p>Verify sibling SHA-256 files and source/version manifests; Apple binary ZIPs also
+have SwiftPM checksums. Follow the <a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/marmot-uniffi/DISTRIBUTION.md">distribution guide</a>.</p>
+</div></details></article><article id="mdk-0-10-2" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-09-19T07:59:24Z">19 September 2026</time></div><h2>0.10.2</h2><p class="mm-update-summary">MDK 0.10.2 updates the Rust workspace, WN Agent, MarmotKit (iOS, macOS and Android), and Marmot C from one source commit.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.10.2.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.10.2">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.10.2 updates the Rust workspace, WN Agent, MarmotKit (iOS, macOS and
+Android), and Marmot C from one source commit.</p>
+<p>For detailed client changes, default download policy, API adoption and validation, read
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.10.2.md">the 0.10.1 → 0.10.2 integration guide</a>. That guide was added
+as a post-tag documentation supplement; published release links must use its merged
+documentation commit, not the original <code>v0.10.2</code> tree.</p>
+<h4>Highlights</h4>
+<ul>
+<li>Accepted conversations acquire attachments in the background, including
+retained history. Protected checkpoints resume interrupted downloads when
+servers support validated ranges. Authentication completes before local
+bytes become available to clients.</li>
+<li>Swift/Kotlin and C expose bounded attachment history, local reads, progress,
+and durable cancel, retry, remove, and download-again controls. Automatic
+acquisition defaults on with per-account policy, storage quotas, disk reserve,
+and one transfer across accounts.</li>
+<li>Message projections expose accepted deletion provenance and preserve
+custom-event tags. Historical tombstones without evidence remain unknown.</li>
+<li>Local-first KeyPackage inventory distinguishes local ownership from relay
+observations. Compatible White Noise packages are preferred, and missing
+invitation packages produce an explicit error.</li>
+<li>Conversation opening and timeline projection avoid repeated account,
+profile, and message work. Readiness and contention measurements make delays
+easier to diagnose.</li>
+<li>Losing-branch messages remain parked for possible revival; retained replay
+and deferred-peel budget fixes avoid premature retirement.</li>
+<li>Account identity creation handles concurrent database initialization.
+Size-rotated audit segments retain source metadata.</li>
+<li>QUIC broker subscriber writes are bounded. Optimized macOS C libraries
+preserve Mach-O alignment for Xcode 27.</li>
+</ul>
+<h4>Compatibility and adoption</h4>
+<p>Update generated Swift/Kotlin source and native libraries together from the
+same immutable release. C consumers must update headers and libraries together
+because message records have new fields. Rebuild downstream apps to adopt the
+new APIs and behavior. The integration supplement also
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/integration/0.10.2.md#c-compatibility-and-retry-guidance-corrections">corrects C retry/compatibility guidance</a>:
+not every failed mutation is safe to retry, and C headers/libraries must match exactly.</p>
+<p>Apple consumers must stage the matching shared Swift source and platform
+privacy asset in their wrapper, rename the latter to <code>PrivacyInfo.xcprivacy</code>,
+and declare <code>resources: [.copy(&quot;PrivacyInfo.xcprivacy&quot;)]</code>. Every consuming app
+and extension must depend on that wrapper. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/marmot-uniffi/DISTRIBUTION.md">distribution guide</a> and
+<a href="https://github.com/marmot-protocol/mdk/issues/1874">consumer adoption tracking</a>.
+The existing native required-reason and SDK-signing questions remain open for
+host App Store submission; resource validation does not resolve them.</p>
+<p>Account databases advance through migrations 81–86: attachment history,
+deletion provenance, retained attachment acquisition, worker demand,
+protected partial downloads, and durable attachment controls. Back up or
+export before upgrading. Downgrade after migration is unsupported; re-upgrade
+or restore a pre-upgrade account database/export. Never remove migration rows.
+See the <a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format definition and compatibility evidence</a>.
+Upgrades from before migration 47 also require at least 3.25 times the account
+database size in free space for its table rebuild and gradual promotion.</p>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.10.2</code>: MDK source snapshot.</li>
+<li><code>wn-agent-v0.10.2</code>: WN Agent and terminal harness binaries, gateway plugins,
+and checksum-paired installers; this track retains prerelease status.</li>
+<li><code>marmotkit-v0.10.2</code>: iOS/macOS XCFrameworks, shared Swift source, platform
+privacy assets, Android Kotlin and all four JNI ABIs, manifests and checksums.</li>
+<li><code>marmotc-v0.10.2</code>: C ABI bundle and checksum.</li>
+</ul>
+<p>Verify sibling SHA-256 files and manifest source/version metadata. Apple
+binary ZIPs also provide SwiftPM checksums. Use matched release inputs.</p>
+</div></details></article><article id="mdk-0-10-1" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-09-16T23:34:59Z">16 September 2026</time></div><h2>0.10.1</h2><p class="mm-update-summary">MDK 0.10.1 updates the Rust workspace, WN Agent, MarmotKit (iOS, macOS and Android), and Marmot C from one source commit.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.10.1.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.10.1">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.10.1 updates the Rust workspace, WN Agent, MarmotKit (iOS, macOS and
+Android), and Marmot C from one source commit.</p>
+<h4>Highlights</h4>
+<ul>
+<li>Durable avatar storage, acquisition and native asset access keep chat-list
+and conversation identities available through the app runtime and bindings.</li>
+<li>Accepted message edits share effective text across timelines, replies and
+chat previews, with a separate paged edit history.</li>
+<li>Authenticated group-system previews expose prepared actor and subject
+identities. Reactions on system rows no longer displace valid chat previews.</li>
+<li>Stored conversations open before live recovery completes, and conversation
+windows remain responsive while sends are in progress.</li>
+<li>Undecryptable traffic from before a Welcome is classified as history rather
+than evidence that the newly joined group has stalled.</li>
+<li>Encrypted group reports, shared dismissal labels and admin message removal
+are available in Rust, Swift/Kotlin and C. Upgrade all participants for
+consistent moderation; older peers may retain admin-removed content.</li>
+<li>Invite acceptance and media downloads have bounded waits and retry budgets.
+Founding Welcome publication overlaps subscription setup.</li>
+<li>OpenClaw retries failed managed welcomer reconciliation and prevents an old
+inbound setup attempt from stopping its replacement generation.</li>
+</ul>
+<h4>Compatibility and adoption</h4>
+<p>Update generated Swift/Kotlin source and native libraries together from the
+same immutable release. C consumers must update the header and library
+together because output record layouts have changed.</p>
+<p>Apple bundles now contain raw static-library XCFrameworks and a separately
+checksummed privacy asset. Keep the remote binary target; stage the matching
+Swift source and platform privacy file in its Swift wrapper, rename the latter
+to <code>PrivacyInfo.xcprivacy</code>, and declare <code>resources: [.copy(&quot;PrivacyInfo.xcprivacy&quot;)]</code>.
+Every consuming app and extension must depend on that wrapper. Remove obsolete
+FFI framework embedding steps. A binary-only update loses SDK privacy delivery.
+See the <a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/marmot-uniffi/DISTRIBUTION.md">distribution guide</a> and
+<a href="https://github.com/marmot-protocol/mdk/issues/1874">consumer adoption tracking</a>.
+The privacy audit's native required-reason and SDK-signing questions remain
+open for host App Store submission; resource validation does not resolve them.</p>
+<p>Account databases advance through migrations 76–80: accepted edits, avatar
+storage and acquisition, content reports, and avatar target lookup. Back up or
+export before upgrading. Downgrade after migration is unsupported; re-upgrade
+or restore a pre-upgrade account database/export. Never remove migration rows.
+See the <a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format definition and compatibility evidence</a>.
+Upgrades from before migration 47 also require at least 3.25 times the account
+database size in free space for its table rebuild and gradual promotion.</p>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.10.1</code>: MDK source snapshot.</li>
+<li><code>wn-agent-v0.10.1</code>: WN Agent and terminal harness binaries, gateway plugins,
+and checksum-paired installers; this track retains prerelease status.</li>
+<li><code>marmotkit-v0.10.1</code>: iOS/macOS XCFrameworks, shared Swift source, separate
+platform privacy assets, Android Kotlin and all four JNI ABIs, manifests and
+checksums.</li>
+<li><code>marmotc-v0.10.1</code>: C ABI bundle and checksum.</li>
+</ul>
+<p>Verify sibling SHA-256 files and manifest source/version metadata. Apple
+binary ZIPs also provide SwiftPM checksums. Use matched release inputs.</p>
+</div></details></article><article id="mdk-0-10-0" class="mm-update-entry"><div class="mm-update-meta"><time datetime="2026-09-16T07:15:01Z">16 September 2026</time></div><h2>0.10.0</h2><p class="mm-update-summary">MDK 0.10.0 is a new compatibility cohort for the Rust workspace, WN Agent, MarmotKit (Swift/iOS, Swift/macOS, Kotlin/Android), and Marmot C. All four release tags identify the same source commit. The release page records that commit and the complete merged change list since 0.9.21.</p><div class="mm-inline-links"><a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/release/0.10.0.md">Original notes</a><a href="https://github.com/marmot-protocol/mdk/releases/tag/v0.10.0">GitHub release</a></div><details class="mm-release-details"><summary>Read full notes</summary><div class="mm-release-body"><p>MDK 0.10.0 is a new compatibility cohort for the Rust workspace, WN Agent,
+MarmotKit (Swift/iOS, Swift/macOS, Kotlin/Android), and Marmot C. All four
+release tags identify the same source commit. The release page records that
+commit and the complete merged change list since 0.9.21.</p>
+<h4>Highlights</h4>
+<ul>
+<li>Bounded live chat-list windows, independent account-attention summaries,
+and combined live conversation windows expose paging, anchor recovery,
+revision-safe drafts, shared presentation, and viewer reaction state through
+the app runtime and bindings.</li>
+<li>Account-scoped user blocking returns across app surfaces. Pending invitations
+contribute to account attention without double-counting unread messages.</li>
+<li>CLI coverage expands to message edits, retention, disbanding, recovery,
+encrypted group images, Welcome redelivery, and ordered media operations.</li>
+<li>WN Agent adds the Claude Code terminal harness. Shared terminal harnesses
+clean up backend process groups, and Hermes preserves inbound obligations and
+quiet ambient context across restarts. Hermes and OpenClaw display current
+group names.</li>
+<li>Recovery fixes cover removed devices, re-addition and traffic arriving before
+a Welcome, interrupted peel replay, foreground scheduling, and local reset.</li>
+<li>Runtime work reduces unnecessary relay synchronization, subscription churn,
+directory/roster reads, and connection setup. Audit uploads validate and pin
+destinations on every attempt.</li>
+<li>Apple binding bundles now package privacy manifests in resource-bearing
+static frameworks. Consumers must preserve the complete XCFramework layout.</li>
+</ul>
+<h4>Compatibility and adoption</h4>
+<p>This is a minor compatibility boundary before 1.0. Update generated Swift or
+Kotlin source and native libraries together from the same immutable release.
+Regenerate consumers and handle changed records/enums; do not combine 0.9.x
+source with 0.10.0 libraries. Marmot C consumers should adopt the matching
+header and library together. Review the <a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/crates/cli/CHANGELOG.md">full changelog</a>
+for CLI JSON changes, media epoch checks, attention totals, and harness behavior.</p>
+<p>Account databases advance through migrations 70–75: forgotten groups, reset
+cutoffs, chat-list paging, draft revisions, invitation attention, and user blocks.
+Back up/export before upgrading. Downgrade after migration is unsupported;
+re-upgrade or restore a pre-upgrade account database/export. Never remove
+migration rows manually. See the <a href="https://github.com/marmot-protocol/mdk/blob/ced0f9de4fd22eb7be26376ff97c1ec23f60dd13/docs/marmot-architecture/storage-format-v2.md">storage-format definition and compatibility
+evidence</a>. Users upgrading from
+before migration 47 must also allow at least 3.25 times the account database size
+in free space for the table rebuild and gradual post-readiness promotion.</p>
+<h4>Release artifacts</h4>
+<ul>
+<li><code>v0.10.0</code>: MDK source snapshot.</li>
+<li><code>wn-agent-v0.10.0</code>: WN Agent and terminal harness binaries, gateway plugins,
+and checksum-paired installers (the WN Agent track retains prerelease status).</li>
+<li><code>marmotkit-v0.10.0</code>: iOS/macOS XCFrameworks, shared Swift source, Android Kotlin
+bindings and JNI libraries, manifests, and checksums.</li>
+<li><code>marmotc-v0.10.0</code>: C ABI bundle and checksum.</li>
+</ul>
+<p>Pin immutable tags, verify sibling SHA-256 files, and inspect manifest source
+and workspace versions. Apple binary ZIPs also provide SwiftPM checksums.</p>
+</div></details></article><!--]--><!----><button type="button" class="mm-load-more">Show older releases</button></div></div></div></div></main><!--]--></div><div id="mm-footer-wrap"><div class="mm-container"><nav class="navfoot-items" style="--mm-footer-link-rows:5;"><!--[--><div class="navfoot-item"><a class="route-link auto-link" href="/marmot-web/" aria-label="Protocol"><!--[--><!--[--><!--]--><!--]-->Protocol<!--[--><!--[--><!--]--><!--]--></a></div><div class="navfoot-item"><a class="route-link auto-link" href="/marmot-web/development-kit.html" aria-label="Development Kit"><!--[--><!--[--><!--]--><!--]-->Development Kit<!--[--><!--[--><!--]--><!--]--></a></div><div class="navfoot-item"><a class="route-link auto-link" href="/marmot-web/docs/" aria-label="Documentation"><!--[--><!--[--><!--]--><!--]-->Documentation<!--[--><!--[--><!--]--><!--]--></a></div><div class="navfoot-item"><a class="route-link auto-link" href="/marmot-web/apps.html" aria-label="Apps"><!--[--><!--[--><!--]--><!--]-->Apps<!--[--><!--[--><!--]--><!--]--></a></div><div class="navfoot-item"><a class="route-link route-link-active auto-link" href="/marmot-web/updates.html" aria-label="Releases"><!--[--><!--[--><!--]--><!--]-->Releases<!--[--><!--[--><!--]--><!--]--></a></div><div class="navfoot-item"><a class="route-link auto-link" href="/marmot-web/community.html" aria-label="Community"><!--[--><!--[--><!--]--><!--]-->Community<!--[--><!--[--><!--]--><!--]--></a></div><div class="navfoot-item"><a class="auto-link external-link" href="https://github.com/marmot-protocol" aria-label="GitHub" rel="noopener noreferrer" target="_blank"><!--[--><!--[--><!--]--><!--]-->GitHub<!--[--><!--[--><!--]--><!--]--></a></div><div class="navfoot-item"><a class="route-link auto-link" href="/marmot-web/donate.html" aria-label="Donate"><!--[--><!--[--><!--]--><!--]-->Donate<!--[--><!--[--><!--]--><!--]--></a></div><div class="navfoot-item"><a class="route-link auto-link" href="/marmot-web/contact.html" aria-label="Contact"><!--[--><!--[--><!--]--><!--]-->Contact<!--[--><!--[--><!--]--><!--]--></a></div><!--]--></nav><div class="bottom"><div class="copyright"><span>©2025 Internet Privacy Foundation. </span><span>All rights reserved.</span></div><a class="route-link" href="/marmot-web/"><img class="vp-site-logo" src="/marmot-web/images/logo-light.svg" alt="Marmot" width="238" height="36"></a></div></div></div></div><!--[--><!--]--><!--]--></div>
+    <script type="module" src="/marmot-web/assets/app-C1yp260q.js" defer></script>
+  </body>
+</html>

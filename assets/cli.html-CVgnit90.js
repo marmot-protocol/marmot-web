@@ -1,0 +1,993 @@
+import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-C1yp260q.js";const r="mdk",i="0.15.0",l="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
+<p><code>wn</code> is the command-line app for the White Noise/Marmot stack. It manages Nostr-keyed accounts, relay lists,
+KeyPackages, chats, groups, messages, media, live runtime subscriptions, and a terminal UI. Use it to drive Marmot from
+a shell or script, or interactively with <code>wn tui</code>.</p>
+<p>The crate (source <code>crates/cli</code>, Cargo package <code>wn-cli</code>) builds two binaries:</p>
+<ul>
+<li><code>wn</code>: the user-facing CLI and TUI entrypoint.</li>
+<li><code>wnd</code>: the background daemon used by <code>wn daemon start</code>.</li>
+</ul>
+<p><code>wn</code> uses <code>marmot-account</code> for account homes and secret storage, and <code>marmot-app</code> for the runtime bridge, transport
+setup, group and message projection, and Nostr directory refresh.</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#install">Install</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#quick-start">Quick start</a></li>
+<li><a href="#commands">Commands</a>
+<ul>
+<li><a href="#accounts">Accounts</a></li>
+<li><a href="#keypackages">KeyPackages</a></li>
+<li><a href="#device-linking-dev-builds">Device linking (dev builds)</a></li>
+<li><a href="#chats">Chats</a></li>
+<li><a href="#groups">Groups</a></li>
+<li><a href="#messages">Messages</a></li>
+<li><a href="#media">Media</a></li>
+<li><a href="#directory-profile-relays-and-settings">Directory, profile, relays, and settings</a></li>
+<li><a href="#agent-text-streams">Agent text streams</a></li>
+<li><a href="#sync">Sync</a></li>
+</ul>
+</li>
+<li><a href="#daemon">Daemon</a></li>
+<li><a href="#tui">TUI</a></li>
+<li><a href="#json-output">JSON output</a></li>
+<li><a href="#packaging">Packaging</a></li>
+<li><a href="#changelog">Changelog</a></li>
+</ul>
+<h2 id="install">Install</h2>
+<p>Install both binaries from this checkout into your Cargo bin directory, and make sure <code>~/.cargo/bin</code> is on <code>PATH</code>:</p>
+<pre><code class="language-sh">cargo install --path crates/cli --locked --bins
+wn --help
+wnd --help
+</code></pre>
+<p>To run from a source checkout without installing:</p>
+<pre><code class="language-sh">cargo run -p wn-cli --bin wn -- --help
+cargo run -p wn-cli --bin wnd -- --help
+</code></pre>
+<p>For isolated development runs, keep the home and secret store explicit:</p>
+<pre><code class="language-sh">export WN_HOME=&quot;$(mktemp -d)&quot;
+export WN_SECRET_STORE=file
+</code></pre>
+<p>The default secret store is the platform keychain. Use <code>WN_SECRET_STORE=file</code> only for local development, tests, and
+disposable homes.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Global options can be passed as flags or environment variables:</p>
+<ul>
+<li><code>--home &lt;path&gt;</code> or <code>WN_HOME</code>: account home, projections, daemon socket, pid, and log.</li>
+<li><code>--account &lt;npub-or-hex&gt;</code> or <code>WN_ACCOUNT</code>: selected account for account-scoped commands. <code>--account</code> goes before the
+subcommand (<code>wn --account &lt;npub&gt; chats list</code>).</li>
+<li><code>--socket &lt;path&gt;</code> or <code>WN_SOCKET</code>: daemon socket. The default is <code>$WN_HOME/dev/wnd.sock</code>.</li>
+<li><code>--secret-store keychain|file</code> or <code>WN_SECRET_STORE</code>: signing-key backend.</li>
+<li><code>--keychain-service &lt;name&gt;</code> or <code>WN_KEYCHAIN_SERVICE</code>: keychain service name.</li>
+<li><code>--json</code>: return a stable JSON envelope for scripts, the TUI, and daemon forwarding.</li>
+<li><code>WN_RELAY</code>: fallback relay URL for commands that need one when no relay flag is given (the TUI also uses it to
+auto-start the daemon).</li>
+</ul>
+<p>Without <code>WN_HOME</code>, the home is the platform user data directory:</p>
+<ul>
+<li>macOS: <code>~/Library/Application Support/whitenoise</code></li>
+<li>Linux and other non-macOS Unix: <code>$XDG_DATA_HOME/whitenoise</code>, or <code>~/.local/share/whitenoise</code></li>
+<li>Windows: <code>%APPDATA%\\whitenoise</code></li>
+</ul>
+<p>Loopback endpoints are refused by default; production installs leave these unset:</p>
+<ul>
+<li><code>WN_ALLOW_LOOPBACK_RELAYS=1</code> lets <code>wn</code>/<code>wnd</code> open sockets to a <code>ws://127.0.0.1</code>-style relay (the local Compose
+stack, or an in-process relay). It admits loopback only; private, link-local, and CGNAT relay hosts stay rejected. The
+local examples below assume it is exported.</li>
+<li><code>WN_ALLOW_LOOPBACK_BLOB_ENDPOINTS=1</code> lets <code>wn</code> upload to and download from <code>http://127.0.0.1</code>-style Blossom
+endpoints.</li>
+</ul>
+<p>Most account-scoped commands resolve the account in this order:</p>
+<ol>
+<li><code>--account &lt;npub-or-hex&gt;</code></li>
+<li><code>WN_ACCOUNT</code></li>
+<li>the only account, when exactly one exists. A public-only account is still selected here; commands that require
+signing then fail with an explicit error.</li>
+</ol>
+<h2 id="quick-start">Quick start</h2>
+<p>Create two local signing identities, create a chat as Alice, and let Bob receive it through the daemon. The examples use
+the repo-owned <code>dev/data</code> tree so local state is easy to inspect and delete:</p>
+<pre><code class="language-sh">just relay-up
+
+export WN_HOME=&quot;$PWD/dev/data/quickstart&quot;
+export WN_SECRET_STORE=file
+export WN_ALLOW_LOOPBACK_RELAYS=1   # loopback relays are dev/test only; unset in production
+unset WN_SOCKET
+rm -rf &quot;$WN_HOME&quot;
+
+wn daemon start \\
+  --discovery-relays ws://127.0.0.1:27777 \\
+  --default-account-relays ws://127.0.0.1:27777
+
+wn create-identity
+printf '%s\\n' &quot;$BOB_NSEC&quot; | wn login --nsec-stdin
+wn whoami
+
+wn --account &lt;alice-npub-or-hex&gt; groups create general &lt;bob-npub-or-hex&gt;
+wn --account &lt;alice-npub-or-hex&gt; messages send &lt;group-hex&gt; &quot;hello bob&quot;
+
+wn --account &lt;bob-npub-or-hex&gt; chats list
+wn --account &lt;bob-npub-or-hex&gt; messages list &lt;group-hex&gt; --limit 20
+</code></pre>
+<p>The local Compose stack also exposes <code>ws://127.0.0.1:28080</code>, but the examples prefer <code>27777</code> because it reliably ACKs
+the relay-list publishes used during first-run account setup on current macOS Docker Desktop.</p>
+<h2 id="commands">Commands</h2>
+<p>Run <code>wn &lt;command&gt; --help</code> for the full flag list of any command. Older singular <code>account</code>, <code>group</code>, and <code>message</code>
+spellings remain as hidden compatibility aliases; new scripts should use the plural forms shown here.</p>
+<h3 id="accounts">Accounts</h3>
+<pre><code class="language-sh">wn create-identity
+printf '%s\\n' &quot;$NSEC&quot; | wn login --nsec-stdin
+printf '%s\\n' &quot;$NSEC&quot; | wn login --nsec-stdin --relay &lt;relay-url&gt;
+wn login &lt;npub-or-hex&gt;
+wn whoami
+wn logout &lt;npub-or-hex&gt;
+wn export-nsec &lt;npub-or-hex&gt;
+wn accounts list
+wn accounts status [npub-or-hex]
+wn accounts relay-lists [npub-or-hex] --bootstrap-relays &lt;relay-url&gt;
+wn reset --confirm
+</code></pre>
+<ul>
+<li>When a daemon is running, <code>create-identity</code> and <code>login --nsec-stdin</code> use the daemon's account-relay defaults to
+publish the required relay lists and an initial KeyPackage. <code>login --nsec-stdin --relay &lt;url&gt;</code> is the command-local
+fallback for a custom relay-list publish during import.</li>
+<li><code>wn login &lt;npub-or-hex&gt;</code> adds a public-only identity. It only checks relay-list availability, and is useful for
+relay-list and KeyPackage lookup, but cannot sign, publish KeyPackages, sync groups, or send messages.</li>
+<li><code>wn logout</code> is destructive: it removes that account's local data (messages, group membership, and MLS state) from this
+device, and for a local-signing account deletes the signing key too.</li>
+<li><code>export-nsec</code> exists for command-shape compatibility but returns <code>private_key_export_disabled</code>; this CLI never prints
+private keys.</li>
+<li><code>accounts create</code> is kept as a compatibility/repair surface; new setup flows should use <code>create-identity</code> or <code>login</code>.</li>
+<li><code>reset --confirm</code> deletes all local White Noise CLI data.</li>
+</ul>
+<h3 id="keypackages">KeyPackages</h3>
+<pre><code class="language-sh">wn --account &lt;npub-or-hex&gt; keys list
+wn --account &lt;npub-or-hex&gt; keys publish
+wn --account &lt;npub-or-hex&gt; keys maintenance-status
+wn --account &lt;npub-or-hex&gt; keys rotate
+wn keys fetch &lt;npub-or-hex&gt; --bootstrap-relays &lt;relay-url&gt;
+wn keys check &lt;npub-or-hex&gt;
+wn --account &lt;npub-or-hex&gt; keys delete &lt;event-id&gt;
+wn --account &lt;npub-or-hex&gt; keys delete-all --confirm
+</code></pre>
+<ul>
+<li><code>keys publish</code> initializes or retries the durable KeyPackage lifecycle and publishes a fresh replacement under the
+account-device's stable kind-30443 <code>d</code> slot. Once an exact event has been signed, every retry reuses it.</li>
+<li><code>keys rotate</code> (alias <code>force-publish</code>) explicitly starts the same replacement when none is already pending. Routine
+replacement does not publish a kind-5 deletion.</li>
+<li><code>keys maintenance-status</code> shows the persisted slot, lifetime, refresh, replacement, retry, and
+retained-private-material state.</li>
+<li><code>keys list</code> returns the current winner per addressable slot (plus local-only rows).</li>
+<li><code>keys delete</code> and <code>keys delete-all</code> are explicit teardown/legacy-cleanup tools. <code>keys delete</code> publishes a Nostr
+deletion for one event id; pass a superseded event id to retire it without deleting the current slot winner.
+<code>keys delete-all --confirm</code> publishes deletions for every observed relay KeyPackage event in the validated fetch
+window, including superseded same-slot events.</li>
+</ul>
+<h3 id="chats">Chats</h3>
+<pre><code class="language-sh">wn --account &lt;npub-or-hex&gt; chats list
+wn --account &lt;npub-or-hex&gt; chats list --include-archived
+wn --account &lt;npub-or-hex&gt; chats list-archived
+wn --account &lt;npub-or-hex&gt; chats show &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; chats subscribe
+wn --account &lt;npub-or-hex&gt; chats subscribe-archived
+wn --account &lt;npub-or-hex&gt; chats archive &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; chats unarchive &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; chats mute &lt;group-hex&gt; 1h
+wn --account &lt;npub-or-hex&gt; chats mute &lt;group-hex&gt; forever
+wn --account &lt;npub-or-hex&gt; chats unmute &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; chats mark-read &lt;group-hex&gt; [&lt;message-id-hex&gt;]
+</code></pre>
+<p>Chat rows (<code>chats list</code>, <code>list-archived</code>, and the <code>subscribe</code>/<code>subscribe-archived</code> feeds) carry the group record plus a
+per-chat projection, so a chat list can render unread badges and a preview without a second query:</p>
+<ul>
+<li><code>unread_count</code> (number) and <code>has_unread</code> (bool);</li>
+<li><code>last_message</code>: <code>{ message_id_hex, sender, sender_display_name, plaintext, kind, timeline_at, deleted }</code>, or <code>null</code>;</li>
+<li><code>last_read_message_id_hex</code> / <code>last_read_timeline_at</code> (either may be <code>null</code>).</li>
+</ul>
+<p>These use the same names and <code>last_message</code> shape as the <code>chat_list_row</code> object on the <code>messages timeline subscribe</code>
+feed. A chat with no messages or reads reports <code>0</code> / <code>false</code> / <code>null</code> rather than omitting the keys.</p>
+<p>The <code>chats subscribe</code> feeds emit only on group-state changes (create, rename, archive/unarchive, membership), not on
+every message or read, so their projection keys are a snapshot from the last group-state emit. Live unread and
+last-message deltas ride the <code>messages timeline subscribe</code> feed's <code>chat_list_row</code> instead.</p>
+<p><code>chats mark-read &lt;group-hex&gt; [&lt;message-id-hex&gt;]</code> advances the read marker and clears the unread count. With no message id
+it marks the newest message read; with one it marks read up to that message. The marker is a forward-only high-water
+mark: marking an older message leaves newer ones unread and never moves it backward. An empty chat, or a message id that
+is not a kind-9 chat message in this chat, leaves the marker untouched and returns success with the current projection
+(the same silent contract as <code>messages react</code>/<code>delete</code> with unknown ids). The response has <code>account_id</code>, <code>npub</code>,
+<code>group_id</code>, and the five projection keys above.</p>
+<p><code>chats mute</code> and <code>chats unmute</code> control local per-chat notification suppression; durations accept <code>s</code>, <code>m</code>, <code>h</code>, <code>d</code>,
+or <code>w</code> suffixes, plus <code>forever</code>. A muted chat stays quiet for ordinary messages, but a direct mention of the
+receiving account remains eligible for notification; blocked senders stay suppressed.</p>
+<h3 id="groups">Groups</h3>
+<pre><code class="language-sh">wn --account &lt;npub-or-hex&gt; groups list
+wn --account &lt;npub-or-hex&gt; groups create &lt;name&gt; [member-npub-or-hex ...] [--description &lt;description&gt;]
+wn --account &lt;npub-or-hex&gt; groups create &lt;name&gt; [member ...] --retention 1d [--image &lt;path&gt; [--image-media-type &lt;mime&gt;]]
+wn --account &lt;npub-or-hex&gt; groups show &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups add-members &lt;group-hex&gt; &lt;member-npub-or-hex&gt; [...] [--admin &lt;member-npub-or-hex&gt;]
+wn --account &lt;npub-or-hex&gt; groups remove-members &lt;group-hex&gt; &lt;member-npub-or-hex&gt; [...]
+wn --account &lt;npub-or-hex&gt; groups members &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups admins &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups relays &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups invites
+wn --account &lt;npub-or-hex&gt; groups accept &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups decline &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups leave &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups rename &lt;group-hex&gt; &lt;name&gt;
+wn --account &lt;npub-or-hex&gt; groups update &lt;group-hex&gt; [--name &lt;name&gt;] [--description &lt;description&gt;]
+wn --account &lt;npub-or-hex&gt; groups set-avatar-url &lt;group-hex&gt; --url &lt;https-url&gt; [--dim &lt;WxH&gt;] [--thumbhash &lt;hex&gt;]
+wn --account &lt;npub-or-hex&gt; groups set-avatar-url &lt;group-hex&gt; --clear
+wn --account &lt;npub-or-hex&gt; groups set-image &lt;group-hex&gt; &lt;image-path&gt; [--media-type &lt;mime&gt;]
+wn --account &lt;npub-or-hex&gt; groups clear-image &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups download-image &lt;group-hex&gt; [--output &lt;path&gt;]
+wn --account &lt;npub-or-hex&gt; groups retention &lt;group-hex&gt; [--set 1d|0]
+wn --account &lt;npub-or-hex&gt; groups promote &lt;group-hex&gt; &lt;member-npub-or-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups demote &lt;group-hex&gt; &lt;member-npub-or-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups self-demote &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups management &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups enable-disbanding &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups disband &lt;group-hex&gt; --confirm
+wn --account &lt;npub-or-hex&gt; groups disband-status &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups acknowledge-disband-failure &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups recovery-status &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups commit-delivery &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups confirm-rejoin &lt;welcome-id-hex&gt; --local-state-token &lt;hex&gt; --confirm
+wn --account &lt;npub-or-hex&gt; groups decline-rejoin &lt;welcome-id-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups quarantined
+wn --account &lt;npub-or-hex&gt; groups retry-hydrate &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups delete-local &lt;group-hex&gt; --confirm
+wn --account &lt;npub-or-hex&gt; groups pending-welcomes
+wn --account &lt;npub-or-hex&gt; groups redeliver-welcome &lt;message-id-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups maintenance-status &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups schedule-self-update &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups maintenance-policy [--set enabled|disabled]
+wn --account &lt;npub-or-hex&gt; groups pause-maintenance
+wn --account &lt;npub-or-hex&gt; groups resume-maintenance
+wn --account &lt;npub-or-hex&gt; groups run-maintenance
+wn --account &lt;npub-or-hex&gt; groups subscribe-state &lt;group-hex&gt;
+</code></pre>
+<p>The hidden legacy <code>group</code> namespace keeps <code>create</code>, <code>members</code>, <code>invite</code> (with <code>--admin</code>), <code>remove</code>, <code>update</code>, and
+<code>set-avatar-url</code> working.</p>
+<p><strong>Groups that are still catching up.</strong> While this device's epoch-gap recovery says the group may have moved on without it,
+group changes (membership, admins, profile, image, retention, disbanding) fail with JSON error code
+<code>group_catching_up</code>. A change from a stale epoch can split the group for everyone. Retry once the group syncs, or pass
+<code>--accept-stale</code> to make the change anyway; scheduled self-updates wait up to a day for the group to catch up.</p>
+<p><strong>Changes not yet on every relay.</strong> A group change counts as published once one group relay accepts it; MDK keeps
+retrying the others with the same event. Until they accept it, members who read only those relays cannot follow it, so
+once a change has been owed to a relay for two minutes, group changes fail with JSON error code
+<code>group_commit_undelivered</code>. <code>groups commit-delivery &lt;group-hex&gt;</code> shows the oldest change still owed to a relay, the
+relays owing it and when the first relay accepted it; it reports owed relays immediately, before the two minutes pass. Retry once they accept it, or pass <code>--accept-undelivered</code> to make the change anyway;
+scheduled self-updates wait up to an hour.</p>
+<p><strong>Group identifiers.</strong> Every <code>&lt;group-hex&gt;</code> is the canonical MLS group id (<code>group_id</code> in JSON; opaque bytes, 16 bytes for
+OpenMLS-created groups). It is not the 32-byte Nostr routing handle shown under <code>nostr_routing.nostr_group_id_hex</code>,
+which is transport state the group can rotate. Filters, lookups, and JSON always key on the MLS group id.</p>
+<p><strong>Publication versus durable completion.</strong> <code>published</code> and <code>message_ids</code> on a mutation result mean the relay accepted
+the events this device sent. They do not prove that any other member has processed them. Outcomes that finish later
+are queryable after the command returns and after a restart: <code>groups disband-status</code>, <code>groups recovery-status</code>,
+<code>groups pending-welcomes</code>, and <code>groups maintenance-status</code>.</p>
+<p><strong>Members are accounts.</strong> <code>groups members</code>, <code>groups show</code> and <code>groups management</code> list each member account once, even
+when it has several devices in the group. Each <code>members</code> entry carries <code>device_count</code>, how many of that account's
+devices are in the group, and member counts, admin counts and the last-admin check count accounts.</p>
+<p><strong>Invites.</strong> <code>groups invites</code> lists groups still awaiting local confirmation. <code>groups accept</code> clears that pending state;
+<code>groups decline</code> leaves and archives the auto-joined pending group.</p>
+<p><strong>Names and admins.</strong> <code>groups update</code> is the canonical spelling for name and/or description changes; <code>groups rename</code>
+and legacy <code>group update</code> keep working. <code>groups add-members ... --admin &lt;member&gt;</code> (and legacy <code>group invite --admin</code>)
+grants admin to an invitee inside the same invite commit. An <code>--admin</code> that is not one of the invitees fails with
+<code>initial_admin_not_invited</code> before anything is published. Invite results carry an <code>initial_admins</code> list.
+<code>groups management</code> mirrors the MarmotKit management state (<code>is_self_admin</code>, <code>can_invite</code>, <code>can_leave</code>,
+<code>requires_self_demote_before_leave</code>, <code>leave_blocked</code>, <code>can_enable_disbanding</code>, <code>can_disband</code>, <code>disbanding_blockers</code>,
+per-member <code>member_actions</code>). Leave hints use the shared core capability selector and remain advisory; the command
+rechecks current authority. <code>can_leave</code> is false for unaccepted invitations and unrecoverable groups.
+<code>requires_self_demote_before_leave</code> is true for an admin, including an admin invitee: <code>groups leave</code> and
+<code>groups decline</code> refuse an admin with <code>admin_policy</code> before anything is written or published, until <code>groups self-demote</code>;
+the last admin promotes another account first. TUI <code>L</code> shows an admin why it cannot leave yet instead of confirming. A
+<code>dev-device-groups</code> build instead demotes an eligible nonlast admin account itself before its ordinary departure, so
+the flag is false there: the last active admin account is refused before a new shared invitation choice or departure
+publication, TUI <code>L</code> confirms and invokes the same command, and a committed demotion remains if a later departure
+fails. An admitted Leave can still be settling; success is not proof every device departed.</p>
+<p><strong>Retention.</strong> <code>groups retention &lt;group-hex&gt;</code> shows the disappearing-message policy (<code>disappearing_message_secs</code>,
+<code>enabled</code>, and the full <code>message_retention</code> component). <code>--set &lt;duration&gt;</code> publishes a component update: a bare integer
+is seconds, <code>s</code>/<code>m</code>/<code>h</code>/<code>d</code>/<code>w</code> suffixes scale a positive integer, and <code>0</code> or <code>off</code> disables retention. <code>groups create --retention &lt;duration&gt;</code> puts the policy in the founding commit instead of a second commit. Only admins may change the
+policy (<code>not_group_admin</code>). A message keeps the policy of the epoch that delivered it: <code>messages list</code> rows carry a
+<code>retention</code> object (<code>retention_seconds</code>, <code>expires_at</code>, or <code>null</code> for legacy rows) and timeline rows carry
+<code>retention_seconds</code> / <code>retention_expires_at</code>, so changing the policy never re-labels older messages.</p>
+<p><strong>Maintenance.</strong> Newly created or joined groups follow the persisted periodic-maintenance policy, which defaults to
+enabled. Pre-rollout groups are not automatically enrolled; <code>groups schedule-self-update</code> schedules one rotation without
+changing their enrollment. Pause/resume is process-local: it stops new preparation while preserving durable obligations
+and already-prepared publication recovery. Application-message JSON results include <code>maintenance_disposition</code> (<code>ready</code>
+or <code>post_join_rotation_pending_retryable</code>); a pending post-join rotation does not block the send.</p>
+<p><strong>Disbanding.</strong></p>
+<ul>
+<li><code>groups enable-disbanding</code> installs and requires lifecycle-v1 in one admin commit. It is idempotent (<code>published=0</code>
+when already required), and <code>disbanding_unsupported_members</code> lists leaves that do not advertise it yet.</li>
+<li><code>groups disband --confirm</code> durably records the irreversible request and returns <code>disband_request</code> plus a one-word
+<code>state</code>. The terminal commit is prepared by the runtime's convergence pass (a running <code>wnd</code>, or
+<code>messages retry &lt;group-hex&gt;</code> from a one-shot <code>wn</code>), so a returned request is never proof that the group has ended or
+that any member observed it.</li>
+<li><code>groups disband-status</code> reports <code>state</code> as one of <code>not_enabled</code>, <code>enabled</code>, <code>pending</code> (durable local request awaiting
+its terminal commit), <code>converging</code> (an authenticated inbound disband is settling), <code>failed</code> (see
+<code>disband_request.failed.reason</code>, then clear it with <code>groups acknowledge-disband-failure</code>), the terminal <code>disbanded</code>,
+or <code>unknown</code> (no positive signal and the MLS state could not be read, as for a quarantined, terminal, or removed copy;
+<code>not_enabled</code> is only asserted from a successful MLS read). It also reports <code>lifecycle_state</code>, <code>disbanding</code> (ordinary
+outbound work is gated), <code>disbanded</code>, <code>unrecoverable</code>, and <code>self_membership</code> (<code>member</code>, <code>left</code>, <code>removed</code>, or
+<code>device_removed</code>: this device's leaf was removed while the account stays in the group through another of its
+devices).</li>
+<li>Ordinary sends into a disbanding group fail with <code>group_disbanding</code>. A removed member's copy records its own removal
+(<code>self_membership: removed</code>) when the terminal commit lands; read both fields rather than inferring the end from one.</li>
+</ul>
+<p><strong>Recovery and rejoin.</strong> Consent is branch-bound. <code>groups recovery-status</code> returns the durable snapshot
+(<code>automatic_recovery_failed</code>, <code>pending_reinvites</code>, <code>failed_reinvites</code>, and <code>rejoin_invitations</code> with each offer's
+<code>welcome_id_hex</code>, authenticated <code>welcomer_account_id_hex</code>, <code>epoch</code>, and <code>local_state_token</code>). <code>groups confirm-rejoin</code>
+needs the exact offer id and token from that snapshot plus <code>--confirm</code>, because it discards the current local copy;
+<code>groups accept</code> never stands in for rejoin authorization. <code>groups quarantined</code> lists stored groups that failed
+hydration with a <code>reason</code>, and <code>groups retry-hydrate</code> re-attempts one without discarding state (<code>recovered</code> is the
+engine outcome; an id that is not quarantined is <code>unknown_group</code>).</p>
+<p><strong>Local deletion.</strong> <code>groups delete-local --confirm</code> deletes only this device's local app data for a group (messages,
+timeline, chat row, cached media secrets) without an MLS leave, a disband, or archiving. MLS state stays intact and a
+fresh delivery can recreate the chat row. It is refused with <code>group_disbanding</code> while a disband is in flight.</p>
+<p><strong>Group images.</strong> <code>groups set-image</code> encrypts and uploads a PNG/JPEG/GIF/WebP file and commits the
+<code>marmot.group.blossom-image.v1</code> component; <code>groups clear-image</code> commits the absent state; <code>groups download-image</code>
+fetches and decrypts the current image (<code>group_image_absent</code> when there is none). <code>groups create --image &lt;path&gt;</code> adds
+a founding image to the create commit. Every surface that renders the image component (these commands, the create
+response, <code>groups show</code> / <code>groups list</code>, <code>chats</code> rows, and the daemon <code>group_state</code> feed) reports only the redacted
+summary (<code>component_id</code>, <code>component</code>, <code>present</code>, <code>image_hash_hex</code>, <code>media_type</code>) and never prints the image key,
+upload secret, nonce, or key-bearing <code>data_hex</code>. There is no privileged CLI path for those keys; <code>groups download-image</code>
+is the supported way to obtain the decrypted image. <code>set-avatar-url</code> changes the separate URL-avatar component.</p>
+<p><strong>Welcome delivery.</strong> <code>groups pending-welcomes</code> lists Welcomes that a confirmed create/invite could not deliver
+(<code>group_id</code>, <code>message_id</code>, <code>recipient</code>, <code>recorded_at</code>). Create and invite drain their fanout before returning, so this
+is normally empty. <code>groups redeliver-welcome &lt;message-id-hex&gt;</code> re-publishes one without re-committing.</p>
+<h3 id="messages">Messages</h3>
+<pre><code class="language-sh">wn --account &lt;npub-or-hex&gt; messages send &lt;group-hex&gt; &quot;hello&quot;
+wn --account &lt;npub-or-hex&gt; messages send --group &lt;group-hex&gt; &quot;--text that starts with a dash&quot;
+wn --account &lt;npub-or-hex&gt; messages send --group &lt;group-hex&gt; --reply-to &lt;message-id&gt; &quot;replying to you&quot;
+wn --account &lt;npub-or-hex&gt; messages list
+wn --account &lt;npub-or-hex&gt; messages list &lt;group-hex&gt; --limit 20
+wn --account &lt;npub-or-hex&gt; messages list &lt;group-hex&gt; --before &lt;unix-seconds&gt; --before-message-id &lt;event-id&gt;
+wn --account &lt;npub-or-hex&gt; messages list &lt;group-hex&gt; --after &lt;unix-seconds&gt; --after-message-id &lt;event-id&gt;
+wn --account &lt;npub-or-hex&gt; messages list &lt;group-hex&gt; --kind 9 --kind 30100
+wn --account &lt;npub-or-hex&gt; messages search &lt;group-hex&gt; &lt;query&gt; --limit 20
+wn --account &lt;npub-or-hex&gt; messages search-all &lt;query&gt; --limit 20
+wn --account &lt;npub-or-hex&gt; messages react &lt;group-hex&gt; &lt;message-id&gt; +
+wn --account &lt;npub-or-hex&gt; messages unreact &lt;group-hex&gt; &lt;message-id&gt;
+wn --account &lt;npub-or-hex&gt; messages edit &lt;group-hex&gt; &lt;message-id&gt; &quot;corrected text&quot;
+wn --account &lt;npub-or-hex&gt; messages delete &lt;group-hex&gt; &lt;message-id&gt;
+wn --account &lt;npub-or-hex&gt; messages retry &lt;group-hex&gt; [event-id]
+wn --account &lt;npub-or-hex&gt; messages sweep-expired
+wn --account &lt;npub-or-hex&gt; messages send-event &lt;group-hex&gt; &lt;kind&gt; [content]
+wn --account &lt;npub-or-hex&gt; messages send-event &lt;group-hex&gt; 30100 '{&quot;cursor&quot;:7}' --tag '[&quot;e&quot;,&quot;&lt;event-id-hex&gt;&quot;]'
+wn --account &lt;npub-or-hex&gt; messages subscribe &lt;group-hex&gt; --limit 50
+wn --account &lt;npub-or-hex&gt; messages subscribe &lt;group-hex&gt; --kind 30100
+wn --account &lt;npub-or-hex&gt; messages timeline list &lt;group-hex&gt; --limit 20
+wn --account &lt;npub-or-hex&gt; messages timeline search &lt;query&gt; --group &lt;group-hex&gt; --limit 20
+wn --account &lt;npub-or-hex&gt; messages timeline search &quot;&quot; --sender &lt;npub-or-hex&gt; --since &lt;unix-seconds&gt; --until &lt;unix-seconds&gt; --attachment-type image
+wn --account &lt;npub-or-hex&gt; messages timeline search &lt;query&gt; --before &lt;timeline-at&gt; --before-message-id &lt;message-id&gt; --cursor-group-id &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; messages timeline subscribe &lt;group-hex&gt;
+</code></pre>
+<p><strong>Replies.</strong> <code>messages send --reply-to &lt;message-id&gt;</code> sends the text as a reply, using the same wire format other Marmot
+clients produce, so recipients see a reply reference and a hydrated preview of the parent. The parent need not exist
+locally; its preview hydrates once it arrives. Pass the group with <code>--group</code> and put <code>--reply-to</code> before the text: the
+message text is parsed hyphen-tolerantly, so a <code>--reply-to</code> (or <code>--reply-to=&lt;id&gt;</code>) placed after the text would be read
+as literal text. The CLI rejects that mis-ordering with <code>reply_to_after_message_text</code> instead of sending it. As a
+consequence, message text containing a bare <code>--reply-to</code> or <code>--reply-to=&lt;id&gt;</code> token anywhere (for example
+<code>hello --reply-to friend</code>) cannot be sent this way.</p>
+<p><strong>Reactions.</strong> <code>messages react</code> is idempotent for an already-active reaction and reports <code>published=0</code>; the emoji
+defaults to <code>+</code>. <code>messages unreact</code> removes all of the account's active reactions from the target in one deletion
+event.</p>
+<p><strong>Edits.</strong> <code>messages edit &lt;group-hex&gt; &lt;message-id&gt; &lt;text&gt;</code> publishes a kind-1009 edit whose <code>e</code> tag references the
+target and whose content is the replacement text (hyphen-tolerant, like <code>send</code>). The target must be a locally projected
+message authored by the selected account: a foreign target fails with <code>not_message_author</code> and an unknown id with
+<code>unknown_message</code> before anything is published, because recipients only honour edits whose authenticated author matches
+the target's. Recipients see the edit as a kind-1009 row in <code>messages list</code> and the timeline (<code>--kind 1009</code> filters to
+edits); hosts resolve the latest text per target from those rows. The response is a send result plus
+<code>target_message_id</code> and <code>kind</code>.</p>
+<p><strong>Deletes.</strong> <code>messages delete &lt;group-hex&gt; &lt;message-id&gt;</code> publishes an authenticated kind-5 delete tombstone. Members that
+honour it hide the target. It is a group-visible deletion request, not secure erasure, and does not touch relay copies
+of the original event.</p>
+<p><strong>Retry.</strong> <code>messages retry &lt;group-hex&gt; [event-id]</code> retries durable pending work for the whole group: retained events and
+pending commits are republished exactly, and fresh plaintext is never re-encrypted. The optional event id is echoed as
+<code>target_event_id</code> (<code>null</code> when omitted) and does not scope the action; <code>retry_scope</code> is always <code>group_convergence</code>.</p>
+<p><strong>Retention sweep.</strong> <code>messages sweep-expired</code> runs the engine-owned disappearing-message sweep for the selected account
+now, on the current wall clock (the engine applies its own clock-skew tolerance and unread deferral;
+there is no flag to supply a time). It returns <code>now_ms</code>, total <code>pruned_messages</code> / <code>secrets_deleted</code>, and a per-group
+<code>groups</code> array with <code>status</code> (<code>no_expired_messages</code>, <code>pruned</code>, <code>deferred_clock_skew</code>, <code>deferred_unread</code>,
+or <code>failed</code>), counts, <code>media_ciphertext_sha256</code> purge hints, and a privacy-safe
+<code>failure_kind</code>. A running <code>wnd</code> does not schedule this sweep; call it explicitly.</p>
+<p><strong>Custom events.</strong> <code>messages send-event &lt;group-hex&gt; &lt;kind&gt; [content]</code> sends an app-defined event. Kind, tags, and content
+pass through verbatim into the encrypted group message. Kinds MDK owns (chat, reactions, edits, deletes, agent activity,
+agent stream anchors, group system rows, push token records, and the device-group kinds 457, 458, 459, 460, 461, 473, 475 and 476) are rejected with <code>reserved_app_event_kind</code>. Each <code>--tag</code>
+takes a JSON array of strings and is repeatable; a malformed tag fails with <code>invalid_event_tag</code>. Custom events project as
+standalone rows with their own kind and tags and never fold onto a target message. <code>messages list</code> and
+<code>messages subscribe</code> accept repeatable <code>--kind &lt;KIND&gt;</code> filters and return every kind without one. On the subscribe feed
+a custom event arrives as type <code>message</code>; on the timeline feed its change trigger is <code>CustomEvent</code>.</p>
+<p><strong>Timeline.</strong> <code>messages timeline list|search|subscribe</code> read the materialized timeline, which interleaves messages,
+media, and agent-stream anchors/finals. Group lists and subscriptions use canonical conversation order.</p>
+<p><strong>Timeline search.</strong> <code>messages timeline search</code> searches retained local history, across the account unless a group
+is supplied. Text is a trimmed, case-insensitive literal substring; query operators and wildcards have no special
+meaning. An empty query (<code>&quot;&quot;</code>) applies only the other filters. <code>--sender</code> accepts an exact npub or hex public key.
+<code>--since</code> is inclusive and <code>--until</code> is exclusive, both in Unix seconds on <code>timeline_at</code>. <code>--attachment-type</code> accepts
+<code>any</code> (no attachment restriction), <code>image</code>, <code>video</code>, <code>audio</code>, <code>file</code> (other or unknown MIME type), or <code>attachment</code>
+(any attachment). Filters combine before the page limit, which is capped at 200 rows.</p>
+<p>Search pages are oldest first in wall-clock order, including group-restricted searches. To fetch older results,
+pass the first row's <code>timeline_at</code> and <code>message_id</code> as <code>--before</code> and <code>--before-message-id</code>. To fetch newer results,
+use the last row with <code>--after</code> and <code>--after-message-id</code>. Account-wide paging also requires that row's <code>group_id</code>
+as <code>--cursor-group-id</code>, so identical message ids in different groups remain distinct. Keep the same filters between
+pages and use <code>has_more_before</code> and <code>has_more_after</code> from JSON output to find the remaining history.</p>
+<p><strong>Delivery.</strong> A timeline row (<code>messages timeline list|search|subscribe</code>) carries <code>invalidation_status</code>, which names
+why the row was withdrawn or failed (<code>local_publish_failed</code>, <code>LosingBranch</code>, ...) and is <code>null</code> otherwise. A row is
+delivered when <code>invalidation_status</code> is <code>null</code> and either <code>source_message_id</code> is set or <code>recipient_confirmed</code> is
+<code>true</code>. The second case is an own send that no relay accepted but another member reacted to, proving they received
+it. A row with <code>invalidation_status</code> set is not delivered, even when it keeps its <code>source_message_id</code>.</p>
+<p><strong>Subscriptions.</strong> <code>messages subscribe</code>, <code>messages timeline subscribe</code>, <code>chats subscribe</code>, <code>chats subscribe-archived</code>,
+<code>groups subscribe-state</code>, and <code>notifications subscribe</code> require <code>wnd</code>. With <code>--json</code> they print newline-delimited
+responses with a typed <code>result.type</code>:</p>
+<table class="mm-responsive-table" role="table">
+<thead role="rowgroup">
+<tr role="row">
+<th scope="col" role="columnheader"><code>result.type</code></th>
+<th scope="col" role="columnheader">Meaning</th>
+</tr>
+</thead>
+<tbody role="rowgroup">
+<tr role="row">
+<td data-label="result.type" role="cell"><code>message</code></td>
+<td data-label="Meaning" role="cell">normal app messages and app-defined custom kinds</td>
+</tr>
+<tr role="row">
+<td data-label="result.type" role="cell"><code>reaction</code></td>
+<td data-label="Meaning" role="cell">reactions</td>
+</tr>
+<tr role="row">
+<td data-label="result.type" role="cell"><code>message_delete</code></td>
+<td data-label="Meaning" role="cell">deletions</td>
+</tr>
+<tr role="row">
+<td data-label="result.type" role="cell"><code>media</code></td>
+<td data-label="Meaning" role="cell">media references</td>
+</tr>
+<tr role="row">
+<td data-label="result.type" role="cell"><code>agent_stream_start</code>, <code>agent_stream_final</code></td>
+<td data-label="Meaning" role="cell">durable agent stream anchors and finals</td>
+</tr>
+<tr role="row">
+<td data-label="result.type" role="cell"><code>agent_stream_delta</code></td>
+<td data-label="Meaning" role="cell">live brokered QUIC chunks</td>
+</tr>
+<tr role="row">
+<td data-label="result.type" role="cell"><code>stream_preview</code></td>
+<td data-label="Meaning" role="cell">runtime-owned QUIC preview summaries</td>
+</tr>
+<tr role="row">
+<td data-label="result.type" role="cell"><code>chat</code></td>
+<td data-label="Meaning" role="cell">chat rows</td>
+</tr>
+<tr role="row">
+<td data-label="result.type" role="cell"><code>group_state</code></td>
+<td data-label="Meaning" role="cell">group state rows</td>
+</tr>
+</tbody>
+</table>
+<h3 id="media">Media</h3>
+<pre><code class="language-sh">wn --account &lt;npub-or-hex&gt; media list &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; media upload &lt;group-hex&gt; &lt;file-path&gt; --send --message &lt;caption&gt;
+wn --account &lt;npub-or-hex&gt; media upload &lt;group-hex&gt; &lt;first.jpg&gt; &lt;second.jpg&gt; --send --message &lt;caption&gt;
+wn --account &lt;npub-or-hex&gt; media upload &lt;group-hex&gt; &lt;file-path&gt; --server https://blossom.divine.video
+wn --account &lt;npub-or-hex&gt; media send &lt;group-hex&gt; '&lt;media-json&gt;' ['&lt;media-json&gt;' ...] --message &lt;caption&gt;
+wn --account &lt;npub-or-hex&gt; media set-endpoints &lt;group-hex&gt; https://blossom.example [https://mirror.example]
+wn --account &lt;npub-or-hex&gt; media download &lt;group-hex&gt; &lt;file-hash&gt; --output ./file.jpg
+</code></pre>
+<p><strong>Upload.</strong> <code>media upload</code> encrypts each file with the group's current <code>MLS-Exporter(&quot;marmot&quot;, &quot;encrypted-media&quot;, 32)</code>
+media secret, uploads the ciphertext to Blossom, and with <code>--send</code> sends one kind-9 media message whose <code>imeta</code> tags keep
+the command-line order (<code>attachment_index</code> in <code>media list</code>). The server must accept opaque <code>application/octet-stream</code>
+uploads. Without <code>--server</code>, the upload targets the ordered endpoints in the group's versioned encrypted-media
+component: frozen V1 (<code>0x8008</code>) for already-joined legacy groups and V2 (<code>0x800b</code>) for current-profile groups. Upload
+JSON returns an <code>attachments</code> array with each attachment's <code>plaintext_sha256</code>, <code>ciphertext_sha256</code>, and locators.</p>
+<p><strong>Endpoints.</strong> Newly created groups use White Noise's ciphertext-compatible endpoint list, which <code>wn</code> takes from
+its White Noise deployment. Endpoint policy is signed group state, so upgrading MDK changes
+defaults for new groups only. An active group admin runs <code>media set-endpoints &lt;group-hex&gt; &lt;url&gt; [...]</code>
+(<code>--locator-kind</code> defaults to <code>blossom-v1</code>) to replace a group's default endpoints without changing its media version.
+Non-admins get <code>not_group_admin</code>; the response carries the refreshed <code>encrypted_media</code> component.</p>
+<p><strong>Re-sending.</strong> <code>media send</code> publishes already-uploaded references as one ordered message without re-uploading. Each
+attachment uses the complete <code>media upload</code> JSON object, including its local <code>source_epoch_identity</code>. Preserve that
+object to send it later. The compatibility plaintext-hash input resolves projected metadata but cannot restore its
+local upload identity.
+References reconstructed from <code>media list</code> or a plaintext-hash lookup have no upload provenance and require a fresh
+upload before sending. They remain valid download inputs. The runtime re-validates every reference against the
+group's media profile, locator policy, version, and exact upload branch. The epoch number alone is insufficient:
+branch selection can change the media key while keeping that number. The wire <code>imeta</code> tag carries neither epoch nor
+local identity; recipients derive the media key from the delivering message's epoch.</p>
+<ul>
+<li>A stale reference is refused before publication with <code>media_reference_stale_epoch</code> (<code>source_epoch</code>,
+<code>current_epoch</code>). Upload the file again and send the returned JSON reference. Missing upload identity requires a
+fresh upload even when both epoch numbers match.</li>
+<li>The send is pinned to the reference's epoch inside the engine too: an epoch change during the send, including a move
+to another branch at the same epoch number, gives the same error, and while the epoch is unsettled (your commit still publishing, or peer commits not yet applied) the send is
+refused with <code>media_reference_epoch_unsettled</code> rather than queued. Sync and retry, or upload again if the epoch
+advanced.</li>
+</ul>
+<p><strong>Download.</strong> <code>media download</code> resolves a projected media reference by plaintext hash, fetches, verifies, and decrypts
+the blob, and writes the plaintext file. <code>--output</code> is a file path or an existing directory (which receives the
+attachment's own file name); without it the file lands in the current directory. The file is written <code>0600</code>; existing
+directories keep their permissions, and only directories the download creates are made private.</p>
+<p><strong>File paths.</strong> <code>media upload</code>, <code>media download --output</code>, <code>groups set-image</code>, <code>groups create --image</code>, and
+<code>groups download-image --output</code> resolve relative paths against the directory <code>wn</code> was run from, so a command forwarded
+to a running <code>wnd</code> reads and writes exactly the files the caller named.</p>
+<h3 id="directory-profile-relays-and-settings">Directory, profile, relays, and settings</h3>
+<pre><code class="language-sh">wn --account &lt;npub-or-hex&gt; follows list
+wn --account &lt;npub-or-hex&gt; follows add &lt;npub-or-hex&gt;
+wn --account &lt;npub-or-hex&gt; follows remove &lt;npub-or-hex&gt;
+wn --account &lt;npub-or-hex&gt; follows check &lt;npub-or-hex&gt;
+wn --account &lt;npub-or-hex&gt; profile show
+wn --account &lt;npub-or-hex&gt; profile update --name &lt;name&gt; --about &lt;text&gt;
+wn --account &lt;npub-or-hex&gt; relays list --type nip65
+wn --account &lt;npub-or-hex&gt; relays add &lt;relay-url&gt; --type inbox
+wn --account &lt;npub-or-hex&gt; relays remove &lt;relay-url&gt; --type inbox
+wn users show &lt;npub-or-hex&gt;
+wn users search &lt;query&gt; --radius 0..2
+wn settings show
+wn settings theme dark
+wn settings language en
+wn notifications subscribe
+wn --account &lt;npub-or-hex&gt; debug health
+wn debug relay-control-state
+wn relay-stats
+wn --json usage-diagnostics show
+wn usage-diagnostics enable
+wn usage-diagnostics disable
+</code></pre>
+<ul>
+<li><code>follows add|remove</code> edits your current contact list on the relay: it adds or removes that account's <code>p</code> tag and keeps
+every other tag and the content. A list with 2,048 follows or more is refused with <code>follow_list_too_large</code>, since
+MDK reads no more than that from one list.</li>
+<li><code>users search</code> searches your follow graph; <code>--radius START..END</code> defaults to <code>0..1</code> (0 is you, 1 who you follow, 2
+follows-of-follows).</li>
+<li><code>notifications subscribe</code> streams daemon-backed local notification updates as JSON lines.</li>
+<li><code>relay-stats</code> prints device-local relay telemetry: aggregate lifecycle counters, cross-relay arrival spread,
+per-relay first-deliverer and first-event/EOSE timing, and redacted relay health. It reads the live <code>wnd</code> runtime
+when a daemon socket exists. Per-relay rows use opaque device-local indices, never relay URLs.</li>
+<li><code>usage-diagnostics show|enable|disable</code> manages the local combined &quot;Share usage and diagnostics&quot; permission. An active
+<code>wnd</code> owns the update. Audit consent is separate. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/docs/marmot-architecture/usage-diagnostics.md">host and operator contract</a> for disclosure, endpoint/key
+configuration, and reporting limitations.</li>
+</ul>
+<h3 id="agent-text-streams">Agent text streams</h3>
+<p>Provisional QUIC previews of agent text, anchored by durable Marmot messages:</p>
+<pre><code class="language-sh">marmot-quic-broker --bind 127.0.0.1:4450
+wn --account &lt;npub-or-hex&gt; stream start &lt;group-hex&gt; \\
+  --stream-id &lt;stream-hex&gt; --quic-candidate quic://127.0.0.1:4450
+wn --account &lt;npub-or-hex&gt; stream watch &lt;group-hex&gt; --stream-id &lt;stream-hex&gt; --insecure-local
+wn --account &lt;npub-or-hex&gt; stream watch &lt;group-hex&gt; --stream-id &lt;stream-hex&gt; --insecure-local --background
+wn stream send --broker --connect 127.0.0.1:4450 --insecure-local \\
+  --stream-id &lt;stream-hex&gt; --start-event-id &lt;start-message-id-hex&gt; &quot;hello over quic&quot;
+wn stream send --connect &lt;host:port&gt; --server-name &lt;dns-name&gt; &quot;hello over quic&quot;
+wn stream receive --bind 127.0.0.1:4450
+wn --account &lt;npub-or-hex&gt; stream compose-open &lt;group-hex&gt; \\
+  --stream-id &lt;stream-hex&gt; --quic-candidate quic://127.0.0.1:4450 --insecure-local
+wn --account &lt;npub-or-hex&gt; stream compose-append --stream-id &lt;stream-hex&gt; &quot;hello &quot;
+wn --account &lt;npub-or-hex&gt; stream compose-finish --stream-id &lt;stream-hex&gt;
+wn --account &lt;npub-or-hex&gt; stream compose-cancel --stream-id &lt;stream-hex&gt;
+wn --account &lt;npub-or-hex&gt; stream finish &lt;group-hex&gt; \\
+  --stream-id &lt;stream-hex&gt; --start-event-id &lt;start-message-id-hex&gt; \\
+  --transcript-hash &lt;hash-hex&gt; --chunk-count &lt;n&gt; &quot;hello over quic&quot;
+wn --account &lt;npub-or-hex&gt; stream verify &lt;group-hex&gt; \\
+  --stream-id &lt;stream-hex&gt; --transcript-hash &lt;hash-hex&gt; --chunk-count &lt;n&gt;
+</code></pre>
+<ul>
+<li><code>stream start</code> and <code>stream finish</code> send typed payloads through the normal encrypted Marmot message path. Brokered
+starts include concrete <code>quic://host:port</code> candidates.</li>
+<li><code>stream watch</code> reads the durable start payload, subscribes to the broker candidate, and prints the provisional text
+preview plus transcript hash. With <code>--background</code> and a running <code>wnd</code>, the daemon owns the subscription and the
+command returns immediately; <code>wn daemon status --json</code> reports the running/completed/failed state under
+<code>stream_watches</code>, and <code>messages subscribe</code> emits it as <code>stream_preview</code> updates (individual chunks as
+<code>agent_stream_delta</code>).</li>
+<li><code>stream send --broker</code> publishes ordered <code>TextDelta</code> records through the memory-only broker. Without <code>--broker</code> it
+connects directly to a peer receiver (<code>wn stream receive</code>).</li>
+<li><code>stream verify</code> compares a received QUIC transcript hash and chunk count against the latest durable final payload for
+the same stream id.</li>
+<li><code>stream compose-open|append|finish|cancel</code> are the daemon-owned live composer used by the TUI and agent connectors,
+and require <code>wnd</code>. Opening publishes the durable stream anchor and starts live preview publication; append feeds
+preview text; finish publishes the durable final message; cancel tears down the session without faking a final.</li>
+</ul>
+<p>QUIC chunks are transient preview data; normal Marmot messages remain the durable group history.</p>
+<p><strong>Destination safety.</strong> Explicit <code>--connect</code> destinations must be public unicast addresses. <code>--insecure-local</code> is the
+only exception, and it opens loopback only. A pinned <code>--server-cert-der-hex</code> is TLS trust, not address authorization, so
+unflagged loopback, private, link-local, and CGNAT targets are rejected; local probes therefore need
+<code>wn stream receive --bind 127.0.0.1:4450</code> plus <code>--insecure-local</code> on send. The client source bind is a family-matched
+wildcard (<code>0.0.0.0:0</code> / <code>[::]:0</code>) and does not authorize the remote destination. Use
+<code>quic://quic-broker.ipf.dev:4450</code> with default trust for the shared production broker, and <code>--insecure-local</code> only for
+loopback development with generated self-signed certificates. Default trust verifies broker certificates against the
+bundled Mozilla roots (<code>webpki-roots</code>) that relays and HTTP also use, not the OS trust store.</p>
+<h3 id="sync">Sync</h3>
+<pre><code class="language-sh">wn --account &lt;npub-or-hex&gt; sync
+</code></pre>
+<p><code>sync</code> is a diagnostic and repair command. Normal daemon-backed chat, group, and stream flows use runtime subscriptions
+and should not need it.</p>
+<h2 id="device-linking-dev-builds">Device linking (dev builds)</h2>
+<p>Build matching <code>wn</code> and <code>wnd</code> with the explicit default-off capability:</p>
+<pre><code class="language-sh">export RUST_MIN_STACK=4194304
+cargo build -p wn-cli --bins --features dev-device-groups --locked
+</code></pre>
+<p>The export retains the repository's existing <a href="__MARMOT_BASE__docs/#development">debug-binary stack requirement</a>
+when running <code>wn</code>/<code>wnd</code> directly; it is not a timing override.</p>
+<p>This enables device groups in that dev CLI/daemon and keeps production settlement/retry timing. It does <strong>not</strong>
+enable <code>test-policy-overrides</code>; leave <code>WN_DEV_SETTLEMENT_QUIESCENCE_MS</code> and other policy-test overrides unset.
+Ordinary release builds do not expose <code>devices</code> or enable the capability. App-binding adoption is separate.</p>
+<p>Use a dedicated account and home for dogfooding. Sign in to that same account on both devices using the existing
+<code>login --nsec-stdin</code> flow; never put an nsec in argv. Run a persistent daemon on each device with its selected home,
+secret store, discovery relays and account relays, using the matching dev <code>wn</code>/<code>wnd</code> binaries. For example, with
+<code>WN_HOME</code> and <code>WN_SOCKET</code> exported and the intended real relay lists configured:</p>
+<pre><code class="language-sh">wn daemon start --discovery-relays &quot;$DISCOVERY_RELAYS&quot; --default-account-relays &quot;$ACCOUNT_RELAYS&quot;
+wn --account &quot;$ACCOUNT&quot; devices list
+wn --account &quot;$ACCOUNT&quot; devices link start
+wn --account &quot;$ACCOUNT&quot; devices link status
+</code></pre>
+<p>Run <code>start</code> on the <strong>new</strong> device. Read <code>status</code> on both devices until each shows seven emoji. Compare all seven
+pictures on the two screens. On the existing device, use its displayed prompt id and approve only if they match:</p>
+<pre><code class="language-sh">wn --account &quot;$ACCOUNT&quot; devices link approve &quot;$PROMPT_ID&quot; --label &quot;Laptop&quot;
+</code></pre>
+<p>On the new device, separately confirm the match:</p>
+<pre><code class="language-sh">wn --account &quot;$ACCOUNT&quot; devices link confirm-match
+wn --account &quot;$ACCOUNT&quot; devices link status
+</code></pre>
+<p>Both confirmations are required; either may happen first. The existing device shows <code>linking</code> until the new device's
+first selected change arrives, then <code>linked</code>; the new device also shows <code>linked</code>. Read <code>devices list</code> on both to see
+their own distinct slots. <code>devices link cancel</code> cancels on the new device. Approval uses the existing defaults of
+adding to existing chats and bringing history; <code>--no-add-to-all-chats</code> and <code>--no-bring-history</code> opt out individually.
+No command creates or authenticates a device by its account key alone.</p>
+<p>Running the same <code>devices link start</code> flow on an already linked device moves only that device to the destination's
+device group. <code>link status</code> adds <code>moves[]</code>: Joining still trusts the old group; Made is the trust switch after the new
+device's first selected change. Old siblings remain local recognition hints, not automatic links. A known failed link
+before Made keeps old trust and forgets only the destination. The move leaves existing chat membership intact and does
+not promise traffic between device groups; admitted old-group traffic can finish normally. An unrecoverable destination
+can stay pending indefinitely while ordinary repair applies, keeping old trust and preventing another confirmed move.
+Corrupt or unreadable local move records may need manual local recovery or reset. These conditions do not themselves
+unlink this device. See <a href="__MARMOT_BASE__docs/native-apps.html#moving-this-device-to-another-device-group">move behavior and limits</a>.</p>
+<p>To deliberately discard only this device's local hidden device-group copy before fresh code pairing:</p>
+<pre><code class="language-sh">wn --account &quot;$ACCOUNT&quot; devices link reset --confirm
+wn --account &quot;$ACCOUNT&quot; keys rotate
+wn --account &quot;$ACCOUNT&quot; devices link start
+</code></pre>
+<p>This keeps ordinary chats/history/drafts/settings, account credentials and the current slot; it abandons old link-bound
+preparations, not shared-state/security synchronization, and publishes no removal. It refuses active pairing/Move or
+unsettled native work (<code>device_group_busy</code>),
+possibly indefinitely. No trusted copy returns <code>no_device_group</code>. Reset does not guarantee fresh admission: an approver
+that still lists the slot/old leaf, rejects it or is full can refuse. Reset itself publishes no KeyPackage; use the
+existing rotation command before fresh code pairing, as above. A failed publication does not restore old trust;
+cancellation/failure can leave needs-link, and no old copy is restored. An already-confirmed fresh Welcome wait retains
+its normal restart behavior. Ordinary chat membership and missing-history repair remain separate. See the
+<a href="__MARMOT_BASE__docs/native-apps.html#explicit-local-device-group-reset-before-fresh-pairing">shared reset contract</a>.</p>
+<p>For this dev-testing build, run <strong>all account commands through a persistent matching daemon</strong>. Select it explicitly
+with <code>--socket</code> or exported <code>WN_SOCKET</code>, so connection failure is reported instead of falling back to local execution.
+The <code>devices</code> commands themselves refuse local execution: without an auto-discovered daemon, their JSON error is
+<code>daemon_required</code> with a startup hint; an explicitly selected unavailable socket reports <code>daemon_unavailable</code>.</p>
+<p>Other existing dev account commands can still start one-shot live workers. Such a worker can answer a pending link,
+then exit and lose the unconfirmed comparison session. Comparison sessions and prompt ids are also lost on a
+daemon/worker restart. If an unconfirmed exchange is interrupted, start both daemons and cancel on the new device only if its exchange
+is still active; then start a fresh link with a fresh comparison. Already committed links and owed Welcomes retain their existing durable
+behavior, so inspect <code>devices list</code> before retrying. Restarting does not roll back an approved link.</p>
+<p>This dogfood CLI does not expose the existing-device <strong>Not now</strong> action. Do not approve an unwanted request or
+mismatching codes; cancel from the requesting/new device or let the exchange expire. <code>devices link cancel</code> applies
+only to the requesting/new device; it does not dismiss an existing-device prompt.</p>
+<p>This dev CLI also cannot manually dismiss a move's old-sibling recognition hint. A later confirmed link or selected
+departure can end the hint automatically; dismissing a hint does not link or remove a device.</p>
+<p><code>--json</code> returns the existing state without terminal escaping: <code>devices list</code> has <code>devices[]</code> with public slot,
+label/status, own-device flag and settings; <code>link</code> responses have nullable <code>new_device</code> and <code>prompts[]</code> with flat
+<code>state</code> strings. Comparing states include <code>code[]</code> objects with <code>emoji</code>/<code>description</code>; prompts include their opaque
+<code>prompt_id</code>. Keep comparison codes in the user-facing response, not logs or transcripts.</p>
+<p>Local CLI regression tests are not the D66 two-device/VM-and-real-relay acceptance test. Use fresh dedicated test
+identities for that separate exercise; VM/device provisioning is manual, not a CLI function. <code>logout</code> currently discards
+the local account; it is not the shared-runtime sibling sign-out/wipe protocol and must not be used as evidence that
+other devices removed it. No new storage migration or background scheduler is introduced by these commands.</p>
+<h2 id="daemon">Daemon</h2>
+<p><code>wn daemon start</code> launches <code>wnd</code> in the background for the selected home. The daemon owns the Unix socket, writes
+<code>dev/wnd.pid</code>, appends startup errors to <code>dev/wnd.log</code>, and hosts one <code>MarmotAppRuntime</code>. The runtime keeps long-lived
+relay subscriptions for local signing accounts using the daemon's discovery and account-relay defaults, and updates them
+automatically after identity, group, message, and stream mutations forwarded through it.</p>
+<pre><code class="language-sh">export WN_HOME=&quot;$PWD/dev/data/daemon-demo&quot;
+export WN_SECRET_STORE=file
+export WN_ALLOW_LOOPBACK_RELAYS=1   # loopback relays are dev/test only; unset in production
+unset WN_SOCKET
+wn daemon start \\
+  --discovery-relays ws://127.0.0.1:27777 \\
+  --default-account-relays ws://127.0.0.1:27777
+wn daemon status
+wn --account &lt;npub-or-hex&gt; chats list
+wn daemon stop
+</code></pre>
+<ul>
+<li><code>wn daemon start</code> returns once it knows how the <code>wnd</code> it launched turned out. It prints <code>daemon started</code> when that
+daemon reports its accounts open, or <code>daemon already running</code> when another daemon answers on the socket first; both
+exit 0. If the daemon exits first, the command fails at once with JSON error code <code>daemon_start_failed</code>, the log
+path, and the log's last lines. If the daemon is still running but not ready after 60 seconds, the command stops it
+and fails with <code>daemon_start_timeout</code>. Ctrl-C stops it too and fails with <code>daemon_start_interrupted</code>. A failed start
+never leaves its newly spawned daemon running. The 60 seconds cover the runtime's 45-second budget for opening
+accounts, and macOS can hold the first launch of a newly installed <code>wnd</code> for several seconds before it runs.</li>
+<li>Before spawning, <code>wn daemon start</code> gives an existing socket up to 60 seconds to answer its readiness probe. If the
+peer does not complete its reply, the command fails with <code>daemon_unavailable</code>, preserves that socket, and starts no
+competing daemon. Direct <code>wnd</code> startup uses the same 60-second budget to check an existing socket and also preserves
+it on timeout; only a refused connection or a missing socket is treated as stale.</li>
+<li><code>wn daemon stop</code> prints <code>daemon stopped</code> only once the daemon process has exited. The daemon answers the request
+before it shuts down its runtime, which can wait on relays; if it is still running 30 seconds later, the command
+fails with <code>daemon_stop_timeout</code> and names its pid, and leaves it to finish shutting down.</li>
+<li>When a daemon socket exists for a home, normal <code>wn --home &lt;path&gt; ...</code> commands are forwarded to it. <code>wn daemon status</code>,
+<code>wn daemon stop</code>, and <code>wn tui</code> handle daemon access directly. Use <code>--socket</code> or <code>WN_SOCKET</code> to target a specific
+daemon.</li>
+<li><code>wnd</code> answers on its socket as soon as it binds it, before it has opened its accounts, which the runtime allows 45
+seconds. Meanwhile <code>wn daemon status</code> prints <code>daemon starting</code> (<code>&quot;starting&quot;: true</code> in <code>--json</code>), <code>wn daemon stop</code>
+stops it, and other commands wait until the accounts are open.</li>
+<li><code>wn daemon status --json</code> includes <code>last_runtime_activity</code>, background <code>stream_watches</code>, and a redacted <code>relay_health</code>
+object with aggregate relay counts and connection-status buckets. It does not include relay URLs, account ids, group
+ids, subscription ids, or message ids.</li>
+<li>Subscription commands (see <a href="#messages">Messages</a>) use the daemon socket directly.</li>
+</ul>
+<p>Run <code>wnd</code> directly when a process supervisor should own the daemon lifecycle. It accepts <code>--home</code> (alias <code>--data-dir</code>),
+<code>--logs-dir</code>, <code>--socket</code>, <code>--discovery-relays</code>, <code>--default-account-relays</code>, <code>--secret-store</code>, and <code>--keychain-service</code>:</p>
+<pre><code class="language-sh">wnd --home &quot;$WN_HOME&quot; \\
+  --discovery-relays ws://127.0.0.1:27777 \\
+  --default-account-relays ws://127.0.0.1:27777
+</code></pre>
+<h3 id="two-terminal-local-stream-demo">Two-terminal local stream demo</h3>
+<p>Terminal 1 owns the daemon and the live subscription:</p>
+<pre><code class="language-sh">just relay-up
+
+export WN_HOME=&quot;$PWD/dev/data/stream-demo&quot;
+export WN_SECRET_STORE=file
+export WN_ALLOW_LOOPBACK_RELAYS=1   # loopback relays are dev/test only; unset in production
+unset WN_SOCKET
+rm -rf &quot;$WN_HOME&quot;
+
+wn daemon start \\
+  --discovery-relays ws://127.0.0.1:27777 \\
+  --default-account-relays ws://127.0.0.1:27777
+
+# After Terminal 2 creates $BOB and $GROUP, run:
+wn --account &quot;$BOB&quot; messages subscribe &quot;$GROUP&quot; --limit 20
+</code></pre>
+<p>Terminal 2 creates Alice and Bob, starts the durable stream, and sends live broker chunks:</p>
+<pre><code class="language-sh">export WN_HOME=&quot;$PWD/dev/data/stream-demo&quot;
+export WN_SECRET_STORE=file
+export WN_ALLOW_LOOPBACK_RELAYS=1   # loopback relays are dev/test only; unset in production
+unset WN_SOCKET
+
+ALICE=$(wn --json create-identity | jq -r '.result.account_id')
+BOB=$(wn --json create-identity | jq -r '.result.account_id')
+
+GROUP=$(wn --account &quot;$ALICE&quot; --json groups create agent &quot;$BOB&quot; | jq -r '.result.group_id')
+wn --account &quot;$ALICE&quot; messages send &quot;$GROUP&quot; &quot;hello bob&quot;
+
+STREAM_ID=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+START_ID=$(wn --account &quot;$ALICE&quot; --json stream start &quot;$GROUP&quot; \\
+  --stream-id &quot;$STREAM_ID&quot; \\
+  --quic-candidate quic://127.0.0.1:4450 | jq -r '.result.message_ids[0]')
+
+wn --account &quot;$BOB&quot; stream watch &quot;$GROUP&quot; --stream-id &quot;$STREAM_ID&quot; --insecure-local --background
+wn stream send --broker --connect 127.0.0.1:4450 --server-name localhost --insecure-local \\
+  --stream-id &quot;$STREAM_ID&quot; --start-event-id &quot;$START_ID&quot; --chunk-bytes 8 &quot;hello from the stream&quot;
+</code></pre>
+<p>Terminal 1 should print typed <code>message</code>, <code>agent_stream_start</code>, <code>agent_stream_delta</code>, and <code>stream_preview</code> JSON lines in
+real time.</p>
+<h2 id="tui">TUI</h2>
+<p><code>wn tui</code> is a Ratatui interface over the real <code>wn --json</code> command surface. Its main view is chat-first: the chat list on
+the left, the materialized message timeline on the right (reactions, reply context, deletion tombstones, and inline
+images), the composer below, and a hints bar plus status bar at the bottom.</p>
+<pre><code class="language-sh">wn tui
+</code></pre>
+<h3 id="startup-and-the-daemon">Startup and the daemon</h3>
+<p>Startup routes by local account count: none opens the login menu (create an identity or log in with an nsec), exactly
+one enters the main view, and several open an account picker. An explicit <code>--account</code> (or <code>WN_ACCOUNT</code>) that resolves to
+a loaded account enters the main view directly. Press <code>A</code> from the chat list, or use <code>/account</code>, <code>/login</code>, and
+<code>/create-identity</code>, to switch accounts later.</p>
+<p>Creating an identity and starting the daemon both need relays. On first run, pass them to <code>wn tui</code> and they are
+forwarded to the daemon-start and account-setup child commands:</p>
+<pre><code class="language-sh">wn tui \\
+  --discovery-relays wss://relay.discovery.example \\
+  --default-account-relays wss://relay.one.example,wss://relay.two.example
+</code></pre>
+<ul>
+<li>When a daemon is running for the same home, TUI child commands use its socket and the TUI attaches to daemon-backed
+subscriptions for live message, chat, and group-state changes. The status bar shows daemon state.</li>
+<li>When no daemon is running at launch, the TUI auto-starts one (as <code>/daemon start</code> would) if it has a relay source: the
+flags above, a global <code>--relay</code>, or <code>WN_RELAY</code>. The status line shows <code>starting daemon...</code> and then the outcome.
+Without a relay source no start is attempted, a status notice says so, and the TUI continues degraded; restart it
+with relay flags (or <code>WN_RELAY</code>).</li>
+<li>The TUI never stops the daemon when it quits, because other <code>wn</code> commands share it. Stop it with <code>/daemon stop</code> or
+<code>wn daemon stop</code>.</li>
+<li>Without a daemon, off-screen unread badges and previews update only on <code>/refresh</code> or when you re-open the chat. Badges
+and the unread total survive restarts either way, since they come from the runtime's durable <code>chats list</code> projection.</li>
+</ul>
+<p>User-initiated commands (send, reply, react/unreact, delete, open chat, user search, group detail, invites) and ambient
+chat-list re-reads run on a background worker, so a <code>wn</code> round-trip never freezes input. They show in-flight feedback
+(<code>sending...</code>, <code>loading chat...</code>, <code>searching...</code>), mutations keep their submission order, and a load for a target you
+have already moved past is dropped. Modal or rare flows (login, logout, daemon start/stop, popup submits) stay
+synchronous.</p>
+<h3 id="keys">Keys</h3>
+<p>Login screen:</p>
+<ul>
+<li>Menu (no accounts): <code>c</code> create an identity, <code>l</code> log in with an nsec, <code>q</code> quit.</li>
+<li>Account picker: <code>j</code>/<code>k</code> or arrows move; <code>Enter</code> selects; <code>c</code> create; <code>l</code> nsec login; <code>Esc</code> returns to the main view
+when one is active; <code>q</code> quit.</li>
+<li>Nsec entry: the nsec is rendered masked; <code>Enter</code> submits it over stdin; <code>Esc</code> cancels.</li>
+</ul>
+<p>Main view:</p>
+<ul>
+<li>
+<p><code>Tab</code>/<code>BackTab</code>: cycle the chat list, messages, and composer.</p>
+</li>
+<li>
+<p>Chat list: <code>j</code>/<code>k</code> or arrows move the selection and, after ~150 ms of quiet, preview the highlighted chat in the
+message pane while focus stays on the list. The messages-pane title names the loaded chat, and the composer sends to
+it. <code>Enter</code> opens the chat and focuses messages. Opening or previewing a chat marks it read (<code>chats mark-read</code>).
+Rows show an unread badge (bold name plus <code>(N)</code>) and a last-message preview, ordered by last activity. <code>g</code> group
+detail, <code>s</code> user search, <code>p</code> profile, <code>h</code> relay health, <code>I</code> pending invites, <code>A</code> account picker. A group invite shows
+as a status notice prompting <code>I</code>. Background refreshes never move the highlight.</p>
+</li>
+<li>
+<p>Messages: <code>j</code>/<code>k</code> or arrows move; <code>PageUp</code>/<code>PageDown</code> page; <code>G</code>/<code>End</code> jump to newest (and pin to the bottom);
+<code>g</code>/<code>Home</code> jump to oldest. Scrolling past the oldest loaded message loads the previous page. <code>i</code> or <code>Enter</code> focuses
+the composer. On the selected message:</p>
+<ul>
+<li><code>r</code> prefills <code>/react </code> (<code>Enter</code> sends the default <code>+</code>; type an emoji first to customize);</li>
+<li><code>u</code> removes your reaction immediately;</li>
+<li><code>d</code> prefills <code>/delete</code> for your own message (<code>Enter</code> confirms);</li>
+<li><code>R</code> prefills <code>/reply </code> and shows the reply target on the status line;</li>
+<li><code>o</code> opens the downloaded image full-size.</li>
+</ul>
+<p>Prefills are skipped when the composer already holds a draft. While a prefill is armed, the hints line says what
+<code>Enter</code> will do and to which message.</p>
+</li>
+<li>
+<p>Composer: <code>Left</code>/<code>Right</code>/<code>Home</code>/<code>End</code> move the cursor; <code>Backspace</code>/<code>Delete</code> remove a character; <code>Enter</code> submits.
+There is no keyboard newline (multi-line content arrives only by paste). The composer grows with its content up to
+8 rows.</p>
+</li>
+<li>
+<p><code>Esc</code>: clears an armed <code>/react</code>, <code>/reply</code>, or <code>/delete</code> prefill; a hand-typed draft is left intact. With nothing armed
+it steps back (composer → messages → chats). With a popup open, it closes the popup.</p>
+</li>
+<li>
+<p><code>Ctrl-U</code>: clears the whole composer, whatever it holds (also the masked nsec field).</p>
+</li>
+<li>
+<p><code>?</code>: help popup.</p>
+</li>
+<li>
+<p><code>q</code>: quit, from the chat list or messages pane and only while the composer is empty. In the composer it is a literal
+<code>q</code>. <code>Ctrl-C</code> always quits.</p>
+</li>
+</ul>
+<p>Popups are modal and capture every key. Text-entry popups submit on <code>Enter</code> (when non-empty) and cancel on <code>Esc</code>;
+confirm popups take <code>y</code>/<code>Enter</code> or <code>n</code>/<code>Esc</code>; list pickers move with <code>j</code>/<code>k</code> and close on <code>Esc</code>; help, info, and error
+cards close on any key.</p>
+<p><code>/react</code> accepts exactly one emoji (one grapheme cluster carrying a non-ASCII scalar, including ZWJ families, skin
+tones, flags, and keycaps) or the NIP-25 <code>+</code>/<code>-</code> sentinels. Anything else, including prose and non-Latin or accented
+words, is refused with a status-line error so typed text is never published as a reaction. This guard lives in the TUI;
+the <code>messages react</code> CLI command stays protocol-faithful.</p>
+<h3 id="inbound-media">Inbound media</h3>
+<p>Image attachments render inline as cell-exact half-block previews (downscaled with Lanczos3) on any image-capable
+terminal. Half-blocks are ordinary colored cells bounded to the reserved block, so an image never overdraws a neighbor
+or leaves artifacts when scrolling. Each image is downloaded and decoded in the background; its placeholder moves
+through <code>[img name]</code> → <code>[downloading name...]</code> → <code>[loading name...]</code> → the image, or <code>[name failed: err]</code>. Terminals
+without image support keep <code>[img name]</code>, and non-image attachments show <code>[file name]</code>.</p>
+<p>The <code>o</code> viewer uses the terminal's native pixel protocol when the startup query found one (iTerm2's own protocol in
+iTerm2), falling back to half-blocks; closing it forces a full repaint. Viewer pixels live in a small in-memory pool
+(oldest evicted first). Each image is decrypted into a private <code>tui-media-cache/</code> directory under the TUI home, decoded
+into memory, and the decrypted file is removed immediately, so no decrypted media stays at rest. Leftovers from a
+crashed session are swept at startup.</p>
+<h3 id="screens">Screens</h3>
+<ul>
+<li><strong>Group detail</strong> (<code>g</code>): members with admin badges and a <code>(you)</code> marker, relay hints, name, and description. <code>j</code>/<code>k</code>
+move the member selection; <code>a</code> searches for someone to add; <code>A</code> adds by npub/hex (<code>groups add-members</code>); <code>x</code> removes
+the selected member; <code>P</code> promotes them to admin; <code>R</code> renames the group; <code>L</code> opens Leave confirmation for admins and
+non-admins; <code>I</code> opens invites. Leave runs <code>groups leave</code>: core demotes an eligible nonlast admin and refuses the last
+active admin, who must promote another account first. On success the TUI returns to the chat list, though departure
+can still be settling. <code>Esc</code> returns to the main view.</li>
+<li><strong>Invites</strong> (<code>I</code>): pending invites from <code>groups invites</code>. <code>a</code> or <code>Enter</code> accepts and opens the chat, <code>d</code> declines,
+<code>Esc</code> closes. The picker stays open until no invites remain; with none it shows an info card.</li>
+<li><strong>User search</strong> (<code>s</code>, or <code>/users [query]</code>): a one-shot <code>users search</code> over your follow graph (default radius <code>0..1</code>).
+In query focus, type and press <code>Enter</code>; in list focus, <code>j</code>/<code>k</code> move, <code>Enter</code> shows the profile card (<code>users show</code>),
+<code>c</code> starts a new chat (<code>group create</code>), <code>a</code> adds them to a chat via a group picker and confirm popup, <code>f</code> follows and
+<code>x</code> unfollows (rows you already follow are badged <code>[following]</code>), <code>i</code> returns to the query, and <code>Esc</code> goes back. Rows
+show the name, a shortened npub, and <code>matched_field · match_quality · radius</code>. Opened from group detail with <code>a</code>, the
+screen targets that group: <code>a</code> skips the chat picker, <code>Esc</code> returns to group detail, and the detail reloads after the
+add.</li>
+<li><strong>Message search</strong> (<code>/search [query]</code>): searches the chat loaded in the messages pane (<code>messages timeline search</code>),
+capped at 100 hits (a full page shows <code>100+</code>; refine the query). Same two-state focus as user search. Matches are
+newest first, shown as <code>[HH:MM] sender</code> plus the text. <code>Enter</code> jumps to the message if it is inside the loaded
+history (one contiguous run ending at the newest, 100 rows per page up to 1000). An older match reports
+<code>that message is older than the loaded history; press g to page back first</code>; page back with <code>g</code>/PageUp and search
+again.</li>
+<li><strong>Profile</strong> (<code>p</code>): your name, display name, about, picture URL (as text; no avatar is fetched), nip05, lud16, npub,
+and follows. <code>Enter</code> on a field edits and publishes only that field (<code>profile update --&lt;field&gt;</code>); <code>f</code> follows a user
+by npub/hex; <code>x</code> unfollows the selected follow. There is no nsec export anywhere. <code>Esc</code> goes back.</li>
+<li><strong>Relay health</strong> (<code>h</code>): a redacted, device-local dashboard from <code>relay-stats</code> (from the live <code>wnd</code> runtime when a
+socket exists, otherwise a fresh in-process read). It shows connection health, lifecycle counters, cross-relay
+delivery spread (p50/p99 from fixed-bucket histograms, with <code>n/a</code> and <code>&gt;Nms</code> overflow), subscription first-event/EOSE
+timing, and per-relay rows keyed by an opaque device-local index. No relay URLs appear. <code>r</code> refreshes, <code>j</code>/<code>k</code> and
+PageUp/PageDown scroll, <code>Esc</code> goes back.</li>
+<li><strong>Diagnostics</strong> (<code>/diagnostics</code>): toggles a group MLS/component diagnostics panel between the messages pane and the
+composer. Hidden by default.</li>
+</ul>
+<h3 id="slash-commands">Slash commands</h3>
+<pre><code class="language-text">/help
+/refresh
+/diagnostics
+/account &lt;npub-or-hex&gt;
+/create-identity
+/login &lt;nsec-or-npub&gt;
+/logout
+/daemon status
+/daemon start
+/daemon stop
+/chat new &lt;name&gt; [member-npub-or-hex ...]
+/chat rename &lt;name&gt;
+/chat describe &lt;description&gt;
+/chat archive
+/chat unarchive
+/chat mute &lt;duration&gt;
+/chat unmute
+/chat archived [on|off]
+/members add &lt;npub-or-hex&gt; [...]
+/members remove &lt;npub-or-hex&gt; [...]
+/members list
+/react [emoji]
+/unreact
+/delete
+/reply &lt;text&gt;
+/retry &lt;event-id&gt;
+/image &lt;file-path&gt; [caption]
+/keys fetch &lt;npub-or-hex&gt;
+/keys rotate
+/name &lt;display-name&gt;
+/profile name &lt;display-name&gt;
+/users [query]
+/search [query]
+/stream [--stream-id &lt;hex&gt;] [--quic-candidate &lt;quic-url&gt;]
+/stream start [--stream-id &lt;hex&gt;] --quic-candidate &lt;quic-url&gt;
+/stream watch [--stream-id &lt;hex&gt;] [--insecure-local]
+/stream status
+/stream finish &lt;stream-id&gt; &lt;transcript-hash&gt; &lt;chunk-count&gt; &lt;text&gt;
+/stream verify &lt;stream-id&gt; &lt;transcript-hash&gt; [chunk-count]
+/quit
+</code></pre>
+<ul>
+<li><code>/logout</code> acts on the selected account and is always confirmed, showing the account npub and stating plainly that
+local data (and, for a local-signing account, the signing key) will be deleted. A local-signing logout is
+irreversible, so it requires typing the literal word <code>logout</code> and pressing <code>Enter</code>; an empty or mismatched entry keeps
+the popup open and <code>Esc</code> cancels. A public-only account uses the lighter <code>y</code>/<code>Enter</code> confirm. If the removed account
+was the last one, the TUI returns to the login menu.</li>
+<li><code>/login &lt;nsec&gt;</code> redacts the secret in the composer and pipes it to the child <code>wn</code> over stdin, never argv.</li>
+<li><code>/chat archived</code> shows archived chats so they can be selected and unarchived; <code>/chat archived off</code> returns to the
+visible list. <code>/members</code> commands operate on the selected chat.</li>
+<li><code>/react</code>, <code>/unreact</code>, <code>/delete</code>, and <code>/reply &lt;text&gt;</code> act on the selected message and call the real <code>messages</code>
+commands; they error to the status line when no message is selected (<code>/delete</code> also when it is not yours). <code>/reply</code>
+runs <code>messages send --group &lt;loaded-group&gt; --reply-to &lt;selected-message-id&gt; &lt;text&gt;</code>. Results fold into the existing
+timeline row without a reload.</li>
+<li><code>/retry &lt;event-id&gt;</code> takes an id rather than acting on the selected message, because timeline rows do not carry
+per-message failed-send state.</li>
+<li><code>/image</code> uses the real encrypted media path (<code>wn media upload &lt;group&gt; &lt;file&gt; --send</code>) with the optional caption as
+message text.</li>
+<li>Stream commands operate on the selected chat. <code>/stream watch</code> starts a daemon background watch whose completed preview
+appears as a provisional row. <code>/stream</code> opens the stream composer, publishes the anchor, starts the receiver watch
+through the daemon, and treats the next submitted line as the streamed text. It uses
+<code>quic://quic-broker.ipf.dev:4450</code> when no candidate is supplied.</li>
+<li>There is no <code>/sync</code>; the TUI rejects it because live updates come from subscriptions. Use <code>wn sync</code> outside the TUI
+as a diagnostic/repair escape hatch.</li>
+</ul>
+<h2 id="json-output">JSON output</h2>
+<p>Pass <code>--json</code> for machine-readable output. Success responses wrap command data in a stable result envelope. Errors use
+snake_case <code>error.code</code> values and include repair fields when the CLI can name the next command. The TUI and daemon both
+depend on the JSON shape, so treat response changes as API changes.</p>
+<h2 id="packaging">Packaging</h2>
+<p>Local development installs from the checkout:</p>
+<pre><code class="language-sh">cargo install --path crates/cli --locked --bins
+</code></pre>
+<p>Engineers and automation can install from source without a checkout:</p>
+<pre><code class="language-sh">cargo install --git https://github.com/marmot-protocol/mdk.git wn-cli --locked --bins
+</code></pre>
+<p>The intended first-class public installer is the namespaced Homebrew tap, whose formula installs both <code>wn</code> and <code>wnd</code>:</p>
+<pre><code class="language-sh">brew install marmot-protocol/tap/wn
+</code></pre>
+<p>The formula lives in <code>github.com/marmot-protocol/homebrew-tap</code>; the project-side checklist is
+<a href="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/docs/release/wn-homebrew.md"><code>docs/release/wn-homebrew.md</code></a>. <code>cargo install wn-cli</code> from crates.io is not
+available: the workspace has <code>publish = false</code> and the CLI depends on local workspace crates.</p>
+<h2 id="changelog">Changelog</h2>
+<p>Release notes for the CLI crate live in <a href="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/cli/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
+`,m={__name:"cli.html",setup(h){return(p,t)=>{const n=c("DocumentationPage");return d(),a("div",null,[t[0]||(t[0]=o("h1",{id:"terminal-and-scripts",tabindex:"-1"},[o("a",{class:"header-anchor",href:"#terminal-and-scripts"},[o("span",null,"Terminal and scripts")])],-1)),s(n,{document:{repo:e(r),version:e(i),sourceUrl:e(l),html:e(u)}},null,8,["document"])])}}},w=JSON.parse('{"path":"/docs/cli.html","title":"Terminal and scripts","lang":"en-US","frontmatter":{"title":"Terminal and scripts","description":"Terminal and scripts — guides synced from the latest published Marmot releases.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1}],"changelog":[{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/cli.md"}');export{m as comp,w as data};
