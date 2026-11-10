@@ -119,9 +119,7 @@ useUpdateDeviceStatus(
   background: var(--mm-black);
   color: var(--mm-toner-200);
 
-  transition:
-    background-color var(--vp-t-color),
-    border-color var(--vp-t-color);
+  transition: none;
 
   @media print {
     display: none;

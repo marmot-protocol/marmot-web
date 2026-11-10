@@ -15,7 +15,6 @@ export default defineClientConfig({
     router.options.scrollBehavior = async (to, from, savedPosition) => {
       const position = await scrollBehavior?.(to, from, savedPosition)
       if (!position) return position
-      // The theme waits for the page transition before resolving its position.
       // Only same-page section links should animate; page changes and history
       // restoration must not visibly travel through the previous scroll offset.
       const behavior = !savedPosition && to.path === from.path && to.hash &&

@@ -88,6 +88,7 @@ export default defineUserConfig({
     contributors: false,
     themePlugins: {
       backToTop: false,
+      nprogress: false,
     },
   }),
   // https://ecosystem.vuejs.press/themes/default/extending.html

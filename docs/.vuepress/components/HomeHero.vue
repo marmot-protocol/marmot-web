@@ -113,7 +113,7 @@ const HomeHeroImage: FunctionalComponent = () => {
 .vp-hero {
   color: var(--mm-header-text);
   background: var(--mm-header-bg);
-  transition: color var(--vp-t-color), background-color var(--vp-t-color);
+  transition: none;
   padding-block: var(--mm-section-space);
 
   .mm-container {

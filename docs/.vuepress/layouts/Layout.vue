@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import VPFadeSlideYTransition from '@theme/VPFadeSlideYTransition.vue'
 import VPHome from '@theme/VPHome.vue'
 import VPNavbar from '@theme/VPNavbar.vue'
 import VPPage from '@theme/VPPage.vue'
 import VPSidebar from '@theme/VPSidebar.vue'
 import Footer from '../components/Footer.vue'
 import { useData } from '@theme/useData'
-import { useScrollPromise } from '@theme/useScrollPromise'
 import { useSidebarItems } from '@theme/useSidebarItems'
 import type { Slot } from '@vuepress/helper/client'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -145,10 +143,6 @@ onContentUpdated(() => {
   toggleSidebar(false)
 })
 
-// handle scrollBehavior with transition
-const scrollPromise = useScrollPromise()
-const onBeforeEnter = scrollPromise.resolve
-const onBeforeLeave = scrollPromise.pending
 </script>
 
 <template>
@@ -183,26 +177,21 @@ const onBeforeLeave = scrollPromise.pending
         </VPSidebar>
       </slot>
       <slot name="page">
-        <VPFadeSlideYTransition
-          @before-enter="onBeforeEnter"
-          @before-leave="onBeforeLeave"
-        >
-          <VPHome v-if="frontmatter.home" :key="page.path" />
-          <VPPage v-else :key="page.path">
-            <template #top>
-              <slot name="page-top" />
-            </template>
-            <template #content-top>
-              <slot name="page-content-top" />
-            </template>
-            <template #content-bottom>
-              <slot name="page-content-bottom" />
-            </template>
-            <template #bottom>
-              <slot name="page-bottom" />
-            </template>
-          </VPPage>
-        </VPFadeSlideYTransition>
+        <VPHome v-if="frontmatter.home" :key="page.path" />
+        <VPPage v-else :key="page.path">
+          <template #top>
+            <slot name="page-top" />
+          </template>
+          <template #content-top>
+            <slot name="page-content-top" />
+          </template>
+          <template #content-bottom>
+            <slot name="page-content-bottom" />
+          </template>
+          <template #bottom>
+            <slot name="page-bottom" />
+          </template>
+        </VPPage>
       </slot>
     </div>
     <Footer />
@@ -410,10 +399,6 @@ const onBeforeLeave = scrollPromise.pending
   background-image: linear-gradient(var(--mm-header-bg), var(--mm-header-bg));
   background-size: 100% var(--navbar-height);
   background-repeat: no-repeat;
-  // Keep VuePress's scroll coordination, with an opacity-only page transition.
-  --transition-fade-in-down-offset: 0px;
-  --transition-enter-duration: var(--mm-motion-fast);
-  --transition-leave-duration: var(--mm-motion-fast);
 
   width: 100%;
   min-height: 100dvh;
