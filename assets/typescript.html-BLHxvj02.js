@@ -1,4 +1,4 @@
-import{c as r,b as t,d as a,u as e,r as s,o as i}from"./app-DZvVNV9l.js";const c="marmot-ts",l="0.9.0",p="https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/getting-started.md",d=`<div id="getting-started" class="mm-source-title">Getting Started</div>
+import{c as r,b as t,d as a,u as e,r as s,o as i}from"./app-BEdUGG9u.js";const c="marmot-ts",l="0.9.0",p="https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/getting-started.md",d=`<div id="getting-started" class="mm-source-title">Getting Started</div>
 <h2 id="what-is-marmot">What is Marmot?</h2>
 <p>Marmot is a privacy-preserving group messaging protocol that combines <strong>MLS (Message Layer Security)</strong> for end-to-end encryption with <strong>Nostr</strong> for decentralized message distribution.</p>
 <p><strong>Key Features:</strong></p>

@@ -1,4 +1,4 @@
-import{c as i,b as t,d as n,u as e,r,o as s}from"./app-DZvVNV9l.js";const c="mdk",d="0.15.0",l="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/marmot-uniffi/DISTRIBUTION.md",m=`<div id="marmotkit-binary-distribution" class="mm-source-title">MarmotKit Binary Distribution</div>
+import{c as i,b as t,d as n,u as e,r,o as s}from"./app-BEdUGG9u.js";const c="mdk",d="0.15.0",l="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/marmot-uniffi/DISTRIBUTION.md",m=`<div id="marmotkit-binary-distribution" class="mm-source-title">MarmotKit Binary Distribution</div>
 <p>MarmotKit releases publish generated Swift/Kotlin APIs with matching native libraries as immutable GitHub Release
 assets. Apple consumers use a binary-target XCFramework ZIP, generated Swift, and a separate SDK privacy manifest.
 Android consumers unpack the Kotlin and JNI bundle into their app build.</p>

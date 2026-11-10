@@ -1,4 +1,4 @@
-import{c as r,b as t,d as s,u as e,r as i,o as a}from"./app-DZvVNV9l.js";const c="marmot-ts",l="0.9.0",d="https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/client/network.md",p=`<div id="network-interface" class="mm-source-title">Network interface</div>
+import{c as r,b as t,d as s,u as e,r as i,o as a}from"./app-BEdUGG9u.js";const c="marmot-ts",l="0.9.0",d="https://github.com/marmot-protocol/marmot-ts/blob/89eb7a12fda6219d36d7914cee68fd054eef6424/docs/client/network.md",p=`<div id="network-interface" class="mm-source-title">Network interface</div>
 <p>Marmot does not connect to relays itself. You pass a <code>NostrNetworkInterface</code> into <code>MarmotClient</code>; that same object is used by <code>KeyPackageManager</code>, <code>GroupsManager</code>, and each <code>MarmotGroup</code>. Event and filter types are applesauce's <code>NostrEvent</code> and <code>Filter</code>; nostr-tools' <code>Event</code> and <code>Filter</code> are structurally compatible.</p>
 <h2 id="contract">Contract</h2>
 <pre><code class="language-typescript">import type { NostrEvent } from &quot;applesauce-core/helpers/event&quot;;

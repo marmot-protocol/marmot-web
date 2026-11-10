@@ -1,4 +1,4 @@
-import{c as r,b as t,d as c,u as e,r as n,o as s}from"./app-DZvVNV9l.js";const d="mdk",m="0.15.0",i="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/marmot-c/API-REFERENCE.md",_=`<div id="complete-marmot-c-symbol-reference" class="mm-source-title">Complete Marmot C symbol reference</div>
+import{c as r,b as t,d as c,u as e,r as n,o as s}from"./app-BEdUGG9u.js";const d="mdk",m="0.15.0",i="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/marmot-c/API-REFERENCE.md",_=`<div id="complete-marmot-c-symbol-reference" class="mm-source-title">Complete Marmot C symbol reference</div>
 <p>All <strong>C functions declared in the generated header</strong> are indexed below, including constructors,
 commands, opaque-object operations, callbacks, free functions and compatibility shims.
 Read <a href="__MARMOT_BASE__docs/c-interface.html">the C integration guide</a> first; this index does not replace its memory,

@@ -1,4 +1,4 @@
-import{c as a,b as o,d as r,u as e,r as i,o as c}from"./app-DZvVNV9l.js";const d="mdk",s="0.15.0",l="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/marmot-c/README.md",h=`<div id="marmot-c" class="mm-source-title">marmot-c</div>
+import{c as a,b as o,d as r,u as e,r as i,o as c}from"./app-BEdUGG9u.js";const d="mdk",s="0.15.0",l="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/marmot-c/README.md",h=`<div id="marmot-c" class="mm-source-title">marmot-c</div>
 <p>C ABI over the Marmot app runtime (<code>marmot-uniffi</code>), for C/C++ and any raw-FFI consumer (Zig, Nim, Go, Odin, Lua,
 PHP, …). Runtime concepts, screen contracts and API selection are shared with Swift/Kotlin and live in the
 <a href="__MARMOT_BASE__docs/native-apps.html#integration-guide-and-api-reference">binding integration guide</a>; this README covers what is
