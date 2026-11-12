@@ -1,0 +1,743 @@
+import{c as a,b as o,d as r,u as e,r as d,o as i}from"./app-BI17XJzV.js";const c="mdk",s="0.16.0",l="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/docs/integration/0.16.0.md",u=`<div id="upgrading-mdk-0150--0160" class="mm-source-title">Upgrading MDK 0.15.0 → 0.16.0</div>
+<h2 id="scope-and-provenance">Scope and provenance</h2>
+<p>This guide compares <code>v0.15.0</code> / <code>marmotkit-v0.15.0</code> / <code>marmotc-v0.15.0</code> /
+<code>wn-agent-v0.15.0</code>, which all peel to
+<code>827687ba7fdbb05ec1b8f17667ad919fedde7266</code>, with the source to be shipped as
+<code>v0.16.0</code>. All four 0.16.0 cohort tags must peel to the release PR's merged
+commit, and packaged manifests must record that exact SHA. The comparison was
+prepared against <code>origin/master</code> at <code>4a05edb354b8184e3b6a2d0f78e313c926a77298</code>
+(72 commits after <code>v0.15.0</code>); the release commit is this documentation update's
+merge on top of it. Use the full release SHA from the tags for artifact
+verification. This guide ships in the release commit, not a later supplement.
+See the <a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/docs/release/0.16.0.md">release notes</a>, <a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/docs/integration/0.15.0.md">previous upgrade guide</a>,
+and <a href="__MARMOT_BASE__docs/native-apps.html">current binding reference</a>.</p>
+<p>Readers: native app hosts (Swift/Kotlin through MarmotKit), C hosts, Rust hosts
+that embed <code>marmot-app</code> or lower crates, and WN Agent operators.</p>
+<p>This is a smaller release than 0.15.0. It adds one <code>MarmotKitError</code> case
+(<code>Nip46</code>), no <code>MarmotEventFfi</code> case and no C status, and it does not migrate
+account databases. The wire format and conformance vectors are unchanged apart
+from their version stamp. What changes on the wire is where events go: MDK now
+withholds an event from a relay known to refuse it for size.</p>
+<p>OpenMLS moves from the <code>erskingardner/openmls</code> fork to upstream <code>main</code>, which
+carries the security fixes released in OpenMLS 0.9.1 and 0.9.2 (see
+<a href="#changes-requiring-no-new-calls">Changes requiring no new calls</a>). Stored
+groups load unchanged, signed leaves are identical, and members on 0.15.0 and
+0.16.0 interoperate.</p>
+<h2 id="upgrade-decisions">Upgrade decisions</h2>
+<table class="mm-responsive-table" role="table">
+<thead role="rowgroup">
+<tr role="row">
+<th scope="col" role="columnheader">Category</th>
+<th scope="col" role="columnheader">Required action or effect</th>
+</tr>
+</thead>
+<tbody role="rowgroup">
+<tr role="row">
+<td data-label="Category" role="cell">Required</td>
+<td data-label="Required action or effect" role="cell">Replace generated Swift/Kotlin, native libraries and C headers together. Handle <code>AppGroupHydrationQuarantineReasonFfi.REWIND_RESTORE_FAILED</code>, the two new <code>GroupEventKindFfi.QueuedIntentRefused</code> fields and the new <code>MarmotKitError.Nip46</code> case. Expect <code>EventTooLarge</code> from KeyPackage, block-list, sticker-sync, profile, follow-list and relay-list publishes. Swift apps that define their own <code>nextCancellable()</code> subscription adapters delete them.</td>
+</tr>
+<tr role="row">
+<td data-label="Category" role="cell">Required for C hosts</td>
+<td data-label="Required action or effect" role="cell">Recompile. <code>MarmotGroupEventKind_QueuedIntentRefused_Body</code> appends three fields, so the event union grows. Enum values are appended; none is renumbered. NIP-46 hosts must review and approve the permission snapshot before pairing or connecting, re-import 0.15.0 vault exports once, and stop relying on <code>marmot_nip46_free</code> to end a session. See <a href="#nip-46-for-c-hosts">NIP-46 for C hosts</a>.</td>
+</tr>
+<tr role="row">
+<td data-label="Category" role="cell">Required storage</td>
+<td data-label="Required action or effect" role="cell">Allow shared-database migration 0004 (schema 3 → 4) and the audit delivery cursor's version-2 upgrade on first open. No account migration. Downgrade is unsupported.</td>
+</tr>
+<tr role="row">
+<td data-label="Category" role="cell">Required for Rust hosts</td>
+<td data-label="Required action or effect" role="cell">Onboarding moves to <code>runtime.account_setup()</code>; <code>AppClient</code> needs <code>test-support</code>; <code>AppError</code> gains <code>Nip46</code>; <code>submit_media_attachments</code> takes a reply target; several structs and enums gain fields or variants. See <a href="#rust-host-changes">Rust host changes</a>.</td>
+</tr>
+<tr role="row">
+<td data-label="Category" role="cell">Required for agent-control clients</td>
+<td data-label="Required action or effect" role="cell">Rust <code>AgentControlRequest::SendMedia</code> literals add <code>reply_to_message_id_hex</code>. JSON clients need no change. See <a href="#wn-agent-and-integrations">WN Agent and integrations</a>.</td>
+</tr>
+<tr role="row">
+<td data-label="Category" role="cell">New defaults</td>
+<td data-label="Required action or effect" role="cell">Events withheld from relays over their known limit (2 MiB on White Noise's relays; NIP-11 for events over 64 KiB); creates and invites refused up front when a Welcome fits no inbox relay; refused queued intents retired; 256 MiB per-account audit budget; v5 delivery retries <code>409</code>, skips isolated rejected records and pauses on <code>401</code>/<code>403</code>/<code>404</code>; direct chats from <code>start_direct_conversation</code> make both accounts admins; durable media uploads that send keep their reply target and refuse malformed reply references before uploading.</td>
+</tr>
+<tr role="row">
+<td data-label="Category" role="cell">Optional adoption</td>
+<td data-label="Required action or effect" role="cell">Deployment relay limits, <code>start_direct_conversation</code>, relay liveness, audit delivery status, audit retention, WN Agent <code>group_admin</code>, NIP-46 sessions in Swift/Kotlin, Swift <code>nextCancellable()</code>, reply-targeted media in agent-control and Hermes.</td>
+</tr>
+<tr role="row">
+<td data-label="Category" role="cell">Automatic fixes</td>
+<td data-label="Required action or effect" role="cell">OpenMLS security fixes (GHSA-gc79-23g3-8g52, GHSA-p276-g3f3-wwgh); a chat that stopped receiving after a late end-of-stored-events reply; needless history loss on quick joins; stalled leaves and sign-outs; a removed chat waking its worker every 10 ms; full deferred-peel backlog no longer stalls a group; recovery breaker raised; rewind-restore failure quarantined; host-safety-refused, oddly spelled and crash-interrupted relay sends settle; generated-setup teardown and delayed handoffs; timed-out declines; idle replay sync; stalled manual relay reconnects; audit delivery stall, 0.15.0 <code>409</code> blocks and replay-storm rows; notification lookups and concurrent directory queries; Hermes staging and configuration file modes.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="required-upgrade-steps">Required upgrade steps</h2>
+<ol>
+<li>
+<p>Pin all MDK, MarmotKit, Marmot C and WN Agent inputs to 0.16.0. Verify the
+source SHA in each manifest and every sibling checksum. Do not combine new
+generated records or headers with 0.15.0 native libraries. See the
+<a href="__MARMOT_BASE__docs/distribution.html">distribution guide</a>.</p>
+</li>
+<li>
+<p>Handle the new quarantine reason. <code>AppGroupHydrationQuarantineReasonFfi</code>
+gains <code>REWIND_RESTORE_FAILED</code> (Swift <code>.rewindRestoreFailed</code>; C
+<code>MARMOT_APP_GROUP_HYDRATION_QUARANTINE_REASON_REWIND_RESTORE_FAILED</code>). It
+arrives through <code>quarantinedGroups</code> and the
+<code>GroupEventKindFfi.groupHydrationQuarantined(reason:)</code> event. A read of past
+group state rewound the group onto a retained anchor and could not restore
+it. Do not offer Retry or Rejoin for it: <code>retryHydrateQuarantinedGroup</code>
+returns <code>false</code>, <code>groupRecoveryStatus</code> lists no <code>rejoinInvitations</code> for the
+group, and <code>confirmGroupRejoin</code> fails as <code>MarmotKitError.UnknownGroup</code>. The
+next account open tries to restore the live state and replays the retained
+input only if that succeeds; if it fails, the group is quarantined again for
+the same reason. Tell the user to reopen the account or restart the app, and
+keep treating the group as quarantined until the quarantined-groups read no
+longer lists it. A group with two
+interrupted rewinds, which used to report <code>GROUP_RECORD_LOAD_FAILED</code>, now
+reports this reason.</p>
+</li>
+<li>
+<p>Update <code>QueuedIntentRefused</code> handling.
+<code>GroupEventKindFfi.queuedIntentRefused(intentIdHex:intentKind:reason:artifact:sizeClass:)</code>
+adds <code>artifact: OversizedArtifactFfi?</code> and <code>sizeClass: EventSizeClassFfi?</code>.
+Both are set only when <code>reason</code> is <code>event_too_large</code>; <code>.commit</code> means the
+change itself is too large for every group relay, <code>.welcome</code> that every
+inbox relay of the invitee refuses its Welcome. Positional Swift <code>case</code>
+patterns, Kotlin constructors and Kotlin destructuring declarations add the
+two fields. C: <code>MarmotGroupEventKind_QueuedIntentRefused_Body</code> appends
+<code>char *artifact</code> (NULL for other reasons; freed with the event),
+<code>bool has_size_class</code> and <code>enum MarmotEventSizeClass size_class</code>.</p>
+</li>
+<li>
+<p>Expect <code>EventTooLarge</code> in more places. When every relay refuses the event
+for size, by its own answer or over its known limit:</p>
+<table class="mm-responsive-table" role="table">
+<thead role="rowgroup">
+<tr role="row">
+<th scope="col" role="columnheader">Call</th>
+<th scope="col" role="columnheader">0.15.0</th>
+<th scope="col" role="columnheader">0.16.0</th>
+</tr>
+</thead>
+<tbody role="rowgroup">
+<tr role="row">
+<td data-label="Call" role="cell"><code>rotateKeyPackage</code>, <code>republishKeyPackage</code>, account setup's KeyPackage publish</td>
+<td data-label="0.15.0" role="cell"><code>Runtime</code> / <code>MARMOT_STATUS_RUNTIME</code></td>
+<td data-label="0.16.0" role="cell"><code>EventTooLarge { artifact: .other }</code> / <code>MARMOT_STATUS_EVENT_TOO_LARGE</code></td>
+</tr>
+<tr role="row">
+<td data-label="Call" role="cell"><code>blockUser</code>, <code>unblockUser</code></td>
+<td data-label="0.15.0" role="cell"><code>BlockListUnavailable</code> / <code>MARMOT_STATUS_BLOCK_LIST_UNAVAILABLE</code></td>
+<td data-label="0.16.0" role="cell"><code>EventTooLarge { artifact: .other }</code> / <code>MARMOT_STATUS_EVENT_TOO_LARGE</code></td>
+</tr>
+<tr role="row">
+<td data-label="Call" role="cell"><code>syncStickerPacks</code></td>
+<td data-label="0.15.0" role="cell"><code>StickerNetwork</code> / <code>MARMOT_STATUS_STICKER_NETWORK</code></td>
+<td data-label="0.16.0" role="cell"><code>EventTooLarge { artifact: .other }</code> / <code>MARMOT_STATUS_EVENT_TOO_LARGE</code></td>
+</tr>
+<tr role="row">
+<td data-label="Call" role="cell">profile, follow-list and relay-list publishes over a known limit</td>
+<td data-label="0.15.0" role="cell">sent, then refused by the relay</td>
+<td data-label="0.16.0" role="cell"><code>EventTooLarge { artifact: .other }</code> / <code>MARMOT_STATUS_EVENT_TOO_LARGE</code>, sent nowhere</td>
+</tr>
+<tr role="row">
+<td data-label="Call" role="cell">group create or invite whose Welcome fits none of an invitee's inbox relays</td>
+<td data-label="0.15.0" role="cell">create succeeded with the Welcome owed</td>
+<td data-label="0.16.0" role="cell"><code>EventTooLarge { artifact: .welcome }</code>, nothing created or sent</td>
+</tr>
+</tbody>
+</table>
+<p>A block edit retried after an uncertain attempt still fails as
+<code>BlockPublicationUncertain</code>, and a sticker install or uninstall still
+succeeds with its list owed to the next sync. <code>MarmotKitError</code> already had
+<code>EventTooLarge</code> in 0.15.0; only where it is raised changes.</p>
+</li>
+<li>
+<p>Handle <code>MarmotKitError.Nip46(reason:)</code> (Kotlin <code>MarmotKitException.Nip46</code>)
+in exhaustive error switches. It carries a NIP-46 session failure's typed
+<code>Nip46ErrorFfi</code> reason.</p>
+</li>
+<li>
+<p>Swift: if your app defines its own <code>nextCancellable()</code> extensions on
+<code>PresentedChatListSubscription</code>, <code>ChatListWindowSubscription</code>,
+<code>AccountAttentionSubscription</code>, <code>ConversationWindowSubscription</code> or
+<code>BlockListSubscription</code> (White Noise iOS's <code>CancellablePresentedChatList.swift</code>),
+delete them. The 0.16.0 Swift asset defines the same methods, and Swift
+rejects the duplicates. See
+<a href="#swift-subscription-cancellation-optional">Swift subscription cancellation</a>.</p>
+</li>
+<li>
+<p>C hosts with NIP-46 accounts: apply <a href="#nip-46-for-c-hosts">NIP-46 for C hosts</a>.</p>
+</li>
+<li>
+<p>Let storage upgrade. See <a href="#storage-upgrade">Storage upgrade</a>.</p>
+</li>
+<li>
+<p>Rust hosts: apply <a href="#rust-host-changes">Rust host changes</a>.</p>
+</li>
+<li>
+<p>WN Agent: upgrade <code>wn-agent</code> and its plugins or harnesses together.</p>
+</li>
+</ol>
+<h2 id="storage-upgrade">Storage upgrade</h2>
+<p>Account databases are not migrated; their schema is the same as 0.15.0.</p>
+<p>The shared database (<code>shared.sqlite3</code>) runs migration 0004
+(<code>0004_audit_log_retention</code>) on first open, adding the
+<code>audit_log_retention_settings</code> table and moving it from schema 3 to 4. It is a
+single small table creation. A 0.15.0 binary then refuses the shared database
+with <code>StorageError::UnsupportedSchemaVersion { found: 4, latest_supported: 3 }</code>.</p>
+<p>The local v5 audit delivery cursor (<code>local-delivery.json</code>) moves from version
+1 to version 2 on load, storing idle sealed segments as compact rows; a 0.15.0
+binary refuses a version-2 cursor as incompatible. A new
+<code>audit-otlp-delivery-v5/delivery-status.json</code> file records each attempt's
+outcome.</p>
+<p>Downgrade to 0.15.0 is unsupported. If you may need to roll back, keep a
+device-local copy of the MDK data directory taken before upgrading while the
+app and every extension (such as a notification extension) are stopped, so no
+database or its WAL file is open while it is copied. Never remove migration
+rows by hand. See the
+<a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/docs/marmot-architecture/storage-format-v2.md">storage-format contract</a>.</p>
+<h2 id="changed-defaults">Changed defaults</h2>
+<h3 id="relay-event-size-limits">Relay event size limits</h3>
+<p>MDK now refuses to send an event to a relay that is known to refuse it for
+size. A relay's limit is known when:</p>
+<ul>
+<li>the deployment lists it (<code>MarmotDeploymentFfi.relayEventLimits</code>, C
+<code>marmot_deployment_set_relay_event_limits</code>, Rust
+<code>MarmotDeployment::relay_event_limits</code>);</li>
+<li>the preset sets it: <code>marmot_deployment_white_noise()</code> sets 2 MiB on
+<code>wss://relay.eu.whitenoise.chat</code> and <code>wss://relay.us.whitenoise.chat</code>;
+<code>marmot_deployment_neutral()</code> sets none; or</li>
+<li>for events over 64 KiB, the relay's NIP-11 document advertises
+<code>limitation.max_message_length</code>. MDK subtracts the <code>[&quot;EVENT&quot;,…]</code> framing and
+applies it under every deployment, taking the smaller of this and any listed
+limit.</li>
+</ul>
+<p>A relay with no known limit is sent to as before. The effects:</p>
+<ul>
+<li>A commit that fits none of its group relays fails as <code>EventTooLarge</code> and is
+rolled back with nothing sent. A Welcome-carrying invite staged at once
+whose Welcome fits none of the invitee's inbox relays is rolled back the same
+way.</li>
+<li>A group create whose founding Welcome fits none of an invitee's inbox relays
+fails as <code>EventTooLarge { artifact: .welcome }</code> before anything is created.
+For scale, a founding Welcome gift wrap fits under 64 KiB with up to 40
+members (about 55 KB); with 41 it is about 66 KB.</li>
+<li>A send queued behind an unsettled group whose commit every group relay
+refuses for size, or whose Welcome fits none of the invitee's inbox relays,
+is retired when the group settles and announced as <code>QueuedIntentRefused</code>
+with reason <code>event_too_large</code>. It is not retried.</li>
+<li>Every other account-signed event (profile, follow and relay lists,
+KeyPackages, block list, stickers, backup pointer) goes only to the relays it
+fits, and nowhere when it fits none.</li>
+</ul>
+<p>Every event the account publishes through its relay plane, including sibling
+Welcomes and Welcome-carrying recovery and own-device commits, is withheld from
+a relay over its known limit. Two gaps remain in this release:</p>
+<ul>
+<li>Push-trigger gift wraps go out through an anonymous publisher that does not
+consult known limits.</li>
+<li>Sibling Welcomes, chosen-id device-group creates and recovery or own-device
+commits skip the up-front check that refuses a create or invite before
+anything is written. Such a change can be committed locally and its Welcome
+then withheld from every relay over its limit, rather than refused with
+<code>EventTooLarge</code>.</li>
+</ul>
+<h3 id="audit-log-retention-and-delivery">Audit log retention and delivery</h3>
+<ul>
+<li>Local audit files now have a per-account size budget, 256 MiB by default.
+Above it, retention deletes the oldest sealed segments that v5 delivery
+accepted or will never send (no v5 cursor, v4 or another identity's files,
+or lost to cursor overflow). Undelivered data is deleted only by age or an
+explicit clear. The age limit stays 30 days, now settable from 1 to 30.
+Deleting undelivered data by age records an <code>ExpiredUndelivered</code> gap.</li>
+<li>v5 delivery now retries <code>409</code>. A <code>400</code>, <code>413</code> or <code>422</code> halves the batch and
+retries the halves; a record is skipped, with a <code>ReceiverRejected</code> gap, only
+if the receiver still rejects it alone. A <code>401</code>, <code>403</code>, <code>404</code>, another unexpected status or an
+invalid success response pauses automatic delivery for that account; the
+pause survives restarts with the same configuration. Changing the
+destination, endpoint or token, or calling <code>postAuditLogTrackerUpdateV5()</code>,
+lifts it. A host that fixes its receiver without changing the token must
+make that call.</li>
+<li>A relay replay that ingest ignores as a duplicate or own echo now writes only
+its <code>ingest_outcome</code> audit row (previously about 6 KB per message).</li>
+<li>Audit v5 records a relay's size refusal as <code>relay_rejected_invalid</code> again
+(0.15.0 wrote <code>unclassified</code>), and a relay MDK did not send to because of a
+known limit as <code>publish_attempt_failed_before_exposure</code>, as it does for a
+relay the host-safety rule refuses. A group with a failed rewind restore
+reports the failure category <code>rewind_restore_failed</code>.</li>
+</ul>
+<h3 id="other-defaults">Other defaults</h3>
+<ul>
+<li><code>start_direct_conversation</code> makes both accounts founding admins of a new
+direct chat. <code>create_group</code> keeps creator-only admins, and existing groups
+keep their roles.</li>
+<li><code>sign_out</code>, <code>sign_out_and_wipe</code> and <code>remove_account</code> first stop any
+generated-setup attempt in flight for that account, and <code>sign_in_account</code>
+resumes a generated setup that its sign-out stopped.</li>
+<li>The recovery runner's per-account breaker rises from 720 to 7,200 quanta an
+hour; the 256 MiB/hour event-byte cap is unchanged. The engine's
+deferred-peel caps rise from 2,048 rows and 16 MiB to 8,192 rows and 64 MiB
+per group, and from 64 MiB to 256 MiB per account.</li>
+<li>Directory fetches run up to four independent queries at a time; each still
+waits up to its usual per-relay timeout.</li>
+<li><code>uploadMediaWithClientToken</code> and <code>uploadMediaFilesWithClientToken</code> with
+<code>send = true</code> keep the reply target named by the request's <code>e</code> or <code>q</code>
+<code>messageTags</code> through upload and durable admission; before, the sent message
+lost its reply tags. Reply references with a missing, malformed or
+conflicting target now fail before any upload. Calls with <code>send = false</code> are
+unchanged.</li>
+</ul>
+<h2 id="feature-adoption">Feature adoption</h2>
+<p>Examples are illustrative; check them against the generated sources of the
+artifacts you ship.</p>
+<h3 id="deployment-relay-limits-optional">Deployment relay limits (optional)</h3>
+<p>List limits for relays you operate that do not advertise one:</p>
+<pre><code class="language-swift">var deployment = marmotDeploymentWhiteNoise()
+deployment.relayEventLimits.append(
+    RelayEventLimitFfi(relay: &quot;wss://relay.example.com&quot;, maxEventBytes: 1_048_576))
+</code></pre>
+<pre><code class="language-kotlin">val base = marmotDeploymentWhiteNoise()
+val deployment = base.copy(
+    relayEventLimits = base.relayEventLimits +
+        RelayEventLimitFfi(relay = &quot;wss://relay.example.com&quot;, maxEventBytes = 1_048_576uL))
+</code></pre>
+<p>C: <code>marmot_deployment_set_relay_event_limits(deployment, relays, max_event_bytes, len)</code> replaces the list, with <code>relays[i]</code> taking
+<code>max_event_bytes[i]</code>. Blank relays and zero limits are ignored; a relay listed
+twice keeps the smaller limit.</p>
+<h3 id="direct-chats-optional">Direct chats (optional)</h3>
+<p><code>startDirectConversation(accountRef:peerAccountId:)</code> takes a hex or npub peer
+and returns the MLS group id as hex. It reuses this account's direct chat with
+that peer, or creates an unnamed group with both accounts as founding admins.
+Lookup and creation run together on the account worker, so retrying with the
+same arguments after a cancellation, a lost response or an error reuses the
+canonical group; it also restores a missing chat-list row for that peer and
+announces it. Cancelling the Swift/Kotlin call detaches the wait but does not
+cancel creation. Success means local state is canonical, not that the Welcome
+was delivered; check <code>pendingWelcomeDeliveries</code> for that. Starting a chat with
+yourself fails as <code>MarmotKitError.Runtime</code>.</p>
+<pre><code class="language-swift">let groupIdHex = try await kit.startDirectConversation(
+    accountRef: account, peerAccountId: npub)
+</code></pre>
+<pre><code class="language-kotlin">val groupIdHex = marmot.startDirectConversation(account, npub)
+</code></pre>
+<p>C: <code>marmot_start_direct_chat(client, account_ref, peer_account_id, &amp;out)</code>;
+free <code>*out</code> with <code>marmot_string_free</code>. A self-peer returns
+<code>MARMOT_STATUS_RUNTIME</code>.</p>
+<h3 id="relay-liveness-optional">Relay liveness (optional)</h3>
+<p>For a relay settings screen. Each row is a relay configured for the account
+(default, bootstrap, NIP-65 and inbox relays, canonicalized) with <code>url</code>,
+<code>status</code> (<code>RelayStatusFfi</code>: <code>.unknown</code>, <code>.connecting</code>, <code>.connected</code>,
+<code>.offline</code>), <code>lastAttemptUnix: UInt64?</code> and <code>lastError: String?</code> (the SDK's
+connection-error category). Reads never dial; a relay not yet observed is
+<code>.unknown</code>. Aggregate <code>relayHealth</code> is unchanged.</p>
+<pre><code class="language-swift">// When the screen appears:
+let sub = try await kit.subscribeRelayLiveness(accountRef: account)
+self.rows = sub.snapshot()                  // first list, returned once
+self.watch = Task {
+    while let rows = try await sub.next() { // later complete lists; may skip some
+        self.rows = rows
+    }                                       // nil after cancel() or shutdown
+}
+
+// &quot;Reconnect&quot; button for a row:
+let updated = try await kit.reconnectRelay(accountRef: account, url: row.url)
+
+// When the screen closes:
+sub.cancel()                                // wakes next() with nil; does not disconnect relays
+</code></pre>
+<p>Kotlin, with the subscription's handle released by the generated <code>close()</code>:</p>
+<pre><code class="language-kotlin">// When the screen appears (in a lifecycle-bound scope):
+val sub = marmot.subscribeRelayLiveness(account)
+rows = sub.snapshot()
+watch = scope.launch {
+    while (true) {
+        rows = sub.next() ?: break          // null after cancel() or shutdown
+    }
+}
+
+// &quot;Reconnect&quot; button for a row:
+val updated = marmot.reconnectRelay(account, row.url)
+
+// When the screen closes:
+sub.cancel()                                // does not disconnect relays
+watch.join()
+sub.close()                                 // release the native handle
+</code></pre>
+<p><code>accountRelayLiveness(accountRef:)</code> returns one list without subscribing.
+<code>reconnectRelay</code> dials only a relay the account has configured, through the
+account pool's dial checks, and keeps that relay's roles; any other URL fails
+as <code>MarmotKitError.Runtime</code>.</p>
+<p>C: <code>marmot_account_relay_liveness</code> returns a <code>MarmotRelayLivenessList</code> (free
+with <code>marmot_relay_liveness_list_free</code>); <code>marmot_reconnect_relay</code> returns a
+<code>MarmotRelayLiveness</code> (free with <code>marmot_relay_liveness_free</code>).
+<code>marmot_subscribe_relay_liveness</code> returns a <code>MarmotRelayLivenessSubscription</code>:
+call <code>marmot_relay_liveness_subscription_snapshot</code> once, then either
+<code>marmot_relay_liveness_subscription_next</code> (<code>timeout_ms</code> 0 waits forever) or
+<code>marmot_relay_liveness_subscription_set_callback</code> (the list is borrowed for the
+callback; a NULL list with <code>MARMOT_STATUS_CLOSED</code> or an error status ends it),
+not both. Finish with <code>marmot_relay_liveness_subscription_cancel</code> and
+<code>marmot_relay_liveness_subscription_free</code>, before freeing the client.
+<code>marmot_relay_liveness_subscription_clear_callback</code> and <code>_free</code> request callback
+cancellation without waiting for a callback that is already running, and no
+terminal callback is guaranteed after a clear. A callback can still start
+after either call returns, so keep <code>user_data</code> alive until no callback is
+running or can still start; if you cannot establish that, keep it for the
+process lifetime.</p>
+<h3 id="audit-delivery-status-optional">Audit delivery status (optional)</h3>
+<p><code>auditDeliveryStatusV5()</code> returns one <code>AuditDeliveryStatusV5Ffi</code> per account so
+a host can show &quot;audit delivery stalled since X&quot; and offer a fix. It reads
+local files only and never dials. Fields: <code>accountRef</code>,
+<code>destinationConfigured</code>, <code>lastSuccessAtMs: UInt64?</code>,
+<code>lastFailure: AuditDeliveryFailureV5Ffi?</code> (<code>kind</code>, <code>httpStatus: UInt16?</code>,
+<code>atMs</code>), <code>consecutiveFailures</code>, <code>rejectedBatches</code> (records skipped after a
+rejection), <code>paused</code>, and <code>backlog: AuditDeliveryBacklogV5Ffi?</code>
+(<code>undeliveredBytes</code>, <code>undeliveredSegments</code>, <code>gaps</code>, <code>oldestUndeliveredAtMs</code>,
+<code>observedAtMs</code>). <code>AuditDeliveryFailureKindV5Ffi</code> separates local failures
+(<code>.stateOverLimit</code>, <code>.tooManyOpenFiles</code>, <code>.localIo</code>, <code>.localBlocked</code>) from
+receiver verdicts (<code>.receiverBlocked</code>, <code>.receiverRejected</code>,
+<code>.receiverRetryable</code>) and <code>.noResponse</code> / <code>.internal</code>.</p>
+<p>When <code>paused</code> is true, fix the configuration and call
+<code>setAuditOtlpConfigV5</code> with the corrected destination, endpoint or token, or
+call <code>postAuditLogTrackerUpdateV5()</code>.</p>
+<p>C: <code>marmot_audit_delivery_status_v5(client, &amp;list)</code>; free the list with
+<code>marmot_audit_delivery_status_v5_list_free</code>. Enum values are
+<code>MARMOT_AUDIT_DELIVERY_FAILURE_KIND_V5_*</code>; <code>has_http_status</code> guards
+<code>http_status</code>.</p>
+<h3 id="audit-retention-optional">Audit retention (optional)</h3>
+<p><code>auditLogRetention()</code> and <code>setAuditLogRetention(retention:)</code> are synchronous
+and take or return <code>AuditLogRetentionFfi { maxAgeDays: UInt32, maxBytesPerAccount: UInt64 }</code>. The setter persists the policy, clamps
+<code>maxAgeDays</code> to 1–30 and <code>maxBytesPerAccount</code> to at least 16 MiB, returns the
+stored value, and asks the running app to sweep shortly after.</p>
+<pre><code class="language-swift">let stored = try kit.setAuditLogRetention(
+    retention: AuditLogRetentionFfi(maxAgeDays: 14, maxBytesPerAccount: 64 &lt;&lt; 20))
+</code></pre>
+<pre><code class="language-kotlin">val stored = marmot.setAuditLogRetention(
+    AuditLogRetentionFfi(maxAgeDays = 14u, maxBytesPerAccount = 64uL shl 20))
+</code></pre>
+<p>C: <code>marmot_audit_log_retention(client, &amp;out)</code> and
+<code>marmot_set_audit_log_retention(client, &amp;retention, &amp;out)</code>; free <code>out</code> with
+<code>marmot_audit_log_retention_free</code>.</p>
+<h3 id="read-queue-latency-optional">Read-queue latency (optional)</h3>
+<p><code>appPerformanceSnapshot().runtimeOperations</code> gains 17 rows that time a host
+read's wait on its account worker: <code>read_queue_r1</code> … <code>read_queue_r9</code> by read
+class, and <code>read_queue_behind_*</code> by the long unit it waited behind (startup
+sync, catch-up, convergence, Welcome fan-out, repair, send, invite or create,
+maintenance). Hosts that render rows generically need no change.</p>
+<h3 id="nip-46-remote-signers-optional">NIP-46 remote signers (optional)</h3>
+<p>Swift and Kotlin hosts can now run NIP-46 (<code>bunker://</code> and client-initiated
+<code>nostrconnect://</code>) accounts through MDK, sharing one session implementation
+with C. MDK owns each account's signer transport and communication key and
+keeps no host signer callback; host NIP-55 callbacks and local-key accounts
+keep their existing APIs.</p>
+<ol>
+<li><code>Marmot.nip46New(configJson:)</code> returns an offline <code>Nip46SessionFfi</code>.</li>
+<li>Call <code>reviewPermissions()</code>, show its version and grants, and pass that exact
+snapshot to <code>approvePermissions(version:grants:)</code> only after the user
+consents. <code>uri</code> and <code>connect</code> refuse an unapproved session, and so does an
+imported export, including an old unversioned descriptor.</li>
+<li>For client-initiated pairing, await <code>pairingOffer()</code> before showing its URI;
+the <code>uri</code> accessor alone does not install the relay listener. Never log
+either URI.</li>
+<li>Await <code>connect()</code>, then <code>nip46Login(...)</code>. Login accepts only an already
+verified <code>Ready</code> session; it rejects any other state without connecting or
+creating an account.</li>
+<li>On restart, the ordinary runtime <code>start</code> restores sessions before their
+account workers. Use <code>nip46Resume(accountRef:)</code> for the restored handle.</li>
+</ol>
+<p>Cancelling <code>connect</code> or <code>ping</code> cancels that request. Once <code>nip46Login</code> or
+<code>nip46Register</code> is admitted, cancelling the call only stops the wait; use the
+session's <code>cancel</code>, <code>disconnect</code> or <code>logout</code> to interrupt adoption, and mind
+what each leaves behind. <code>disconnect</code> keeps the same session, which can
+reconnect. <code>cancel</code> is terminal for that session and its handles but keeps the
+stored credentials: <code>nip46Resume</code>, or the next <code>start</code>, builds a new session
+from them at once, while the old handle stays <code>Cancelled</code>. <code>logout</code> sends a bounded remote logout and erases the local
+communication key, so the user must pair again. <code>nip46Remove</code>, sign-out and
+wipe also erase it. <code>status()</code> returns
+<code>Nip46StatusFfi</code> (state, optional <code>Nip46ErrorFfi</code>, auth URL, request id,
+generation) and is a local read. Runtime calls fail as
+<code>MarmotKitError.Nip46(reason:)</code>; session calls throw <code>Nip46ErrorFfi</code>. See the
+<a href="__MARMOT_BASE__docs/native-apps.html#nip-46-accounts">binding guide</a> and
+<a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/docs/external-signer-accounts.md#nip-46-sessions">external signer accounts</a>.</p>
+<h3 id="swift-subscription-cancellation-optional">Swift subscription cancellation (optional)</h3>
+<p>UniFFI's generated <code>next()</code> keeps waiting on the native receive after its Swift
+task is cancelled. The 0.16.0 Swift asset (<code>MarmotKit.swift</code>) adds
+<code>nextCancellable()</code> to <code>PresentedChatListSubscription</code>,
+<code>ChatListWindowSubscription</code>, <code>AccountAttentionSubscription</code>,
+<code>ConversationWindowSubscription</code> and <code>BlockListSubscription</code>. Cancelling the
+task cancels the pending native receive and throws <code>CancellationError</code>; the
+subscription stays open for later receives. Cancellation wins over a typed
+error that completes at the same moment, and a receive that completes as the
+task is cancelled can be dropped. Apps such as White Noise iOS that carry
+handwritten adapters delete them (required step 6) and get MDK's tested
+version. No download is added; the existing Swift asset checksum covers it.
+See the <a href="__MARMOT_BASE__docs/distribution.html">distribution guide</a> and
+<a href="__MARMOT_BASE__docs/native-api.html#swift-cancellation-adapters">API reference</a>.</p>
+<h2 id="c-host-changes">C host changes</h2>
+<ul>
+<li>Recompile against the 0.16.0 header and library. The only change to an
+existing struct is the <code>QueuedIntentRefused</code> event body (three appended
+fields), which grows the <code>MarmotGroupEventKind</code> union.</li>
+<li>Appended enum values: <code>MARMOT_APP_GROUP_HYDRATION_QUARANTINE_REASON_REWIND_RESTORE_FAILED</code>.
+New enums: <code>MarmotRelayStatus</code>, <code>MarmotAuditDeliveryFailureKindV5</code>.</li>
+<li>New functions: <code>marmot_start_direct_chat</code>, <code>marmot_account_relay_liveness</code>,
+<code>marmot_reconnect_relay</code>, <code>marmot_subscribe_relay_liveness</code> and the
+<code>marmot_relay_liveness_subscription_*</code> family,
+<code>marmot_audit_delivery_status_v5</code>, <code>marmot_audit_log_retention</code>,
+<code>marmot_set_audit_log_retention</code>, <code>marmot_deployment_set_relay_event_limits</code>,
+with their <code>_free</code> functions. See the
+<a href="__MARMOT_BASE__docs/c-api.html">C symbol inventory</a>.</li>
+<li>Status mapping changes as in <a href="#required-upgrade-steps">Required upgrade steps</a>:
+KeyPackage, block-list, sticker-sync, profile, follow-list and relay-list
+publishes return <code>MARMOT_STATUS_EVENT_TOO_LARGE</code> for size refusals.</li>
+</ul>
+<h3 id="nip-46-for-c-hosts">NIP-46 for C hosts</h3>
+<p><code>marmot_nip46_*</code> handles now wrap the session MDK shares with Swift and Kotlin.
+Existing signatures and status numbers are unchanged, but the call sequence
+changes:</p>
+<ul>
+<li>Review before pairing. Call <code>marmot_nip46_review_grants</code> (JSON <code>version</code> and
+<code>grants</code>) and, after user consent, <code>marmot_nip46_approve_grants</code> with that
+exact version and grant array. <code>marmot_nip46_uri</code> and <code>marmot_nip46_connect</code>
+refuse an unapproved session. Imports, including old unversioned
+descriptors, need the same review.</li>
+<li>For client-initiated pairing, await <code>marmot_nip46_pairing_offer</code> on a
+background worker before showing the URI; <code>marmot_nip46_uri</code> alone does not
+install the relay listener.</li>
+<li><code>marmot_nip46_login</code> requires a session <code>marmot_nip46_connect</code> already
+verified (<code>Ready</code>); otherwise it fails without connecting or creating an
+account.</li>
+<li>Restart. 0.15.0 hosts kept <code>marmot_nip46_export</code> in their vault and
+re-registered each export after <code>marmot_client_start</code>. MDK now persists
+verified credentials through the configured secret store and restores them
+during <code>marmot_client_start</code>; obtain the handle with <code>marmot_nip46_resume</code>.
+Import each 0.15.0 vault export once (new, review and approve, connect,
+<code>marmot_nip46_register</code>). <code>marmot_nip46_remove</code> removes the stored session
+and credentials before you attach a different one.</li>
+<li><code>marmot_nip46_free</code> now releases only its C handle; an attached session
+keeps signing for its account. <code>marmot_nip46_cancel</code> permanently stops the
+shared session and every handle on it but keeps the stored credentials:
+<code>marmot_nip46_resume</code>, or the next <code>marmot_client_start</code>, builds a new
+session from them, and signing resumes. To revoke a session, use
+<code>marmot_nip46_logout</code> (bounded remote logout, then local key erasure),
+<code>marmot_nip46_remove</code>, or account sign-out or wipe. Join every borrower
+before freeing a handle.</li>
+<li><code>marmot_nip46_state</code> JSON keeps its fields and adds <code>permission_approval</code>,
+<code>listening</code>, <code>disconnected</code> and <code>reconnecting</code> states plus <code>last_error</code>,
+<code>request_id</code> and <code>generation</code>. New <code>marmot_nip46_status</code> returns a typed
+<code>MarmotNip46Status</code>: <code>state</code>, <code>last_error</code> (read it only when
+<code>has_last_error</code> is true), nullable <code>auth_url</code> and <code>request_id</code>, and
+<code>generation</code>. Free the whole record with <code>marmot_nip46_status_free</code>, never
+its strings separately.</li>
+<li>New calls: <code>marmot_nip46_ping</code>, <code>marmot_nip46_disconnect</code> (reconnectable),
+<code>marmot_nip46_cancel_request</code>, <code>marmot_nip46_complete_auth</code>,
+<code>marmot_nip46_resume</code> and <code>marmot_nip46_remove</code>.</li>
+</ul>
+<p>See the <a href="__MARMOT_BASE__docs/c-interface.html#nip-46-accounts">C NIP-46 guide</a>.</p>
+<h2 id="rust-host-changes">Rust host changes</h2>
+<ul>
+<li>Onboarding: <code>runtime.accounts().begin_onboarding(..)</code> and the other 19
+onboarding methods move to <code>runtime.account_setup()</code>, which returns
+<code>AccountSetup&lt;'_&gt;</code>, with unchanged signatures. <code>AccountSetup</code> borrows the
+runtime; a spawned task clones <code>MarmotAppRuntime</code> and calls
+<code>account_setup()</code> inside it.</li>
+<li><code>marmot_app::AppClient</code> and <code>MarmotApp::client</code> are public only under the
+<code>test-support</code> feature, and <code>AppClient</code> drops eleven methods no build
+called. Use the <code>MarmotAppRuntime</code> method of the same name. For a one-shot
+sync like <code>wn sync</code>, use <code>MarmotApp::sync_account</code>, which returns
+<code>Err(AppError)</code> when the open fails and <code>Ok(Err(SyncFailure))</code> with the
+applied prefix when the pass fails.</li>
+<li><code>MarmotDeployment</code> adds <code>relay_event_limits: Vec&lt;RelayEventLimit&gt;</code>; struct
+literals add it.</li>
+<li><code>marmot_session::KeyPackagePublishError</code> adds <code>event_size_class</code>, and
+<code>PreparedSessionSend</code> adds <code>Refused(Box&lt;AccountDeviceEffects&gt;)</code>. Neither is
+<code>#[non_exhaustive]</code>.</li>
+<li><code>cgka_traits</code>: <code>GroupHydrationQuarantineReason::RewindRestoreFailed</code>;
+<code>EngineError::EventTooLarge { artifact, size_class }</code>;
+<code>GroupEvent::QueuedIntentRefused</code> adds <code>artifact</code> and <code>size_class</code>;
+<code>OversizedArtifact</code> moves here (re-exported from marmot-session); new
+<code>WelcomeSizeCheck</code>, <code>TransportEndpointFailure::over_known_limit</code>, and
+<code>TransportAdapter::size_class_over_known_limits</code> (default <code>None</code>);
+<code>StorageProvider::list_snapshots_with_prefixes</code> (default provided).
+<code>OutboundFanout::possible_exposure</code> also answers <code>true</code> for an <code>Attempting</code>
+target.</li>
+<li><code>cgka-engine</code>: <code>create_group_with_optional_app_components_and_audit_context</code>
+and <code>create_group_with_siblings_and_audit_context</code> take
+<code>welcome_check: Option&lt;&amp;dyn WelcomeSizeCheck&gt;</code>; pass <code>None</code> for the old
+behaviour. New <code>publish_refused_as_too_large</code> and
+<code>pending_is_queued_invite</code>. Deferred-peel caps rise as above.</li>
+<li><code>RuntimePerformanceOperation</code> gains 17 <code>ReadQueue*</code> variants.</li>
+<li><code>AppError</code> adds <code>Nip46(Nip46Error)</code>. New runtime-owned NIP-46 sessions:
+<code>nip46_new</code>, <code>nip46_login</code>, <code>nip46_register</code>, <code>nip46_resume</code> and
+<code>nip46_remove</code>, with <code>Nip46Session</code>, <code>Nip46Permissions</code>, <code>Nip46State</code> and
+<code>Nip46Status</code>.</li>
+<li><code>MarmotAppRuntime::submit_media_attachments</code> takes
+<code>reply_to_message_id: Option&lt;String&gt;</code> before <code>client_token</code>; pass <code>None</code> for
+the old behaviour. <code>agent_control::AgentControlRequest::SendMedia</code> adds
+<code>reply_to_message_id_hex: Option&lt;String&gt;</code>; struct literals add it.</li>
+<li><code>audit_otlp_sender::AuditOtlpSendResult</code> drops <code>Partial</code>, adds
+<code>Rejected { http_status }</code>, and <code>Retryable</code>/<code>Blocked</code> carry the status.
+marmot-forensics <code>DeliveryStep</code> adds <code>Split</code> and <code>GapReason</code> adds
+<code>ReceiverRejected</code>, <code>ExpiredUndelivered</code> and <code>CursorOverflow</code>.</li>
+<li>New runtime APIs: <code>start_direct_conversation</code>, <code>account_relay_liveness</code>,
+<code>subscribe_relay_liveness</code>, <code>reconnect_relay</code>, <code>audit_delivery_status</code>,
+<code>audit_log_retention</code>, <code>set_audit_log_retention</code>.</li>
+<li>storage-sqlite: <code>remove_seen_staged_recovery_events</code> becomes
+<code>settle_staged_recovery_events</code> with <code>StagedRecoverySettlement</code>; new
+<code>notification_policy_snapshot</code>/<code>notification_revision</code> and the shared
+retention store.</li>
+</ul>
+<p>Exhaustive Rust matches on any of these enums add the new arms. Details are in
+the crate changelogs.</p>
+<h2 id="wn-agent-and-integrations">WN Agent and integrations</h2>
+<ul>
+<li>New control request <code>group_admin</code> with <code>account_id_hex</code>, <code>group_id_hex</code>,
+<code>member_id_hex</code> and optional <code>promote</code>, <code>add</code> and <code>remove</code>. With no flag it
+reads the member's status; <code>promote</code> makes a current member an admin; <code>add</code>
+invites a missing member (as an initial admin together with <code>promote</code>);
+<code>remove</code> takes precedence and removes the member in one commit. The reply
+<code>group_admin_status</code> carries a fresh <code>is_member</code>/<code>is_admin</code> readback,
+<code>message_ids_hex</code> and, when a change was sent, <code>accept_disposition</code>
+(<code>published</code>, <code>accepted_pending</code> or <code>completion_unknown</code>). Do not resend an
+<code>accepted_pending</code> or <code>completion_unknown</code> change; after an error, read the
+status before retrying. The protocol name stays <code>marmot.agent-control.v2</code>; a
+0.15.0 connector closes the socket on this request. Hermes, OpenClaw and the
+terminal harnesses do not expose it as a tool yet.</li>
+<li><code>wn</code>, <code>wnd</code> and <code>wn-agent</code> use the White Noise preset, so they withhold events
+over 2 MiB from its relays. <code>group create</code>, <code>groups create</code>, <code>group invite</code>,
+<code>groups add-members</code>, <code>keys publish</code>, <code>keys rotate</code>, <code>create-identity</code>,
+<code>login</code> and the profile, follow and relay-list commands can report JSON
+<code>event_too_large</code> with <code>artifact</code> and <code>size_class</code>.</li>
+<li><code>wn groups quarantined</code> can report <code>RewindRestoreFailed</code>, and
+<code>wn groups retry-hydrate</code> reports <code>recovered=false</code> for it.</li>
+<li><code>send_media</code> accepts an optional <code>reply_to_message_id_hex</code> (64 hex
+characters): the caption and every ordered attachment go out as one reply
+message. A malformed target fails as <code>invalid_hex</code> before upload. Reusing a
+retained <code>idempotency_key</code> with different inputs, including a different
+reply target, fails with the new non-retryable <code>media_idempotency_conflict</code>;
+a matching retry returns the original message ids. Hermes image, document,
+video and voice sends accept <code>reply_to</code>, and multi-image sends accept
+<code>reply_to_message_id_hex</code> in their metadata; 0.15.0 refused reply-targeted
+media. The Python control client's <code>send_media</code> takes the same keyword.
+Older connectors ignore the field and send ordinary media, so upgrade the
+connector with the plugin.</li>
+<li>Hermes now creates inbound attachment staging private (<code>0700</code> directory,
+<code>0600</code> files) and tightens an existing staging directory before copying, and
+writes <code>config.yaml</code>, its backup and temporary files <code>0600</code> regardless of
+umask. No action is needed.</li>
+<li>Install pins move to <code>wn-agent-v0.16.0</code>.</li>
+</ul>
+<h2 id="changes-requiring-no-new-calls">Changes requiring no new calls</h2>
+<ul>
+<li>OpenMLS now carries the fixes from OpenMLS 0.9.1 and 0.9.2. A Welcome,
+GroupInfo, Proposal or Commit with deeply nested extensions could abort the
+process (GHSA-gc79-23g3-8g52); anyone can gift-wrap a Welcome to a user. A
+rejected private message could advance its sender's ratchet and block that
+sender's later messages (GHSA-p276-g3f3-wwgh). Stored groups load unchanged
+and members on 0.15.0 and 0.16.0 interoperate.</li>
+<li>A chat keeps receiving new messages after its account's live subscriptions
+are rebuilt. A relay's end-of-stored-events reply that arrived late held the
+group's live messages until the recovery runner answered, and nothing woke
+the runner, so the chat stayed silent until unrelated activity.</li>
+<li>Joining several groups in quick succession, while earlier history was still
+replaying, no longer records account-wide history loss and a re-sync.
+History the new subscription asks for again is owed to it and charged as
+lost only if it does not arrive.</li>
+<li>A leave that a rival branch blocked is re-driven at once: the step-down is
+staged again or the leave is reported blocked, so sign-out no longer waits
+out its 30 s leave deadline.</li>
+<li>A chat the account was removed from no longer wakes the account worker every
+10 ms for the life of the process.</li>
+<li>A delayed generated-setup handoff at startup or in the foreground no longer
+creates a replacement account after the original is wiped or removed.</li>
+<li><code>reconnectRelay</code> right after a disconnect dials at once instead of waiting
+out the 5 s retry interval and failing its 5 s bound.</li>
+<li>A group whose deferred-peel backlog filled no longer holds its live messages
+and the account's sync cursor behind a history event the engine could neither
+open nor store; the event is let go of and the rest of the group admitted.</li>
+<li>Opening an account restores every group's interrupted rewind before ingest
+or a Welcome join reads the group.</li>
+<li>A relay the host-safety rule refuses (private or loopback address, plaintext
+<code>ws://</code>, unparseable URL) counts as never contacted: a commit every other
+relay refused rolls back instead of retrying forever, and a Welcome goes to
+the inbox list's other relays.</li>
+<li>A relay spelled with an upper-case host or explicit default port now
+confirms or rolls back commits; such a group used to freeze on its next
+commit.</li>
+<li>After a crash during a commit's send, a relay's refusal of the retry keeps
+the commit pending (possibly exposed) instead of rolling it back.</li>
+<li>An account event over a relay's advertised message limit
+(<code>limitation.max_message_length</code>) is no longer sent to that relay, so it is
+not exposed there and not resent. Before, the relay closed the socket, the
+event read as possibly exposed, and it was resent three times.</li>
+<li>Wiping or removing a generated identity whose setup was still publishing no
+longer creates a new, unrequested account.</li>
+<li>A <code>declineGroupInvite</code> that timed out with <code>AccountWorkerResponseTimedOut</code>, or
+was cancelled, while still queued no longer leaves the group later. A decline
+the worker had already started still completes, so after a timeout read the
+group's state before offering Accept.</li>
+<li>An offline account no longer repeats its full replay synchronization on every
+15 s maintenance tick.</li>
+<li>v5 audit delivery no longer stalls once about 3,250 segments are retained.</li>
+<li>An audit file a receiver's <code>409</code> blocked for good under 0.15.0 resumes
+delivery after the upgrade: loading the cursor clears that block and resends
+the file's pending range.</li>
+<li>Live notifications reuse settings, mutes, group records and users across
+events; mute expiry and setting changes still apply at once.</li>
+</ul>
+<h2 id="acceptance-and-remaining-work">Acceptance and remaining work</h2>
+<p>Before shipping an app on 0.16.0:</p>
+<ul>
+<li>Compile against the matched artifacts with every exhaustive <code>switch</code>/<code>when</code>
+updated; for C, rebuild every consumer.</li>
+<li>Upgrade a 0.15.0 install in place and confirm the shared database and audit
+cursor upgrade once and the second open changes nothing. Confirm 0.15.0
+refuses to reopen it, and that restoring the pre-upgrade copy works.</li>
+<li>Exercise <code>EventTooLarge</code> paths: a create and an invite against an invitee
+whose inbox relays all have a small listed limit (nothing is created or
+sent), and KeyPackage rotation, block and sticker sync against relays with
+a small limit. Confirm your UI's copy for each.</li>
+<li>Show a <code>QueuedIntentRefused</code> with <code>artifact</code> and <code>sizeClass</code>.</li>
+<li>If adopted: relay liveness across offline, reconnect, background and
+screen dismissal (<code>cancel</code>); direct-chat start with retries after
+cancellation and with an offline peer; audit status with a receiver
+returning <code>401</code> (paused, then lifted by a configuration change), <code>409</code> and
+<code>413</code>; retention changes and their clamping.</li>
+<li>Sign out or wipe a freshly generated identity while its setup is still
+publishing, and confirm no new account appears.</li>
+<li>Swift: build with the 0.16.0 asset after deleting any host-owned
+<code>nextCancellable()</code> adapters, and cancel a task waiting on each adopted
+subscription.</li>
+<li>NIP-46 (C, or Swift/Kotlin if adopted): approve permissions, pair, log in,
+restart and resume without a host callback; import one 0.15.0 vault export;
+sign out and confirm the communication key is erased.</li>
+<li>If you send media with <code>uploadMediaWithClientToken</code> or the agent-control
+<code>send_media</code>, send a reply-targeted batch and confirm receivers show it as a
+reply.</li>
+<li>Report evidence by stage: source, host smoke, packaged artifact, consuming
+app, real device.</li>
+</ul>
+<p>What was validated: every change in this comparison landed through the merge
+queue's CI matrix, and the binding-docs gate passes for the MarmotKit method and
+C symbol inventories at this source. Not validated here: upgrade of a real
+0.15.0 installation, relay limits against production relays, and app-level
+adoption on iOS or Android.</p>
+<p>Known limitations:</p>
+<ul>
+<li>Relay-safety follow-ups are open in
+<a href="https://github.com/marmot-protocol/mdk/issues/3305">#3305</a>, including refused
+relays on the legacy Welcome path and a typed no-usable-relay error.
+Push-trigger gift wraps ignore known relay limits, and sibling Welcomes,
+chosen-id device-group creates and recovery or own-device commits skip the
+up-front size check (see
+<a href="#relay-event-size-limits">Relay event size limits</a>).</li>
+<li>Still open from 0.15.0: adding every device of an account is best effort;
+right after a reconnect a new send can still go out ahead of older unsent
+ones; the automatic-rejoin handshake's inner event kind is under discussion
+(<a href="https://github.com/marmot-protocol/marmot/issues/451">marmot#451</a>);
+<a href="https://github.com/marmot-protocol/mdk/issues/2237">#2237</a>,
+<a href="https://github.com/marmot-protocol/mdk/issues/2277">#2277</a>,
+<a href="https://github.com/marmot-protocol/mdk/issues/2283">#2283</a>,
+<a href="https://github.com/marmot-protocol/mdk/issues/2389">#2389</a>,
+<a href="https://github.com/marmot-protocol/mdk/issues/2286">#2286</a>,
+<a href="https://github.com/marmot-protocol/mdk/issues/2253">#2253</a>,
+<a href="https://github.com/marmot-protocol/mdk/issues/2158">#2158</a> and
+<a href="https://github.com/marmot-protocol/mdk/issues/1445">#1445</a>.</li>
+</ul>
+`,g={__name:"upgrading.html",setup(p){return(h,t)=>{const n=d("DocumentationPage");return i(),a("div",null,[t[0]||(t[0]=o("h1",{id:"upgrade-guide",tabindex:"-1"},[o("a",{class:"header-anchor",href:"#upgrade-guide"},[o("span",null,"Upgrade guide")])],-1)),r(n,{document:{repo:e(c),version:e(s),sourceUrl:e(l),html:e(u)}},null,8,["document"])])}}},f=JSON.parse('{"path":"/docs/upgrading.html","title":"Upgrade guide","lang":"en-US","frontmatter":{"title":"Upgrade guide","description":"Upgrade guide — guides synced from the latest published Marmot releases.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1}],"changelog":[{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/upgrading.md"}');export{g as comp,f as data};

@@ -1,4 +1,4 @@
-import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-BEdUGG9u.js";const r="mdk",i="0.15.0",l="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
+import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-BI17XJzV.js";const r="mdk",i="0.16.0",l="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
 <p><code>wn</code> is the command-line app for the White Noise/Marmot stack. It manages Nostr-keyed accounts, relay lists,
 KeyPackages, chats, groups, messages, media, live runtime subscriptions, and a terminal UI. Use it to drive Marmot from
 a shell or script, or interactively with <code>wn tui</code>.</p>
@@ -545,7 +545,7 @@ per-relay first-deliverer and first-event/EOSE timing, and redacted relay health
 when a daemon socket exists. Per-relay rows use opaque device-local indices, never relay URLs.</li>
 <li><code>usage-diagnostics show|enable|disable</code> manages the local combined &quot;Share usage and diagnostics&quot; permission. An active
 <code>wnd</code> owns the update. Audit consent is separate. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/docs/marmot-architecture/usage-diagnostics.md">host and operator contract</a> for disclosure, endpoint/key
+<a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/docs/marmot-architecture/usage-diagnostics.md">host and operator contract</a> for disclosure, endpoint/key
 configuration, and reporting limitations.</li>
 </ul>
 <h3 id="agent-text-streams">Agent text streams</h3>
@@ -986,8 +986,8 @@ depend on the JSON shape, so treat response changes as API changes.</p>
 <pre><code class="language-sh">brew install marmot-protocol/tap/wn
 </code></pre>
 <p>The formula lives in <code>github.com/marmot-protocol/homebrew-tap</code>; the project-side checklist is
-<a href="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/docs/release/wn-homebrew.md"><code>docs/release/wn-homebrew.md</code></a>. <code>cargo install wn-cli</code> from crates.io is not
+<a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/docs/release/wn-homebrew.md"><code>docs/release/wn-homebrew.md</code></a>. <code>cargo install wn-cli</code> from crates.io is not
 available: the workspace has <code>publish = false</code> and the CLI depends on local workspace crates.</p>
 <h2 id="changelog">Changelog</h2>
-<p>Release notes for the CLI crate live in <a href="https://github.com/marmot-protocol/mdk/blob/827687ba7fdbb05ec1b8f17667ad919fedde7266/crates/cli/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
+<p>Release notes for the CLI crate live in <a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/crates/cli/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
 `,m={__name:"cli.html",setup(h){return(p,t)=>{const n=c("DocumentationPage");return d(),a("div",null,[t[0]||(t[0]=o("h1",{id:"terminal-and-scripts",tabindex:"-1"},[o("a",{class:"header-anchor",href:"#terminal-and-scripts"},[o("span",null,"Terminal and scripts")])],-1)),s(n,{document:{repo:e(r),version:e(i),sourceUrl:e(l),html:e(u)}},null,8,["document"])])}}},w=JSON.parse('{"path":"/docs/cli.html","title":"Terminal and scripts","lang":"en-US","frontmatter":{"title":"Terminal and scripts","description":"Terminal and scripts — guides synced from the latest published Marmot releases.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1}],"changelog":[{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/cli.md"}');export{m as comp,w as data};
