@@ -1,4 +1,4 @@
-import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-BI17XJzV.js";const r="mdk",i="0.16.0",l="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
+import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-GXPg9DFO.js";const r="mdk",i="0.17.0",l="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
 <p><code>wn</code> is the command-line app for the White Noise/Marmot stack. It manages Nostr-keyed accounts, relay lists,
 KeyPackages, chats, groups, messages, media, live runtime subscriptions, and a terminal UI. Use it to drive Marmot from
 a shell or script, or interactively with <code>wn tui</code>.</p>
@@ -254,9 +254,11 @@ group changes (membership, admins, profile, image, retention, disbanding) fail w
 <p><strong>Changes not yet on every relay.</strong> A group change counts as published once one group relay accepts it; MDK keeps
 retrying the others with the same event. Until they accept it, members who read only those relays cannot follow it, so
 once a change has been owed to a relay for two minutes, group changes fail with JSON error code
-<code>group_commit_undelivered</code>. <code>groups commit-delivery &lt;group-hex&gt;</code> shows the oldest change still owed to a relay, the
-relays owing it and when the first relay accepted it; it reports owed relays immediately, before the two minutes pass. Retry once they accept it, or pass <code>--accept-undelivered</code> to make the change anyway;
-scheduled self-updates wait up to an hour.</p>
+<code>group_commit_undelivered</code>. A relay that refuses a change for good (too large for it, or any other final answer) will
+never carry it, so group changes fail with the same code at once, until you accept the refusal. <code>groups commit-delivery &lt;group-hex&gt;</code> shows the oldest change a relay refused, or else the oldest change still owed to a relay, with the relays
+owing it, the relays that refused it (<code>refused_relays</code>, each with its <code>cause</code>) and when the first relay accepted it; it
+reports owed relays immediately, before the two minutes pass. Retry once they accept it, or pass <code>--accept-undelivered</code>
+to make the change anyway, which also dismisses the group's refusals for good; scheduled self-updates wait up to an hour.</p>
 <p><strong>Group identifiers.</strong> Every <code>&lt;group-hex&gt;</code> is the canonical MLS group id (<code>group_id</code> in JSON; opaque bytes, 16 bytes for
 OpenMLS-created groups). It is not the 32-byte Nostr routing handle shown under <code>nostr_routing.nostr_group_id_hex</code>,
 which is transport state the group can rotate. Filters, lookups, and JSON always key on the MLS group id.</p>
@@ -269,10 +271,18 @@ when it has several devices in the group. Each <code>members</code> entry carrie
 devices are in the group, and member counts, admin counts and the last-admin check count accounts.</p>
 <p><strong>Invites.</strong> <code>groups invites</code> lists groups still awaiting local confirmation. <code>groups accept</code> clears that pending state;
 <code>groups decline</code> leaves and archives the auto-joined pending group.</p>
+<p>Group creation and member invites resolve each requested account independently using fresh KeyPackages.
+Eligible accounts proceed even if others are unavailable. JSON <code>member_outcomes</code> lists each canonical account once,
+with <code>account_id_hex</code>, <code>status</code>, and <code>selected_device_count</code>. <code>selected</code> means eligible for the operation, not joined or delivered.
+Other statuses are <code>missing_key_package</code>, <code>obsolete_key_package</code>, <code>invalid_key_package</code>, <code>incompatible_key_package</code>,
+<code>missing_inbox_route</code>, and <code>incomplete</code>. If no requested account is eligible, creation returns <code>group_id: null</code>;
+an invite returns <code>summary: null</code> and nullable publication fields, without changing the group.
+An empty create roster still creates a creator-only group.</p>
 <p><strong>Names and admins.</strong> <code>groups update</code> is the canonical spelling for name and/or description changes; <code>groups rename</code>
 and legacy <code>group update</code> keep working. <code>groups add-members ... --admin &lt;member&gt;</code> (and legacy <code>group invite --admin</code>)
 grants admin to an invitee inside the same invite commit. An <code>--admin</code> that is not one of the invitees fails with
-<code>initial_admin_not_invited</code> before anything is published. Invite results carry an <code>initial_admins</code> list.
+<code>initial_admin_not_invited</code> before anything is published. Invite results carry selected <code>initial_admins</code> and the
+original <code>requested_initial_admins</code>. An unavailable invitee receives no admin rights.
 <code>groups management</code> mirrors the MarmotKit management state (<code>is_self_admin</code>, <code>can_invite</code>, <code>can_leave</code>,
 <code>requires_self_demote_before_leave</code>, <code>leave_blocked</code>, <code>can_enable_disbanding</code>, <code>can_disband</code>, <code>disbanding_blockers</code>,
 per-member <code>member_actions</code>). Leave hints use the shared core capability selector and remain advisory; the command
@@ -545,7 +555,7 @@ per-relay first-deliverer and first-event/EOSE timing, and redacted relay health
 when a daemon socket exists. Per-relay rows use opaque device-local indices, never relay URLs.</li>
 <li><code>usage-diagnostics show|enable|disable</code> manages the local combined &quot;Share usage and diagnostics&quot; permission. An active
 <code>wnd</code> owns the update. Audit consent is separate. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/docs/marmot-architecture/usage-diagnostics.md">host and operator contract</a> for disclosure, endpoint/key
+<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/usage-diagnostics.md">host and operator contract</a> for disclosure, endpoint/key
 configuration, and reporting limitations.</li>
 </ul>
 <h3 id="agent-text-streams">Agent text streams</h3>
@@ -986,8 +996,8 @@ depend on the JSON shape, so treat response changes as API changes.</p>
 <pre><code class="language-sh">brew install marmot-protocol/tap/wn
 </code></pre>
 <p>The formula lives in <code>github.com/marmot-protocol/homebrew-tap</code>; the project-side checklist is
-<a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/docs/release/wn-homebrew.md"><code>docs/release/wn-homebrew.md</code></a>. <code>cargo install wn-cli</code> from crates.io is not
+<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/release/wn-homebrew.md"><code>docs/release/wn-homebrew.md</code></a>. <code>cargo install wn-cli</code> from crates.io is not
 available: the workspace has <code>publish = false</code> and the CLI depends on local workspace crates.</p>
 <h2 id="changelog">Changelog</h2>
-<p>Release notes for the CLI crate live in <a href="https://github.com/marmot-protocol/mdk/blob/a2e0558a634bbd20607cdd5afb93abc6220ee58d/crates/cli/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
+<p>Release notes for the CLI crate live in <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/cli/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
 `,m={__name:"cli.html",setup(h){return(p,t)=>{const n=c("DocumentationPage");return d(),a("div",null,[t[0]||(t[0]=o("h1",{id:"terminal-and-scripts",tabindex:"-1"},[o("a",{class:"header-anchor",href:"#terminal-and-scripts"},[o("span",null,"Terminal and scripts")])],-1)),s(n,{document:{repo:e(r),version:e(i),sourceUrl:e(l),html:e(u)}},null,8,["document"])])}}},w=JSON.parse('{"path":"/docs/cli.html","title":"Terminal and scripts","lang":"en-US","frontmatter":{"title":"Terminal and scripts","description":"Terminal and scripts — guides synced from the latest published Marmot releases.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1}],"changelog":[{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/cli.md"}');export{m as comp,w as data};
