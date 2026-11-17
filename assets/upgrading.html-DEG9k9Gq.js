@@ -1,4 +1,4 @@
-import{c as n,b as o,d as r,u as e,r as d,o as i}from"./app-D3yJPdaP.js";const s="mdk",c="0.17.0",l="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/integration/0.17.0.md",u=`<div id="upgrading-mdk-0160--0170" class="mm-source-title">Upgrading MDK 0.16.0 → 0.17.0</div>
+import{c as n,b as o,d as r,u as e,r as d,o as i}from"./app-CGo5Oqej.js";const s="mdk",c="0.17.0",l="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/integration/0.17.0.md",u=`<div id="upgrading-mdk-0160--0170" class="mm-source-title">Upgrading MDK 0.16.0 → 0.17.0</div>
 <h2 id="scope-and-provenance">Scope and provenance</h2>
 <p>This guide compares <code>v0.16.0</code> / <code>marmotkit-v0.16.0</code> / <code>marmotc-v0.16.0</code> /
 <code>wn-agent-v0.16.0</code>, which all peel to

@@ -1,4 +1,4 @@
-import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-D3yJPdaP.js";const r="mdk",i="0.17.0",l="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
+import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-CGo5Oqej.js";const r="mdk",i="0.17.0",l="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
 <p><code>wn</code> is the command-line app for the White Noise/Marmot stack. It manages Nostr-keyed accounts, relay lists,
 KeyPackages, chats, groups, messages, media, live runtime subscriptions, and a terminal UI. Use it to drive Marmot from
 a shell or script, or interactively with <code>wn tui</code>.</p>

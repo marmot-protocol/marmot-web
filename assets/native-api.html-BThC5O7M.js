@@ -1,4 +1,4 @@
-import{c as a,b as t,d as n,u as e,r as s,o as c}from"./app-D3yJPdaP.js";const i="mdk",d="0.17.0",p="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/API-REFERENCE.md",l=`<div id="complete-marmotkit-method-reference" class="mm-source-title">Complete MarmotKit method reference</div>
+import{c as a,b as t,d as n,u as e,r as s,o as c}from"./app-CGo5Oqej.js";const i="mdk",d="0.17.0",p="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/API-REFERENCE.md",l=`<div id="complete-marmotkit-method-reference" class="mm-source-title">Complete MarmotKit method reference</div>
 <p>This reference inventories the UniFFI exports and is maintained alongside source changes.
 Start with the <a href="__MARMOT_BASE__docs/native-apps.html#integration-guide-and-api-reference">integration guide</a>
 for API selection, lifecycle, localization and ownership. For the 0.14.0 changes, read
