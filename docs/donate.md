@@ -1,9 +1,9 @@
 ---
 title: Donate
-description: Support Marmot and White Noise through the Internet Privacy Foundation, a 501(c)(3) nonprofit. Donations are tax deductible for U.S. taxpayers.
+description: Support Marmot and White Noise through Internet Privacy Foundation, a 501(c)(3) nonprofit. Donations are tax deductible for U.S. taxpayers.
 home: true
 heroText: Support Marmot.
-tagline: Help keep private communication open and accessible. Donations to the Internet Privacy Foundation support the development of Marmot, White Noise, and the tools around them.
+tagline: Help keep private communication open and accessible. Donations to Internet Privacy Foundation support the development of Marmot, White Noise, and the tools around them.
 pageClass: donate mm-editorial mm-text-hero
 sidebar: false
 ---
@@ -11,9 +11,9 @@ sidebar: false
 <div class="mm-container">
 <section class="mm-section">
 
-## About the Internet Privacy Foundation
+## About Internet Privacy Foundation
 
-The [Internet Privacy Foundation](https://ipf.dev/) (IPF) defends digital freedom and the fundamental right to privacy. Through open-source projects including Marmot and White Noise, IPF develops protocols, libraries, and applications that help people communicate privately and give developers the tools to build on that work.
+[Internet Privacy Foundation](https://ipf.dev/) (IPF) defends digital freedom and the fundamental right to privacy. Through open-source projects including Marmot and White Noise, IPF develops protocols, libraries, and applications that help people communicate privately and give developers the tools to build on that work.
 
 **IPF is a U.S. 501(c)(3) nonprofit organization. Donations are tax deductible for U.S. taxpayers to the extent permitted by law.**
 
@@ -63,11 +63,11 @@ Supporting the ongoing work behind Marmot, White Noise, and private communicatio
 
 ## About your donation
 
-Donations are received by the Internet Privacy Foundation and support its general work, including Marmot and White Noise. They are not restricted to Marmot alone.
+Donations are received by Internet Privacy Foundation and support its general work, including Marmot and White Noise. They are not restricted to Marmot alone.
 
 IPF and its payment providers handle payment details and confirmations.
 
-[About the Internet Privacy Foundation](https://ipf.dev/)
+[About Internet Privacy Foundation](https://ipf.dev/)
 
 </section>
 
