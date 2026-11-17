@@ -4,30 +4,30 @@ home: true
 pageClass: contact
 sidebar: false
 heroText: Contact us
-tagline: If you want to get in touch, we’re happy to hear from you. Whether you’re building on Marmot, exploring integrations, reporting an issue, asking technical questions, or just curious about the protocol, reach out through the emails below. We read everything, and we’ll reply as soon as we can.
+tagline: If you want to get in touch, we’re happy to hear from you. Whether you’re building on Marmot, exploring integrations, reporting an issue, asking technical questions, or just curious about the protocol, reach out by email or connect with us on Nostr and X.
 ---
 
 <div class="mm-container">
 <div class="mm-contact-methods">
 <div>
 
-## General inquiries
+## Email
 
-<EmailLink email="support@marmot.protocol" />
-
-</div>
-<div>
-
-## Press & media
-
-<EmailLink email="press@marmot.protocol" />
+<EmailLink email="info@ipf.dev" />
 
 </div>
 <div>
 
-## Donations
+## Nostr
 
-<EmailLink email="donations@marmot.protocol" />
+[Follow Marmot Protocol](https://njump.me/npub1marm0t9qkmv8lq7pe7vdx60ed8fl2d876a2ytk3ade208dlyfweqg5r6m9)
+
+</div>
+<div>
+
+## X
+
+[@MarmotProtocol](https://x.com/MarmotProtocol)
 
 </div>
 </div>
