@@ -176,9 +176,9 @@ useUpdateDeviceStatus(
   white-space: nowrap;
 }
 
-@media (min-width: ($MQMobile + 1)) and (max-width: $MQNarrow) {
+@media (min-width: ($MQMobile + 1)) and (max-width: 1279px) {
   .vp-navbar .vp-navbar-item + .vp-navbar-item {
-    margin-inline-start: 1.25rem;
+    margin-inline-start: 0.75rem;
   }
 }
 

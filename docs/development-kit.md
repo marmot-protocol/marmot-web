@@ -85,7 +85,7 @@ Native bindings, command-line tools, agent connectors, diagnostics, and versione
 
 ## SDKs, tools, and integrations
 
-Explore implementations, libraries, agent integrations, and supporting tools from Awesome Marmot. For applications you can use, [browse Apps](/apps.html).
+Explore implementations, libraries, agent integrations, and supporting tools from [Awesome Marmot](/awesome/). For applications you can use, [browse Apps](/apps.html).
 
 <CatalogDirectory audience="developers" />
 

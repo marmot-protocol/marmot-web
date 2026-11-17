@@ -56,6 +56,10 @@ export default defineUserConfig({
         link: '/apps',
       },
       {
+        text: 'Awesome',
+        link: '/awesome/',
+      },
+      {
         text: 'Releases',
         link: '/updates',
       },
