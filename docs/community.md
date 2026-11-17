@@ -58,6 +58,8 @@ Create an app, library, bot, or integration. Share early work and discuss the pa
 
 [Explore the Development Kit →](/development-kit.html)
 
+[See what others have built →](/awesome/)
+
 </article>
 <article>
 

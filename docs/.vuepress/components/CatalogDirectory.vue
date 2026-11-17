@@ -4,7 +4,15 @@ import SelectField from './SelectField.vue'
 import { compareProjects, isTeamProject } from '../data/catalog-order.mjs'
 import content from '../data/catalog.json'
 
-const props = defineProps<{ audience: 'apps' | 'developers' }>()
+const props = defineProps<{ audience: 'apps' | 'developers' | 'all' }>()
+const copy = {
+  apps: { noun: 'apps', placeholder: 'Find an app…' },
+  developers: { noun: 'developer projects', placeholder: 'Find an SDK or tool…' },
+  all: { noun: 'projects', placeholder: 'Find a project…' },
+}[props.audience]
+const showCategory = props.audience !== 'apps'
+const showGeneration = props.audience !== 'developers'
+const sourceCommit = content.catalogSource.match(/\/blob\/([0-9a-f]{7})/)?.[1]
 const query = ref('')
 const category = ref('All')
 const activity = ref('All')
@@ -12,8 +20,9 @@ const generation = ref('All')
 const maintainer = ref('All')
 const filtersOpen = ref(false)
 const filtersId = useId()
-const activeFilters = computed(() => [maintainer.value, activity.value, props.audience === 'apps' ? generation.value : category.value].filter(value => value !== 'All').length)
-const entries = computed(() => content.catalog.filter(item => props.audience === 'apps' ? item.category === 'Apps' : item.category !== 'Apps'))
+const activeFilters = computed(() => [maintainer.value, activity.value, generation.value, category.value].filter(value => value !== 'All').length)
+const entries = computed(() => props.audience === 'all' ? content.catalog
+  : content.catalog.filter(item => (item.category === 'Apps') === (props.audience === 'apps')))
 const categories = computed(() => [...new Set(entries.value.map(item => item.category))])
 const filtered = computed(() => entries.value.filter(item =>
   (maintainer.value === 'All' || isTeamProject(item.href) === (maintainer.value === 'IPF')) &&
@@ -30,8 +39,8 @@ function reset() { query.value = ''; clearFilters() }
   <div class="mm-catalog">
     <div class="mm-directory-controls mm-catalog-controls">
       <div class="mm-catalog-search">
-      <label class="mm-search-field"><span>Search {{ audience === 'apps' ? 'apps' : 'developer projects' }}</span>
-        <input v-model="query" type="search" :placeholder="audience === 'apps' ? 'Find an app…' : 'Find an SDK or tool…'" />
+      <label class="mm-search-field"><span>Search {{ copy.noun }}</span>
+        <input v-model="query" type="search" :placeholder="copy.placeholder" />
       </label>
       <button class="mm-filter-toggle" type="button" :aria-expanded="filtersOpen" :aria-controls="filtersId"
         :aria-label="`Filters${activeFilters ? `, ${activeFilters} active` : ''}`" @click="filtersOpen = !filtersOpen">
@@ -46,9 +55,9 @@ function reset() { query.value = ''; clearFilters() }
       </div>
       <SelectField v-model="maintainer" label="Maintainer"
         :options="[{ value: 'All', label: 'All projects' }, { value: 'IPF', label: 'IPF team' }, { value: 'Community', label: 'Community' }]" />
-      <SelectField v-if="audience === 'developers'" v-model="category" label="Category"
+      <SelectField v-if="showCategory" v-model="category" label="Category"
         :options="[{ value: 'All', label: 'All' }, ...categories.map(value => ({ value, label: value }))]" />
-      <div v-else class="mm-protocol-filter">
+      <div v-if="showGeneration" class="mm-protocol-filter">
       <SelectField v-model="generation" label="Protocol"
         :options="[{ value: 'All', label: 'All versions' }, { value: 'v2', label: 'Marmot v2' }, { value: 'v1', label: 'Marmot v1' }, { value: 'unknown', label: 'Unconfirmed' }]" />
       <p class="mm-caption">Marmot v1 and v2 are not interchangeable.</p>
@@ -57,12 +66,12 @@ function reset() { query.value = ''; clearFilters() }
         :options="[{ value: 'All', label: 'All projects' }, { value: 'active', label: 'Recently updated' }, { value: 'inactive', label: 'No recent commits' }, { value: 'archived', label: 'Archived' }, { value: 'unverified', label: 'Unverified' }]" />
       </div>
     </div>
-    <p class="mm-caption" role="status">{{ filtered.length }} of {{ entries.length }} {{ audience === 'apps' ? 'apps' : 'developer projects' }}</p>
+    <p class="mm-caption" role="status">{{ filtered.length }} of {{ entries.length }} {{ copy.noun }}</p>
     <div class="mm-catalog-list">
       <article v-for="item in filtered" :key="item.href" class="mm-implementation">
         <div>
-          <component :is="audience === 'apps' ? 'h2' : 'h3'"><a :href="item.href">{{ item.name }}</a></component>
-          <p v-if="audience === 'developers'" class="mm-caption">{{ item.category }}</p>
+          <component :is="audience === 'developers' ? 'h3' : 'h2'"><a :href="item.href">{{ item.name }}</a></component>
+          <p v-if="showCategory" class="mm-caption">{{ item.category }}</p>
           <div class="mm-project-labels"><span v-if="isTeamProject(item.href)" class="mm-team-label">IPF team</span><span v-for="label in item.labels" :key="label" :data-label="label">{{ label }}</span></div>
         </div>
         <!-- Generated by the sync script with raw HTML disabled and validated URLs. -->
@@ -74,6 +83,7 @@ function reset() { query.value = ''; clearFilters() }
       <button class="mm-text-button" type="button" @click="reset">Clear filters</button>
     </div>
     <div class="mm-catalog-actions">
+      <p v-if="audience === 'all'" class="mm-caption">Synced from <a :href="content.catalogSource">awesome-marmot<template v-if="sourceCommit"> at {{ sourceCommit }}</template></a></p>
       <a class="mm-button mm-button-secondary no-external-link-icon" href="https://github.com/marmot-protocol/awesome-marmot">
         Suggest a project <span class="mm-button-external-icon" aria-hidden="true"></span>
       </a>
