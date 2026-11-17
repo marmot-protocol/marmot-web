@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs'
 import { documentationSources } from './data/documentation-sources.mjs'
 
 const __dirname = import.meta.dirname || getDirname(import.meta.url)
-const base = process.env.NODE_ENV === 'production' ? '/marmot-web/' : '/'
+const base = '/'
 // These small declarations belong in the initial HTML, avoiding two blocking
 // stylesheet requests before the browser can discover the local font files.
 const fontFaces = ['zilla-slab.css', 'jetbrains-mono.css']
