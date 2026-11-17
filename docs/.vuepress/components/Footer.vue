@@ -28,7 +28,7 @@ const navfootLinks = computed(() => [
       </nav>
       <div class="bottom">
         <div class="copyright">
-          <span>©2025 Internet Privacy Foundation. </span>
+          <span>©2025–2026 <a href="https://ipf.dev/">Internet Privacy Foundation</a>. </span>
           <span>All rights reserved.</span>
         </div>
         <BrandLink />
@@ -97,6 +97,12 @@ const navfootLinks = computed(() => [
 .copyright {
   color: var(--mm-toner-400);
   font-size: 0.875rem;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
 
   span:last-child {
     white-space: nowrap;
