@@ -1,6 +1,6 @@
 ---
 title: MarmotKit API
-description: MarmotKit API — guides synced from the latest published Marmot releases.
+description: Look up MarmotKit methods and types for accounts, encrypted messaging, groups, media, and other operations in native apps.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

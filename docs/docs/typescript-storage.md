@@ -1,6 +1,6 @@
 ---
 title: TypeScript storage
-description: TypeScript storage — guides synced from the latest published Marmot releases.
+description: Choose and configure Marmot TypeScript storage for browser or server applications, including how to plug in custom storage.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

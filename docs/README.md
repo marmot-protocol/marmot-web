@@ -1,6 +1,8 @@
 ---
 home: true
-heroText: null
+title: Marmot Protocol
+heroText: Marmot Protocol
+description: Marmot is an open protocol for decentralized, end-to-end encrypted group messaging using Messaging Layer Security (MLS) and Nostr identities.
 heroImage: /images/marmot.svg
 tagline: <p>Decentralized group messaging that protects people by encrypting content and metadata.</p><p><span>Your Keys.</span> <span>Your Identity.</span>  <span>Your Data.</span></p>
 taglineHtml: true

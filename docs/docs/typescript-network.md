@@ -1,6 +1,6 @@
 ---
 title: TypeScript networking
-description: TypeScript networking — guides synced from the latest published Marmot releases.
+description: Connect Marmot TypeScript clients to Nostr relays and configure the transport for sending and receiving group events.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

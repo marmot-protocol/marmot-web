@@ -1,6 +1,6 @@
 ---
 title: Bots and agents
-description: Bots and agents — guides synced from the latest published Marmot releases.
+description: Connect a bot or coding agent to White Noise over a local control socket and manage its messaging permissions.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

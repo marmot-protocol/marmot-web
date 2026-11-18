@@ -3,7 +3,7 @@ title: Development Kit
 description: Build with MDK, choose a native or web integration, and explore independent Marmot implementations.
 home: true
 heroImage: /images/marmot-marine.svg
-heroText: null
+heroText: Marmot Development Kit
 tagline: Build private messaging into your app. The Marmot Development Kit brings together the Rust runtime, encrypted storage, networking, and native bindings used to build Marmot clients.
 pageClass: devkit mm-editorial
 sidebar: false

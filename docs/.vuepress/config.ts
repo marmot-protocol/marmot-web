@@ -5,6 +5,7 @@ import { getDirname, path } from 'vuepress/utils'
 import { readFileSync } from 'node:fs'
 
 import { documentationSources } from './data/documentation-sources.mjs'
+import { discovery } from './discovery'
 
 const __dirname = import.meta.dirname || getDirname(import.meta.url)
 const base = '/'
@@ -17,6 +18,7 @@ const fontFaces = ['zilla-slab.css', 'jetbrains-mono.css']
 
 export default defineUserConfig({
   bundler: viteBundler(),
+  plugins: [discovery],
   // Preload the current route, but do not download every guide and release
   // chunk speculatively on every visit (especially on mobile connections).
   shouldPrefetch: false,
@@ -26,6 +28,12 @@ export default defineUserConfig({
   description: 'Decentralized group messaging that protects people by encrypting content and metadata.',
   // https://vuejs.press/reference/config.html#head
   head: [
+    ['script', {
+      defer: '',
+      src: 'https://analytics.ipf.dev/script.js',
+      'data-website-id': '71b8cdd5-06b2-459c-9343-fa5a7d1b864e',
+      'data-domains': 'marmot.build',
+    }],
     ['link', { rel: 'icon', href: `${base}favicon.ico`, sizes: '16x16 32x32 48x48' }],
     ['link', { rel: 'icon', href: `${base}favicon-32x32.png`, type: 'image/png', sizes: '32x32' }],
     ['link', { rel: 'icon', href: `${base}favicon.svg`, type: 'image/svg+xml', sizes: 'any' }],

@@ -1,6 +1,6 @@
 ---
 title: TypeScript quickstart
-description: TypeScript quickstart — guides synced from the latest published Marmot releases.
+description: Install the Marmot TypeScript SDK, connect a client to Nostr, and start sending end-to-end encrypted group messages.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

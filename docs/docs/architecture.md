@@ -1,6 +1,6 @@
 ---
 title: Architecture
-description: Architecture — guides synced from the latest published Marmot releases.
+description: Explore how the Marmot Development Kit organizes MLS group state, encrypted storage, Nostr relay access, and client runtimes.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

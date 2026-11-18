@@ -1,6 +1,6 @@
 ---
 title: Documentation
-description: Documentation — guides synced from the latest published Marmot releases.
+description: Find the right Marmot developer guide for native apps, Rust, C, TypeScript, the command line, or agent integrations.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

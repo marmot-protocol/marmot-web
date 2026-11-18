@@ -1,6 +1,6 @@
 ---
 title: Rust application runtime
-description: Rust application runtime — guides synced from the latest published Marmot releases.
+description: Use the Rust application runtime to manage Marmot accounts, messaging, storage, and networking in a Rust application.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

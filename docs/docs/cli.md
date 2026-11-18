@@ -1,6 +1,6 @@
 ---
 title: Terminal and scripts
-description: Terminal and scripts — guides synced from the latest published Marmot releases.
+description: Set up the White Noise CLI and use terminal commands or scripts to manage accounts, groups, and encrypted messages.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

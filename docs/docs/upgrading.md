@@ -1,6 +1,6 @@
 ---
 title: Upgrade guide
-description: Upgrade guide — guides synced from the latest published Marmot releases.
+description: Review version-specific breaking changes and migration steps before upgrading an application to the latest stable MDK release.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

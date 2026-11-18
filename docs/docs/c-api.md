@@ -1,6 +1,6 @@
 ---
 title: C API
-description: C API — guides synced from the latest published Marmot releases.
+description: Look up Marmot’s C functions and types, including calling conventions, return values, and ownership requirements.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

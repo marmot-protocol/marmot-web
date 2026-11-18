@@ -1,6 +1,6 @@
 ---
 title: MarmotKit distribution
-description: MarmotKit distribution — guides synced from the latest published Marmot releases.
+description: Choose and install the published MarmotKit packages for Apple and Android platforms, or build the native bindings from source.
 pageClass: mm-docs
 editLink: false
 sidebarDepth: 0

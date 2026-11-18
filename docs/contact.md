@@ -1,5 +1,6 @@
 ---
 title: Contact
+description: Contact the Marmot team about the protocol, White Noise, security, partnerships, and ways to contribute.
 home: true
 pageClass: contact
 sidebar: false

@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { latestStableRelease, renderDocumentation } from '../scripts/documentation.mjs'
+import { guideMarkdown } from '../scripts/guide-markdown.mjs'
 import { normalizeDocumentHeadings } from '../docs/.vuepress/utils/document-headings.mjs'
 
 const source = { repo: 'mdk', sha: 'abc', path: 'crates/host/README.md', route: '/docs/native-apps.html', sourceUrl: 'https://github.com/marmot-protocol/mdk/blob/abc/crates/host/README.md' }
@@ -51,4 +52,36 @@ test('table rows retain column labels for wrapping mobile layouts without changi
   assert.match(result.html, /data-label="Recommended API" role="cell"><code>newWithConfiguration<\/code>/)
   assert.match(result.html, /data-label="Use case" role="cell">Recovery/)
   assert.match(result.html, /scope="col" role="columnheader"/)
+})
+
+test('Markdown guide exports preserve versioned links, tables, and inert code examples', () => {
+  const html = renderDocumentation([
+    '# Host guide',
+    '## Setup',
+    '',
+    '| Example | Guide |',
+    '| --- | --- |',
+    '| `Client` | [API](API.md#methods) |',
+    '',
+    '[Back to setup](#setup)',
+    '',
+    '<script>literal text</script>',
+    '',
+    '```js',
+    'client.send("<event>")',
+    '```',
+  ].join('\n'), source, [source, target]).html
+  const base = new URL('https://marmot.build/preview/')
+  const markdown = guideMarkdown(
+    { ...source, version: '1.2.3', html },
+    'Native apps',
+    new URL('docs/native-apps.html', base),
+    base,
+  )
+  assert.match(markdown, /^# Native apps\n\n> MDK 1\.2\.3/)
+  assert.match(markdown, /\[Version-pinned source\]\(https:\/\/github\.com\/marmot-protocol\/mdk\/blob\/abc\/crates\/host\/README\.md\)/)
+  assert.match(markdown, /\| Example \| Guide \|\n\| --- \| --- \|\n\| `Client` \| \[API\]\(https:\/\/marmot\.build\/preview\/docs\/native-api\.html#methods\) \|/)
+  assert.match(markdown, /\[Back to setup\]\(https:\/\/marmot\.build\/preview\/docs\/native-apps\.html#setup\)/)
+  assert.match(markdown, /&lt;script>literal text&lt;\/script>/)
+  assert.match(markdown, /```js\nclient\.send\("<event>"\)\n```/)
 })
