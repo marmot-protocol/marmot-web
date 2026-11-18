@@ -1,0 +1,278 @@
+# Architecture
+
+> MDK 0.17.0 · [Read on Marmot](https://marmot.build/docs/architecture.html) · [Version-pinned source](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/index.md)
+
+## Marmot Architecture — Index
+
+A technical reference for the Marmot stack: where the current architecture stands, which contracts are becoming spec text, and which older notes are kept only for background.
+
+This wiki is organized in two tiers:
+
+1.  **`overview/`** — **short, one-page docs**. Each covers one theme. Read these first; these are the docs to share with a new engineer.
+2.  **`further-context/`** — **deep reference material**. Longer design docs, historical decision tracking, codebase surveys, and older exploration notes. Check the status banner before treating a further-context doc as current.
+
+* * *
+
+## Start here — overview (one page each)
+
+Written to be readable in 5 minutes each, shareable as a package.
+
+*   **Doc:** [**`overview/executive-summary.md`**](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/executive-summary.md)
+    
+    *   **What it covers:** **The one-pager.** Problem, what we're optimizing for, what we're NOT optimizing for, target state. Share this with a new engineer.
+*   **Doc:** [`overview/protocol-boundary.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/protocol-boundary.md)
+    
+    *   **What it covers:** Where the line is between protocol and application. The test for putting new features on the correct side.
+*   **Doc:** [`overview/target-architecture.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/target-architecture.md)
+    
+    *   **What it covers:** The four components (CgkaEngine, TransportPeeler, TransportAdapter, application) and their trait boundaries.
+*   **Doc:** [`overview/capability-negotiation.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/capability-negotiation.md)
+    
+    *   **What it covers:** Why the capability system is load-bearing and what every client must implement.
+*   **Doc:** [`overview/custom-extensions.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/custom-extensions.md)
+    
+    *   **What it covers:** The inherit-vs-define decision framework. The MLS Safe Extensions framework (draft-09).
+*   **Doc:** [`overview/nostr-role.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/nostr-role.md)
+    
+    *   **What it covers:** Nostr's three distinct roles — identity, app message format, transport — and which are pluggable.
+*   **Doc:** [`overview/nostr-account-transport.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/nostr-account-transport.md)
+    
+    *   **What it covers:** Working note on Nostr user directory, account bootstrap, relay plane, group routing, and relay safety policy.
+*   **Doc:** [`overview/nostr-bounded-acquisition-interface.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/nostr-bounded-acquisition-interface.md)
+    
+    *   **What it covers:** Optional owned acquisition and notification-loss evidence at the existing relay-client boundary.
+*   **Doc:** [`overview/transport-agnosticism.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/transport-agnosticism.md)
+    
+    *   **What it covers:** Working note on where transport pluggability stops today: leak inventory from the FIPS spike and PRs #1513/#1521/#1514, the five seams (directory, peeler injection, endpoint type, blob store, composition-root bundle), and the sequencing to real carrier swaps.
+*   **Doc:** [`overview/app-core-boundary.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/app-core-boundary.md)
+    
+    *   **What it covers:** The MDK/host-app ownership contract, including Android as a minimal display/platform layer, shared runtime rules, bindings and storage boundaries.
+*   **Doc:** [`overview/marmot-app-runtime.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/marmot-app-runtime.md)
+    
+    *   **What it covers:** The implemented first slice of the multi-account `marmot-app` runtime, its shared Nostr relay plane, and the daemon, CLI, TUI boundary.
+*   **Doc:** [`hermes-openclaw-agent-integration-plan.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/hermes-openclaw-agent-integration-plan.md)
+    
+    *   **What it covers:** Working plan for hosting Hermes Agent and OpenClaw as server-side Marmot members with a `wn-agent` connector, local gateway shims, invite allowlists, and QUIC previews.
+*   **Doc:** [`hermes-agent-production-runbook.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/hermes-agent-production-runbook.md)
+    
+    *   **What it covers:** Supervised deployment path for Hermes Agent with `wn-agent`, token-gated local control sockets, systemd templates, and a Docker-to-phone manual test.
+*   **Doc:** [`overview/cgka-engine-quality-and-vectors.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/cgka-engine-quality-and-vectors.md)
+    
+    *   **What it covers:** Near-term engine quality target: whitenoise-rs integration, chaos coverage, scenario vectors, and byte-level vectors.
+*   **Doc:** [`convergence-reliability-plan.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/convergence-reliability-plan.md)
+    
+    *   **What it covers:** Tracked assurance, constant review, simulator architecture, verification gates, workload campaigns, and the path from an engine black box to app/process/container simulation.
+*   **Doc:** [`distributed-convergence-campaigns.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/distributed-convergence-campaigns.md)
+    
+    *   **What it covers:** Container-first distributed campaign operation, the narrow VM escalation boundary, reproducible manifests, private evidence, and the scope of distributed test claims.
+*   **Doc:** [`overview/whitenoise-integration-map.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/whitenoise-integration-map.md)
+    
+    *   **What it covers:** First shim map from whitenoise-rs account/relay flows to the current engine/session/account boundary.
+*   **Doc:** [`overview/observability.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/observability.md)
+    
+    *   **What it covers:** Privacy-safe tracing/logging rules and the repo-wide tracing audit guardrail.
+*   **Doc:** [`overview/local-artifact-safety.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/local-artifact-safety.md)
+    
+    *   **What it covers:** Restrictive-by-construction creation of local files, sockets, and databases: the `fs-private` helpers, the one octal-mode parser, the DB sidecar/PRAGMA-at-open rules, and the close-before-host- suspension rules that release WAL and root-lease file locks.
+*   **Doc:** [`overview/terminal-harness-execution-profiles.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/terminal-harness-execution-profiles.md)
+    
+    *   **What it covers:** Typed execution intent across Claude Code, Pi, OpenCode, and Codex; backend mappings, installer acknowledgement, and the remote-execution containment boundary.
+*   **Doc:** [`overview/multi-step-state-changes.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/multi-step-state-changes.md)
+    
+    *   **What it covers:** The no-torn-writes convention for multi-step operations: validate-before-mutate, full compensation on error paths, intent-before-side-effects, and confirmation that reflects reality (mdk#711).
+*   **Doc:** [`overview/current-state.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/current-state.md)
+    
+    *   **What it covers:** Implementations, merged MIPs, the current CGKA engine workspace, and known gaps.
+*   **Doc:** [`overview/direction.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/direction.md)
+    
+    *   **What it covers:** Where we're going after the CGKA engine/convergence work.
+
+**Read order for a new engineer:** executive-summary → protocol-boundary → target-architecture → capability-negotiation → nostr-role → app-core-boundary → marmot-app-runtime → cgka-engine-quality-and-vectors → whitenoise-integration-map → observability → custom-extensions → current-state → direction.
+
+* * *
+
+## Deeper reference — further-context
+
+These are longer working documents. Go here when you need depth, not orientation.
+
+### Protocol & architecture reference
+
+*   **Doc:** [`cgka-engine-spec.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/cgka-engine-spec.md)
+    
+    *   **What it covers:** Draft normative CGKA engine spec: boundary, state, convergence, storage, conformance requirements.
+*   **Doc:** [`cgka-engine-canonicalization-contract.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/cgka-engine-canonicalization-contract.md)
+    
+    *   **What it covers:** Draft CGKA engine canonicalization contract: post-peeling inputs, candidate-state graph, sync state, outputs, storage, conformance scenarios.
+*   **Doc:** [`convergence-reliability-plan.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/convergence-reliability-plan.md)
+    
+    *   **What it covers:** Working program tracker for convergence assurance claims, constants, simulator milestones, verification ownership, and campaign exit gates.
+*   **Doc:** [`distributed-convergence.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/distributed-convergence.md)
+    
+    *   **What it covers:** Draft convergence model for selecting one MLS branch from unordered multi-relay input.
+*   **Doc:** [`relay-delivery-telemetry.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/relay-delivery-telemetry.md)
+    
+    *   **What it covers:** Measuring relay delivery behavior to tune convergence quiescence; cross-relay arrival spread, quiescence regimes, and the backfill/reconciliation backstop.
+*   **Doc:** [`relay-observability.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/relay-observability.md)
+    
+    *   **What it covers:** Export contract for client-side relay performance telemetry: the opt-in/aggregate/k-anonymous privacy contract, metric catalogue, collection architecture, and the proposed observability.md amendment.
+*   **Doc:** [`telemetry.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/telemetry.md)
+    
+    *   **What it covers:** Current implementation inventory for relay telemetry, OTLP export, engine reorg metrics, tracing/logging guardrails, local surfaces, and exactly what fields are collected or exported.
+*   **Doc:** [`usage-diagnostics.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/usage-diagnostics.md)
+    
+    *   **What it covers:** Combined consent, stock Aptabase privacy disclosure, finite backend and host observations, bounded delivery, host adoption, operator queries, and separate deployment acceptance.
+*   **Doc:** [`audit-logging.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/audit-logging.md)
+    
+    *   **What it covers:** Current implementation inventory for opt-in forensic JSONL logs, file identity, every event kind and metadata field, upload/tracker behavior, and downstream tooling guidance.
+*   **Doc:** [`moderation-reports.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/moderation-reports.md)
+    
+    *   **What it covers:** Private NIP-56 reports to the deployment's moderation team, gift-wrapped per NIP-59: event layers, labels, reader steps, and client durability, idempotency and privacy behavior. Additive to in-group moderation.
+*   **Doc:** [`runtime-state-bounds.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/runtime-state-bounds.md)
+    
+    *   **What it covers:** Inventory of long-lived daemon/broker runtime structures (maps, counters, handle sets, temp artifacts) with their bounds and eviction/reclamation rules, plus the tracked-resource discipline for adding new ones.
+*   **Doc:** [`storage-format-v2.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/storage-format-v2.md)
+    
+    *   **What it covers:** MDK-local storage versioning, normalized protocol-message rows, the explicit stored-message binary envelope, legacy compatibility, snapshot-v2 decision gate, and upgrade/downgrade operations.
+*   **Doc:** [`further-context/app-sqlite-storage-boundaries.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/app-sqlite-storage-boundaries.md)
+    
+    *   **What it covers:** Current ownership, durability, reconciliation, legacy-import, and migration contracts for the session, account-directory, and shared SQLite stores.
+*   **Doc:** [`further-context/local-daemon-protocol-boundaries.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/local-daemon-protocol-boundaries.md)
+    
+    *   **What it covers:** Detailed comparison of the `wnd` and `marmot.agent-control.v2` local socket protocols and the narrow boundary for any future shared framing helper.
+*   **Doc:** [`further-context/dial-safety-collector-inventory.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/dial-safety-collector-inventory.md)
+    
+    *   **What it covers:** Per-attempt collector and forensic-audit HTTP inventory behind the dial-safety overview: structural URL gates, resolve/validate/pin, disabled redirects and proxies, timeout budgets, and privacy-safe errors.
+*   **Doc:** [`further-context/audit-delivery-local-slice.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/audit-delivery-local-slice.md)
+    
+    *   **What it covers:** Measured JSONL recorder boundaries and the testable local cursor, prepared range, and gap behavior before production delivery is activated.
+*   **Doc:** [marmot-protocol/marmot](https://github.com/marmot-protocol/marmot)
+    
+    *   **What it covers:** Marmot v2 protocol draft by stable protocol surface and app component.
+*   **Doc:** [`../quic-broker-deployment.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/quic-broker-deployment.md)
+    
+    *   **What it covers:** Local Compose, GHCR image, and VM deployment notes for the memory-only QUIC broker.
+*   **Doc:** [`further-context/target-architecture.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/target-architecture.md)
+    
+    *   **What it covers:** Older long-form target architecture with illustrative trait sketches. Current orientation lives in `overview/target-architecture.md`.
+*   **Doc:** [`further-context/cgka-engine-design.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/cgka-engine-design.md)
+    
+    *   **What it covers:** Older long-form `CgkaEngine` design. Current contract lives in the canonicalization and convergence docs.
+*   **Doc:** [`further-context/capability-negotiation.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/capability-negotiation.md)
+    
+    *   **What it covers:** Full capability negotiation design. The three queries, group creation, upgrade, admin action, MIP checklist.
+*   **Doc:** [`further-context/nostr-role-in-marmot.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/nostr-role-in-marmot.md)
+    
+    *   **What it covers:** Deep version of Nostr's three roles. What's spec-stable and what's transport-specific.
+*   **Doc:** [`further-context/custom_extensions.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/custom_extensions.md)
+    
+    *   **What it covers:** Full decision framework + per-MIP review + MLS Extensions Safe framework teaching + `IdentityRemove` design space.
+
+### Current state — facts and analysis
+
+*   **Doc:** [`further-context/account-recovery.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/account-recovery.md)
+    
+    *   **What it covers:** Proposed v2 account history recovery design: scorecard, agreed decisions, durable overflow tail, one execution path for every cause, deletions, storage, tests and delivery.
+*   **Doc:** [`further-context/chat-row-contract-audit.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/chat-row-contract-audit.md)
+    
+    *   **What it covers:** Current native chat-row gaps, scoped C3 follow-ups and C9 release validation evidence.
+*   **Doc:** [`further-context/attachment-acquisition.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/attachment-acquisition.md)
+    
+    *   **What it covers:** C8 attachment audit, revisioned SQLite discovery, acquisition sequence and remaining decisions.
+*   **Doc:** [`further-context/avatar-cache-storage.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/avatar-cache-storage.md)
+    
+    *   **What it covers:** C7-A protected avatar storage, bounds, local-read costs and later acquisition/native boundaries.
+*   **Doc:** [`further-context/conversation-live-window-plan.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/conversation-live-window-plan.md)
+    
+    *   **What it covers:** C5 M4 viewport/capture implementation and remaining engine-authority/live-actor requirements.
+*   **Doc:** [`further-context/conversation-drafts.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/conversation-drafts.md)
+    
+    *   **What it covers:** C5 M2 revision-safe composer metadata, conditional mutation, durable send handoff and wakeups.
+*   **Doc:** [`further-context/conversation-opening.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/conversation-opening.md)
+    
+    *   **What it covers:** C5 M1 bounded storage opening, canonical anchors, read-state readiness and later screen inputs.
+*   **Doc:** [`further-context/chat-projections-native.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/chat-projections-native.md)
+    
+    *   **What it covers:** C4 native list-window and account-attention contracts, ownership, validation and client handoff.
+*   **Doc:** [`further-context/chat-projection-inventory.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/chat-projection-inventory.md)
+    
+    *   **What it covers:** Source-pinned inventory of chat-list, timeline, group, identity, and subscription projections; durable versus read-time state, update/recovery paths, and inputs to complete chat-screen contracts.
+*   **Doc:** [`further-context/chat-screen-contract-draft.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/chat-screen-contract-draft.md)
+    
+    *   **What it covers:** C1 working recommendations for chat-screen field ownership, bounded responses and update consistency; identifies remaining checks before implementation.
+*   **Doc:** [`further-context/chat-presentation-first-slice.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/chat-presentation-first-slice.md)
+    
+    *   **What it covers:** Implementation-ready first slice for durable resolved chat-row presentation: API contract, recovery/upgrade design, merge sequence and native adoption acceptance criteria.
+*   **Doc:** [`further-context/codebase-survey.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/codebase-survey.md)
+    
+    *   **What it covers:** Raw metrics — LOC counts, dependency graphs, module structures.
+*   **Doc:** [`further-context/whitenoise-rs-deep-dive.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/whitenoise-rs-deep-dive.md)
+    
+    *   **What it covers:** Detailed analysis of the whitenoise-rs client layer — major subsystems, known complexity hotspots, refactor plan.
+*   **Doc:** [`../learnings.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/learnings.md)
+    
+    *   **What it covers:** Historical engineering notes. Useful for archaeology, not a current contract.
+
+### Architecture review (2026-10)
+
+*   **Doc:** [`review/README.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/review/README.md)
+    *   **What it covers:** In-progress system-by-system architecture review: scope, platform constraint, lenses, evidence rules and status. Start with [`review/00-system-map.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/review/00-system-map.md) for the Pass 0 map.
+
+### Historical context
+
+*   **Doc:** [`further-context/architectural-alternatives.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/architectural-alternatives.md)
+    
+    *   **What it covers:** The six architectural alternatives considered before landing on the target. Useful for understanding _why_ the target looks the way it does.
+*   **Doc:** [`further-context/decision-points.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/decision-points.md)
+    
+    *   **What it covers:** Seven key architectural decisions with explicit recommendations. Several marked ✅ resolved.
+
+### Principles (lives at `docs/` top level)
+
+*   **Doc:** [`../required-features.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/required-features.md)
+    *   **What it covers:** Full principles statement for what Marmot the protocol defines and what it doesn't. The long-form version of `overview/protocol-boundary.md`.
+
+* * *
+
+## Current state vs. target state, at a glance
+
+*   **Layer:** Presentation
+    
+    *   **Today:** Flutter (whitenoise)
+    *   **Target:** Unchanged
+*   **Layer:** FFI bridge
+    
+    *   **Today:** flutter\_rust\_bridge
+    *   **Target:** **whitenoise-ffi** — transport-agnostic, Dart + Swift
+*   **Layer:** Application
+    
+    *   **Today:** whitenoise-rs singleton
+    *   **Target:** **whitenoise-core** — thin facade, per-account sessions
+*   **Layer:** Transport
+    
+    *   **Today:** Nostr relay control planes, embedded
+    *   **Target:** `TransportAdapter` trait plus `transport-nostr-adapter` core, stale subscription cleanup, diagnostics, redacted SDK relay health, and optional SDK client; relay auth/policy next
+*   **Layer:** CGKA Engine
+    
+    *   **Today:** `crates/cgka-engine` implements the current OpenMLS-backed engine candidate; `crates/marmot-session` wraps it in an encrypted account-device lifecycle
+    *   **Target:** Spec-level `CgkaEngine` contract with production persistence, whitenoise-rs integration mapping, chaos coverage, and portable vectors
+*   **Layer:** Crypto
+    
+    *   **Today:** OpenMLS behind `CgkaEngine`
+    *   **Target:** OpenMLS first, with the trait boundary preserving future CGKA swap room
+*   **Layer:** Storage
+    
+    *   **Today:** `storage-sqlite` for SQLCipher-backed persistence plus in-memory SQLite test/simulator runs
+    *   **Target:** MLS app-component policy negotiation, app key-management integration, packaging
+
+* * *
+
+## Key decisions already made
+
+*   **PCS is non-negotiable.** Both FS and PCS required. Sender Keys off the table.
+*   **MLS stays.** BeeKEM and other CGKAs interesting but immature; `CgkaEngine` trait makes them swappable in future.
+*   **Transport is pluggable.** FIPS mesh and others are first-class future targets.
+*   **Commit convergence is engine-owned.** Transport ordering is advisory; the engine canonicalizes commits before releasing app-visible output.
+*   **whitenoise-ffi, not whitenoise-frb.** FFI bridge outputs Swift bindings too.
+*   **Nostr has three distinct roles** — identity (always), app message format (always), transport (pluggable).
+*   **One capability per feature.** Flat feature registry, no dependency graph.
+*   **Progressive enhancement, not hard breaks.** Create the best group possible, upgrade gracefully, never block communication.

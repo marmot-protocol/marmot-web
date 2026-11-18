@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://marmot.build/</loc></url>
+  <url><loc>https://marmot.build/apps.html</loc></url>
+  <url><loc>https://marmot.build/awesome/</loc></url>
+  <url><loc>https://marmot.build/community.html</loc></url>
+  <url><loc>https://marmot.build/contact.html</loc></url>
+  <url><loc>https://marmot.build/development-kit.html</loc></url>
+  <url><loc>https://marmot.build/docs/</loc></url>
+  <url><loc>https://marmot.build/docs/agents.html</loc></url>
+  <url><loc>https://marmot.build/docs/architecture.html</loc></url>
+  <url><loc>https://marmot.build/docs/c-api.html</loc></url>
+  <url><loc>https://marmot.build/docs/c-interface.html</loc></url>
+  <url><loc>https://marmot.build/docs/cli.html</loc></url>
+  <url><loc>https://marmot.build/docs/distribution.html</loc></url>
+  <url><loc>https://marmot.build/docs/native-api.html</loc></url>
+  <url><loc>https://marmot.build/docs/native-apps.html</loc></url>
+  <url><loc>https://marmot.build/docs/rust-runtime.html</loc></url>
+  <url><loc>https://marmot.build/docs/typescript-network.html</loc></url>
+  <url><loc>https://marmot.build/docs/typescript-storage.html</loc></url>
+  <url><loc>https://marmot.build/docs/typescript.html</loc></url>
+  <url><loc>https://marmot.build/docs/upgrading.html</loc></url>
+  <url><loc>https://marmot.build/donate.html</loc></url>
+  <url><loc>https://marmot.build/updates.html</loc></url>
+</urlset>

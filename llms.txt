@@ -1,0 +1,38 @@
+# Marmot
+
+> Marmot is an open protocol for decentralized, end-to-end encrypted group messaging. It uses Messaging Layer Security (MLS) for group encryption and Nostr public keys for identity. Current clients use Nostr relays for transport.
+
+MDK is the Rust implementation and provides MarmotKit native bindings, a C interface, and the White Noise runtime. Marmot TypeScript is a separate implementation for JavaScript and TypeScript applications. White Noise is a messenger built on Marmot. The guides below follow the latest stable releases and link to their version-pinned sources.
+
+## Protocol and ecosystem
+
+- [Marmot protocol specification](https://github.com/marmot-protocol/marmot): Protocol and interoperability requirements.
+- [White Noise](https://www.whitenoise.chat/): End-user messenger and downloads.
+
+## Start here
+
+- [Documentation](https://marmot.build/docs/index.md): Find the right Marmot developer guide for native apps, Rust, C, TypeScript, the command line, or agent integrations.
+
+## Integration guides
+
+- [Native apps · MarmotKit](https://marmot.build/docs/native-apps.md): Integrate MarmotKit into iOS, macOS, or Android apps and use its native bindings for encrypted messaging, groups, and account management.
+- [Rust application runtime](https://marmot.build/docs/rust-runtime.md): Use the Rust application runtime to manage Marmot accounts, messaging, storage, and networking in a Rust application.
+- [C and native hosts](https://marmot.build/docs/c-interface.md): Integrate Marmot into a native host through its C ABI, from building the library to calling it and managing its handles.
+- [Bots and agents](https://marmot.build/docs/agents.md): Connect a bot or coding agent to White Noise over a local control socket and manage its messaging permissions.
+- [Terminal and scripts](https://marmot.build/docs/cli.md): Set up the White Noise CLI and use terminal commands or scripts to manage accounts, groups, and encrypted messages.
+- [TypeScript quickstart](https://marmot.build/docs/typescript.md): Install the Marmot TypeScript SDK, connect a client to Nostr, and start sending end-to-end encrypted group messages.
+- [TypeScript storage](https://marmot.build/docs/typescript-storage.md): Choose and configure Marmot TypeScript storage for browser or server applications, including how to plug in custom storage.
+- [TypeScript networking](https://marmot.build/docs/typescript-network.md): Connect Marmot TypeScript clients to Nostr relays and configure the transport for sending and receiving group events.
+
+## Reference
+
+- [MarmotKit distribution](https://marmot.build/docs/distribution.md): Choose and install the published MarmotKit packages for Apple and Android platforms, or build the native bindings from source.
+- [MarmotKit API](https://marmot.build/docs/native-api.md): Look up MarmotKit methods and types for accounts, encrypted messaging, groups, media, and other operations in native apps.
+- [C API](https://marmot.build/docs/c-api.md): Look up Marmot’s C functions and types, including calling conventions, return values, and ownership requirements.
+- [Architecture](https://marmot.build/docs/architecture.md): Explore how the Marmot Development Kit organizes MLS group state, encrypted storage, Nostr relay access, and client runtimes.
+- [Upgrade guide](https://marmot.build/docs/upgrading.md): Review version-specific breaking changes and migration steps before upgrading an application to the latest stable MDK release.
+
+## Optional
+
+- [Marmot apps](https://marmot.build/apps.html): Apps built on the protocol.
+- [Release notes](https://marmot.build/updates.html): Published MDK and Marmot TypeScript changes.
