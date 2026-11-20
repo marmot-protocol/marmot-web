@@ -1,4 +1,4 @@
-import{c as a,b as t,d as r,u as e,r as i,o as c}from"./app-CjXjy52L.js";const d="mdk",s="0.17.0",l="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-c/README.md",h=`<div id="marmot-c" class="mm-source-title">marmot-c</div>
+import{c as a,b as o,d as r,u as e,r as i,o as c}from"./app-DgITpRfK.js";const d="mdk",s="0.18.0",l="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-c/README.md",h=`<div id="marmot-c" class="mm-source-title">marmot-c</div>
 <p>C ABI over the Marmot app runtime (<code>marmot-uniffi</code>), for C/C++ and any raw-FFI consumer (Zig, Nim, Go, Odin, Lua,
 PHP, …). Runtime concepts, screen contracts and API selection are shared with Swift/Kotlin and live in the
 <a href="__MARMOT_BASE__docs/native-apps.html#integration-guide-and-api-reference">binding integration guide</a>; this README covers what is
@@ -16,13 +16,14 @@ per feature.</p>
 <li><a href="#relay-liveness">Relay liveness</a></li>
 <li><a href="#nip-46-accounts">NIP-46 accounts</a></li>
 <li>Feature notes: <a href="#runtime-construction">runtime construction</a>,
-<a href="#experimental-device-group-test-builds">experimental device-group test builds</a>,
+<a href="#device-groups">device groups</a>,
 <a href="#discarding-a-failed-send">discarding a failed send</a>, <a href="#local-sends">local sends</a>,
 <a href="#attachment-handoff-leases">attachment handoff leases</a>, <a href="#attachment-storage">attachment storage</a>,
 <a href="#custom-reaction-artwork">custom reaction artwork</a>, <a href="#sticker-pack-sharing">sticker pack sharing</a>,
 <a href="#emoji-set-installs">emoji set installs</a>,
 <a href="#file-backed-media-upload">file-backed media upload</a>,
 <a href="#account-attachment-history">account attachment history</a>,
+<a href="#direct-follow-availability">direct-follow availability</a>,
 <a href="#public-event-verification">public event verification</a>, <a href="#host-performance-stages">host performance stages</a>,
 <a href="#markdown-rendering">Markdown rendering</a>, <a href="#identity-references-and-pseudonyms">identity references and pseudonyms</a>,
 <a href="#keypackage-inventory">KeyPackage inventory</a>, <a href="#invitation-lookup-outcomes">invitation lookup outcomes</a>, <a href="#selected-chat-list-presentation">selected chat-list presentation</a>,
@@ -55,6 +56,14 @@ terminal NULL on failure. Blocking <code>next</code> returns the same error stat
 freeing the handle; release it with <code>marmot_relay_liveness_subscription_free</code> before
 freeing its client. Callback cancellation and context lifetime follow the generic
 subscription rules below.</p>
+<h2 id="direct-follow-availability">Direct-follow availability</h2>
+<p>The shared <a href="__MARMOT_BASE__docs/native-apps.html#direct-follow-availability">direct-follow availability contract</a> applies to C.
+<code>marmot_follow_availability_page</code> returns an owned <code>MarmotFollowAvailabilityPage</code>;
+<code>marmot_refresh_follow_availability</code> and <code>marmot_follow_availability_status</code> return an owned
+<code>MarmotFollowAvailabilityRefreshStatus</code>. Release them with <code>marmot_follow_availability_page_free</code> and
+<code>marmot_follow_availability_refresh_status_free</code>. Page freeing releases every embedded row and optional string.
+<code>marmot_cancel_follow_availability</code> writes a C boolean through its out-pointer. All four calls block the
+calling thread; keep page and status reads off the UI thread.</p>
 <h2 id="what-you-get">What you get</h2>
 <ul>
 <li><code>libmarmot_c.so</code> / <code>libmarmot_c.a</code> (cdylib + staticlib).</li>
@@ -72,12 +81,15 @@ Output records have concrete C layouts; this API has no tail-extension or
 cross-release layout-compatibility guarantee, and a shared major/minor number does not imply layout compatibility.
 Do not swap in a new library under an application compiled against older record layouts. Any additive record field,
 union tag or function requires regenerating <code>marmot.h</code>, recompiling consumers and shipping the matching library.</p>
-<p>See <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-c/CHANGELOG.md">the changelog</a> for record-layout changes and upgrade requirements
+<p>See <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-c/CHANGELOG.md">the changelog</a> for record-layout changes and upgrade requirements
 for each release.</p>
 <p><code>MARMOT_STATUS_EVENT_TOO_LARGE</code> (119) reports the shared <a href="__MARMOT_BASE__docs/native-apps.html#runtime-lifecycle-threads-and-errors">size-refusal error</a>.
 The last-error string contains only the coarse artifact and size class; C has no structured size-error payload.
 For a Welcome, status119 explains the observed attempt, not terminal delivery or proof of no earlier receipt.
 Keep native retry work and confirmed state, including when a crash or expired bookkeeping hides earlier exposure.</p>
+<p><code>MARMOT_STATUS_NO_USABLE_RELAY</code> (133) reports the shared <a href="__MARMOT_BASE__docs/native-apps.html#runtime-lifecycle-threads-and-errors">no-usable-relay error</a>:
+none of the group's relays is one MDK may send to, so nothing was sent and a retry fails the same way while the
+group's relays stay the same.</p>
 <h2 id="rules-of-the-road">Rules of the road</h2>
 <ul>
 <li>Every fallible function returns <code>MarmotStatus</code> (<code>MARMOT_STATUS_OK</code> is
@@ -153,7 +165,7 @@ lifecycle, screen contracts, API selection, localization and upgrade policy.</li
 C-only compatibility shims.</li>
 <li><a href="__MARMOT_BASE__docs/native-api.html">Shared method reference</a>: runtime purposes and recommended alternatives to
 older screen paths.</li>
-<li><a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/integration/README.md">Integration index</a>: a per-release upgrade guide for every release from 0.10.2,
+<li><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/integration/README.md">Integration index</a>: a per-release upgrade guide for every release from 0.10.2,
 including C record, enum, error and schema changes.</li>
 </ul>
 <p>Read the exact version's header and docs. The <code>marmot_nip46_*</code> adapter supports remote
@@ -176,8 +188,11 @@ through <code>marmot_onboarding_snapshot_free</code>; do not free the arrays sep
 See the shared <a href="__MARMOT_BASE__docs/native-apps.html#interactive-account-onboarding">diagnostic evidence limits</a>
 before interpreting query success as relay capability or publication evidence.</p>
 <p>The historical <code>SingleDevice</code> onboarding step is a sign-in chat/history notice,
-not a blanket claim that multi-device use is unsupported. Its notice, actions,
-acknowledgment calls and publication gate are unchanged; <code>MultiDeviceUnsupported</code>
+not a blanket claim that multi-device use is unsupported. Its actions,
+acknowledgment calls and publication gate are unchanged. Each
+<code>MarmotOnboardingDevicePackage</code> ends with <code>client</code>, a nullable, peer-controlled app
+label that <code>marmot_onboarding_snapshot_free</code> releases with the snapshot; render it
+only as untrusted text, as the shared notice copy describes. <code>MultiDeviceUnsupported</code>
 is retained for compatibility and omitted from current findings. Adopt the shared
 <a href="__MARMOT_BASE__docs/native-apps.html#single-device-notice">notice copy and evidence limits</a>
 in host localization with a published binding artifact. Continue is still an
@@ -190,6 +205,12 @@ unrelated fields, and content. <code>ManualReview</code> has no approval action;
 publish it or treat it as a full reset. Free the snapshot with
 <code>marmot_onboarding_snapshot_free</code> after presenting the exact diff. Approval
 remains a separate revision- and recovery-epoch-bound call.</p>
+<p>A step that offers <code>MARMOT_ONBOARDING_ACTION_REMOVE_UNUSABLE_RELAYS</code>, including
+one that passed, has an approvable preview that removes declared relays the
+check showed cannot serve their role. Each removed change's <code>removal_reason</code>
+says why (retired, or refused with <code>auth-required</code> / <code>payment-required</code> while
+the client could authenticate as the account). It is optional advice; see the
+shared <a href="__MARMOT_BASE__docs/native-apps.html#interactive-account-onboarding">onboarding guide</a>.</p>
 <p>Explicit <code>marmot_propose_onboarding_relays</code> selections also return the typed
 preview. See the shared <a href="__MARMOT_BASE__docs/native-apps.html#explicit-recovery-and-checkpoint-compatibility">manual-edit preservation and checkpoint compatibility
 contract</a>.
@@ -213,9 +234,8 @@ for that struct's layout. <code>marmot_client_new_with_client_name</code> is the
 deployment's recovery relays, discovery indexers, media and image servers, Open Ranking, moderation label namespace,
 keychain service and relay event limits. Create one with <code>marmot_deployment_white_noise</code> or
 <code>marmot_deployment_neutral</code>, adjust it with the <code>marmot_deployment_set_*</code> functions, construct, then free it with
-<code>marmot_deployment_free</code>; the client keeps its own copy. For an available constructor, a NULL deployment returns <code>MARMOT_STATUS_NULL_POINTER</code>
-before anything opens. The unavailable experimental constructor checks its capability immediately after
-required output preflight, before reading the remaining arguments. White Noise hosts pass <code>marmot_deployment_white_noise()</code>. The
+<code>marmot_deployment_free</code>; the client keeps its own copy. A NULL deployment returns <code>MARMOT_STATUS_NULL_POINTER</code>
+before anything opens. White Noise hosts pass <code>marmot_deployment_white_noise()</code>. The
 <a href="__MARMOT_BASE__docs/native-apps.html#deployment">shared contract</a> covers what neutral means, the keychain caveat and how
 <code>marmot_deployment_set_relay_event_limits</code> limits apply.</p>
 <p>For private integration fixtures, <code>marmot_client_new_with_options</code> accepts
@@ -223,18 +243,13 @@ an explicit loopback relay policy and an optional host secret-store vtable.
 Existing constructors keep their public-only policy. Loopback broker access
 requires a separate publisher trust opt-in; neither permits private or
 link-local endpoints. Local insecure trust is intended only for tests.</p>
-<h2 id="experimental-device-group-test-builds">Experimental device-group test builds</h2>
-<p>Follow the <a href="__MARMOT_BASE__docs/native-apps.html#experimental-device-group-test-builds">shared build and constructor guidance</a>.
-<code>marmot_client_new_with_experimental_device_groups</code> takes the same arguments and unchanged <code>MarmotClientOptions</code>
-layout as <code>marmot_client_new_with_configuration</code>. Required output validation and clearing happen first. An incapable
-library returns <code>MARMOT_STATUS_RUNTIME</code> with <code>experimental_device_groups_unavailable</code> before opening the root or
-taking secret-store callback ownership; ownership transfers only on successful construction. A push extension or
-background worker on an experimental root needs this constructor too: under <code>marmot_client_new_with_configuration</code>, an
-account that holds or is joining a device group does not open, and its calls return <code>MARMOT_STATUS_RUNTIME</code> with
-<code>experimental_device_groups_required</code>.</p>
-<p>Build the C library/header with <code>./crates/marmot-c/c-bindings.sh --dev-device-groups</code>. It stages
-<code>crates/marmot-c/output-dev-device-groups/</code> using a <code>dev-device-groups/</code> child of the selected Cargo target directory.
-Ordinary output cleaning preserves this sibling directory.</p>
+<p>&lt;a id=&quot;experimental-device-group-test-builds&quot;&gt;&lt;/a&gt;</p>
+<h2 id="device-groups">Device groups</h2>
+<p>Every constructor opens with device groups on; see the <a href="__MARMOT_BASE__docs/native-apps.html#device-groups">shared guidance</a>.
+<code>marmot_client_new_with_experimental_device_groups</code> is now the same open as <code>marmot_client_new_with_configuration</code>,
+kept so existing hosts keep linking. Every process that opens the root, a push extension or background worker
+included, must use this version or newer; see the <a href="__MARMOT_BASE__docs/native-apps.html#device-groups">shared guidance</a>. The ordinary <code>./crates/marmot-c/c-bindings.sh</code> build serves every constructor;
+there is no separate device-group artifact.</p>
 <h2 id="attachment-handoff-leases">Attachment handoff leases</h2>
 <p><code>marmot_open_attachment_handoff</code> writes a private plaintext copy of a retained
 attachment for an OS surface that needs a real file and returns its path under a
@@ -247,7 +262,7 @@ lease, <code>MARMOT_STATUS_INVALID_MEDIA_REFERENCE</code> for a malformed one, a
 Freeing the record with <code>marmot_attachment_handoff_free</code> does not release the
 lease. Both calls block, and the open holds the calling thread for the whole copy:
 run them off the UI thread. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/ATTACHMENT-ACCESS.md#handoff-leases">shared contract</a>.</p>
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/ATTACHMENT-ACCESS.md#handoff-leases">shared contract</a>.</p>
 <h2 id="attachment-storage">Attachment storage</h2>
 <p><code>marmot_attachment_storage_usage</code>, <code>marmot_attachment_storage_by_chat</code> and
 <code>marmot_largest_retained_attachments</code> read a Manage storage screen's usage and
@@ -258,7 +273,14 @@ ordinary Remove. <code>marmot_attachment_keep_media</code> and
 window as <code>MarmotAttachmentKeepMedia</code> discriminants; attachments it removes read
 <code>CleanedBySetting</code>. Page cursors are borrowed from their page: keep the page alive
 while passing its <code>next_cursor</code>, then free the page. Calls block. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/ATTACHMENT-ACCESS.md#manage-storage">shared contract</a>.</p>
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/ATTACHMENT-ACCESS.md#manage-storage">shared contract</a>.</p>
+<p><code>marmot_attachment_removals(client, account_ref, cursor, limit, out)</code> reads
+durable removal pages for host-owned derivative caches. The cursor is a borrowed
+nullable string, not a storage-list handle. Copy <code>next_cursor</code> before freeing
+the page with <code>marmot_body_removal_page_free</code>; it deep-frees the
+nested array and strings. Calls block. Follow the shared
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/ATTACHMENT-ACCESS.md#derivative-cache-removal-journal">reset and reconciliation contract</a>
+before persisting cursors.</p>
 <h2 id="custom-reaction-artwork">Custom reaction artwork</h2>
 <p><code>marmot_reaction_attachment</code> performs a bounded local lookup using the exact
 reaction event ID. It blocks off the UI thread and writes a standalone owned
@@ -266,7 +288,7 @@ reaction event ID. It blocks off the UI thread and writes a standalone owned
 the standalone result with <code>marmot_attachment_entry_free</code>; never use that free
 for an entry borrowed from a page. Use its original source target with ordinary
 attachment acquisition and local reads. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/ATTACHMENT-HISTORY.md#reaction-artwork">shared reaction contract</a>.</p>
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/ATTACHMENT-HISTORY.md#reaction-artwork">shared reaction contract</a>.</p>
 <h2 id="sticker-pack-sharing">Sticker pack sharing</h2>
 <p><code>marmot_sticker_pack_share_link(account_ref, coordinate)</code> follows the shared
 <a href="__MARMOT_BASE__docs/native-apps.html#stickers">sticker sharing contract</a>. It runs synchronously without network I/O and
@@ -300,13 +322,13 @@ File-backed calls have no fixed worker-response timeout; per-endpoint network
 deadlines still apply. Cancellation observed before message admission starts
 prevents publication; admission is not interruptible once started.</p>
 <h2 id="account-attachment-history">Account attachment history</h2>
-<p><code>marmot_account_attachment_history_page</code> blocks off the UI thread and borrows its query arrays and cursor. Deep-free the result with <code>marmot_account_attachment_page_read_free</code>; its cursor and version are borrowed fields and must not be freed separately. Clone a version baseline with <code>marmot_account_attachment_version_clone</code> when it must outlive a page. Query flags use <code>uint8_t</code>, and arrays are capped at 100 before decoding. See the <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/ACCOUNT-ATTACHMENT-HISTORY.md">shared contract</a>.</p>
+<p><code>marmot_account_attachment_history_page</code> blocks off the UI thread and borrows its query arrays and cursor. Deep-free the result with <code>marmot_account_attachment_page_read_free</code>; its cursor and version are borrowed fields and must not be freed separately. Clone a version baseline with <code>marmot_account_attachment_version_clone</code> when it must outlive a page. Query flags use <code>uint8_t</code>, and arrays are capped at 100 before decoding. See the <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/ACCOUNT-ATTACHMENT-HISTORY.md">shared contract</a>.</p>
 <h2 id="discarding-a-failed-send">Discarding a failed send</h2>
 <p><code>marmot_discard_failed_send(client, account_ref, group_id_hex, message_id_hex, &amp;out)</code> follows the shared
 <a href="__MARMOT_BASE__docs/native-apps.html#discarding-a-failed-send">contract</a> and publishes nothing. Inputs are borrowed; free
 <code>*out</code> with <code>marmot_discard_failed_send_result_free</code>, which also frees its <code>media_ciphertext_sha256</code> array.</p>
 <h2 id="local-sends">Local sends</h2>
-<p>The <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/LOCAL-SENDS.md">local-send contract</a> (0.10.4) adds token-aware
+<p>The <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/LOCAL-SENDS.md">local-send contract</a> (0.10.4) adds token-aware
 send/reply/draft/upload calls. C calls block until local acceptance (or upload then
 acceptance), rather than relay completion. Free their results with
 <code>marmot_local_send_acceptance_free</code>, <code>marmot_media_upload_submission_free</code>, or
@@ -329,7 +351,7 @@ stages in addition to the existing readiness and visibility milestones. Read the
 readiness and outbound/inbound message visibility remain in <code>host_splash_ready</code>,
 <code>host_foreground_local_ready</code>, <code>host_outbound_message_visible</code> and
 <code>host_inbound_message_visible</code>, respectively. Free snapshots with <code>marmot_app_performance_snapshot_free</code>. Stage
-boundaries are defined in the <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/runtime-latency-telemetry.md#boundaries">runtime telemetry catalog</a>.
+boundaries are defined in the <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/runtime-latency-telemetry.md#boundaries">runtime telemetry catalog</a>.
 See the <a href="__MARMOT_BASE__docs/native-apps.html#localization-privacy-and-diagnostics">diagnostics contract</a>.</p>
 <h2 id="markdown-rendering">Markdown rendering</h2>
 <p><code>MarmotMarkdownInline::Timestamp</code> carries signed <code>int64_t</code> Unix seconds and a
@@ -343,7 +365,7 @@ labels after locale, time-zone or clock changes and when the app resumes; visibl
 <code>Relative</code> nodes also need updates as time passes. An absolute-time tooltip or
 accessibility label is optional. Timestamp payloads require no separate free;
 <code>marmot_markdown_document_free</code> releases the containing tree. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-markdown/README.md">shared Markdown contract</a> for host
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-markdown/README.md">shared Markdown contract</a> for host
 rendering guidance and <a href="#binary-compatibility">Binary compatibility</a> for adopting
 the new union tag.</p>
 <p><code>MarmotMarkdownBlock</code> includes a <code>Details</code> tag (bounded <code>&lt;details&gt;</code> / <code>&lt;summary&gt;</code> blocks) whose fields live behind
@@ -385,7 +407,10 @@ invitations) using the
 <a href="__MARMOT_BASE__docs/native-apps.html#invitation-lookup-outcomes">shared lookup and result contract</a>.
 Optional C operation fields (<code>group_id_hex</code>, <code>created</code>, or <code>summary</code>) are NULL when
 no operation occurred. Free the whole result even when its operation is absent.</p>
-<p><code>marmot_start_direct_chat</code> still requires its peer. It and explicit directory
+<p><code>marmot_start_direct_chat</code> still requires its peer, as does
+<code>marmot_start_direct_chat_with_options</code>, which takes a borrowed
+<code>MarmotDirectConversationOptions</code> for the founding disappearing-message
+duration. Both and explicit directory
 lookups can return <code>MARMOT_STATUS_MISSING_KEY_PACKAGE</code> when the lookup found nothing
 invitable; the detail ends in <code>[obsolete_only]</code> when the recipient must update their
 app. <code>MARMOT_STATUS_DIRECTORY_LOOKUP_INCOMPLETE</code> means the lookup ran out of time or
@@ -402,7 +427,7 @@ rebuild against the matching header and library. Each list owns its strings; do 
 plus MDK-selected title/avatar descriptors. <code>MarmotPresentedChatRow</code> also embeds <code>preview</code> and <code>actions</code>
 (0.10.3; this changed its binary layout). The Draft preview owns its text; the parent row/snapshot free releases it.
 Message selection refers to the same row's <code>last_message</code>. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/CHAT-LIST-ROWS.md">shared chat-list row contract</a>.</p>
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/CHAT-LIST-ROWS.md">shared chat-list row contract</a>.</p>
 <p><code>marmot_open_presented_chat_list</code> returns an attached handle; take its <code>*_snapshot</code> once, then use <code>*_next</code> for
 whole-list replacements. The initial item has sequence zero. A repeated snapshot call returns CLOSED with NULL.
 This fallible subscription offers blocking next with timeout and typed storage/preparation errors. It has no callback
@@ -412,10 +437,10 @@ Free each result with <code>marmot_presented_chat_list_update_free</code> and th
 for version ordering, localization, readiness, and account-switch behavior.</p>
 <h2 id="chat-screens-and-avatars">Chat screens and avatars</h2>
 <p>Live Chats/Unread/Archived/Left windows and independent account attention follow the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/chat-projections-native.md">native handoff contract</a>
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/further-context/chat-projections-native.md">native handoff contract</a>
 for paging, sequence handling, cancellation, C ownership, and compatibility. Prepared conversation windows (history,
 header/capabilities, visible identities, read state and revisioned draft descriptors) follow the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/CONVERSATION-WINDOW.md">native conversation contract</a> for opening, paging, cancellation, timeout,
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/CONVERSATION-WINDOW.md">native conversation contract</a> for opening, paging, cancellation, timeout,
 ownership and draft migration.</p>
 <p>Avatar screen metadata is mirrored as <code>MarmotAvatarAsset</code>; resolved chat/conversation records carry an optional
 avatar metadata pointer. Use <code>marmot_request_avatar_assets</code> for up to 16 visible
@@ -571,7 +596,7 @@ compatibility and retained-state limits.</p>
 <code>MarmotLinkedDeviceList</code>; free it with <code>marmot_linked_device_list_free</code>. Each <code>MarmotLinkedDevice</code> has its
 <code>slot_id_hex</code> handle, <code>is_this_device</code>, <code>label</code>, <code>client</code> and <code>platform</code> (empty until set), <code>linked_at</code>, a
 <code>linked_by_slot_id_hex</code> that is NULL for the founder, a <code>MarmotLinkedDeviceStatus</code> and three setting flags. The list
-is empty in ordinary opens without explicit experimental device-group intent, and until this device trusts a device group. Re-read it on <code>MARMOT_EVENT_LINKED_DEVICES_CHANGED</code>.
+is empty until this device trusts a device group. Re-read it on <code>MARMOT_EVENT_LINKED_DEVICES_CHANGED</code>.
 <code>marmot_rename_linked_device</code> blocks on the account worker and renames one device by its <code>slot_id_hex</code> with one roster
 commit; an empty label clears it.</p>
 <p><code>marmot_update_linked_device_settings</code> blocks on the account worker and patches any linked device's settings.
@@ -613,7 +638,7 @@ the account's slots now, over the network, and writes the list after the check. 
 its <code>slot_id_hex</code> handle, <code>client</code> (empty when none), <code>appeared_at</code>, <code>last_seen_at</code>, <code>before_this_device</code>,
 <code>signed_in</code>, a <code>MarmotUnrecognizedSignInState</code>, and a <code>linked_by_slot_id_hex</code> set only for <code>LinkedElsewhere</code>.
 <code>marmot_answer_sign_in</code> takes a <code>MarmotSignInResponse</code> discriminant as <code>uint32_t</code>; an out-of-range value is
-<code>MARMOT_STATUS_INVALID_ARGUMENT</code>. The list is empty in ordinary opens without explicit experimental intent. Re-read it on
+<code>MARMOT_STATUS_INVALID_ARGUMENT</code>. Re-read it on
 <code>MARMOT_EVENT_UNRECOGNIZED_SIGN_INS_CHANGED</code>. See the <a href="__MARMOT_BASE__docs/native-apps.html#unrecognized-sign-ins">shared contract</a>.</p>
 <p><code>marmot_start_fresh</code> answers every sign-in from before this device Not now, now and when one is listed later, without
 rejecting any, and <code>marmot_started_fresh</code> writes whether the device did so and still has no device group; re-read it
@@ -626,17 +651,19 @@ has its <code>reason</code>, the <code>slot_id_hex</code> the item names, a <cod
 <code>MARMOT_COMPROMISE_WARNING_REASON_FOREIGN_OWN_SLOT_KEY_PACKAGE</code>, and <code>occurred_at</code>. <code>reason</code> is a
 <code>MarmotCompromiseWarningReason</code> discriminant carried as <code>uint32_t</code>: later releases add values, so show one the host
 does not know as a generic reason. <code>marmot_dismiss_compromise_warning</code> closes the warning on this device only. Re-read
-it on <code>MARMOT_EVENT_COMPROMISE_WARNING_CHANGED</code>. It is empty in ordinary opens without explicit experimental intent. See
+it on <code>MARMOT_EVENT_COMPROMISE_WARNING_CHANGED</code>. See
 the <a href="__MARMOT_BASE__docs/native-apps.html#compromise-warning">shared contract</a>.</p>
 <h2 id="linking-a-new-device">Linking a new device</h2>
+<p>Read <code>chat_progress</code> and <code>chat_progress_len</code> on the returned snapshot. For an entry with <code>on_new_device</code> set, show the
+joining banner while <code>remaining</code> is positive. On the approver the count measures Adds still owed. An empty list means
+progress is unavailable. Re-read on <code>MARMOT_EVENT_DEVICE_LINK_CHANGED</code>.</p>
 <p><code>marmot_start_device_link</code>, <code>marmot_confirm_device_link_match</code> and <code>marmot_cancel_device_link</code> (on the new device),
 <code>marmot_link_device</code> and <code>marmot_decline_device_link</code> (on a device already signed in) and
 <code>marmot_device_link_snapshot</code> each block on the account worker and write an owned <code>MarmotDeviceLinkSnapshot</code>; free it
 with <code>marmot_device_link_snapshot_free</code>. <code>new_device</code> is NULL unless this device asked to be linked. Both
 <code>MarmotNewDeviceLinkState</code> and each prompt's <code>MarmotDeviceLinkPromptState</code> are tagged unions: <code>Comparing</code> carries
 <code>code</code>/<code>code_len</code> emoji with screen-reader descriptions, <code>CannotLink</code> carries <code>missing</code>/<code>missing_len</code>, and
-<code>AddedElsewhere</code> carries both labels. <code>marmot_link_device</code> takes the label and two <code>uint8_t</code> setting flags. Every call
-requires the explicit experimental build and constructor described above. Re-read on
+<code>AddedElsewhere</code> carries both labels. <code>marmot_link_device</code> takes the label and two <code>uint8_t</code> setting flags. Re-read on
 <code>MARMOT_EVENT_DEVICE_LINK_CHANGED</code>. See the <a href="__MARMOT_BASE__docs/native-apps.html#linking-a-new-device">shared contract</a>.</p>
 <h2 id="history-may-be-incomplete-notices">History may be incomplete notices</h2>
 <p><code>marmot_history_notices</code> blocks on the account worker, reads local durable state only, and writes an owned
@@ -665,9 +692,20 @@ has not reached every group relay; <code>marmot_group_commit_delivery</code> rep
 immediately (free with <code>marmot_group_commit_delivery_free</code>), and
 <code>marmot_acknowledge_group_commit_undelivered</code> lets one change through. See the
 <a href="__MARMOT_BASE__docs/native-apps.html#history-may-be-incomplete-notices">shared contract</a> for when the
-status is returned.</p>
+status is returned.
+While the group's last commit from this device has not confirmed, group changes return
+<code>MARMOT_STATUS_GROUP_COMMIT_PENDING</code>, ahead of the catching-up and undelivered statuses.
+<code>marmot_group_pending_commit</code> reports the commit, its <code>Sending</code> or <code>Stuck</code> state and its relays
+(free with <code>marmot_group_pending_commit_free</code>). See the
+<a href="__MARMOT_BASE__docs/native-apps.html#a-group-change-still-being-sent">shared contract</a>.
+A group change that answered <code>CompletionUnknown</code> (or <code>AcceptedPending</code>, queued) and that MDK
+later gave up is kept for the host: <code>marmot_group_changes_not_delivered</code> lists the group's records
+(free with <code>marmot_group_change_not_delivered_list_free</code>), <code>MARMOT_GROUP_EVENT_KIND_GROUP_CHANGE_NOT_DELIVERED</code>
+announces a direct one, and <code>marmot_acknowledge_change_not_delivered</code> clears one by its
+<code>commit_id_hex</code>. A record names the change by its group, kind and time only. See the
+<a href="__MARMOT_BASE__docs/native-apps.html#group-changes-that-were-not-applied">shared contract</a>.</p>
 <p>Automatic Unrecoverable rejoin runs inside the account workers; C hosts keep their existing group-state
-subscriptions. See the <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/invitation-recovery.md#automatic-rejoin-of-an-unrecoverable-copy">shared automatic rejoin contract</a>
+subscriptions. See the <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/invitation-recovery.md#automatic-rejoin-of-an-unrecoverable-copy">shared automatic rejoin contract</a>
 for authorization, history retention and availability requirements.</p>
 <h2 id="blocked-leaves">Blocked leaves</h2>
 <p>When <code>leave_blocked</code> is set on <code>MarmotAppGroupRecord</code>, <code>MarmotChatListRow</code> or <code>MarmotGroupManagementState</code>, the
@@ -784,4 +822,4 @@ host's swap encryption. Flags already in <code>LIBSQLITE3_FLAGS</code> are kept.
 <p>The mirror surface is macro-generated, so header generation runs cbindgen
 with macro expansion (<code>RUSTC_BOOTSTRAP=1</code> on the stable toolchain). CI
 diff-gates the checked-in header.</p>
-`,u={__name:"c-interface.html",setup(m){return(p,o)=>{const n=i("DocumentationPage");return c(),a("div",null,[o[0]||(o[0]=t("h1",{id:"c-and-native-hosts",tabindex:"-1"},[t("a",{class:"header-anchor",href:"#c-and-native-hosts"},[t("span",null,"C and native hosts")])],-1)),r(n,{document:{repo:e(d),version:e(s),sourceUrl:e(l),html:e(h)}},null,8,["document"])])}}},g=JSON.parse('{"path":"/docs/c-interface.html","title":"C and native hosts","lang":"en-US","frontmatter":{"title":"C and native hosts","description":"Integrate Marmot into a native host through its C ABI, from building the library to calling it and managing its handles.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0,"head":[["link",{"rel":"canonical","href":"https://marmot.build/docs/c-interface.html"}],["link",{"rel":"describedby","href":"https://marmot.build/llms.txt"}],["meta",{"property":"og:type","content":"website"}],["meta",{"property":"og:site_name","content":"Marmot"}],["meta",{"property":"og:title","content":"C and native hosts | Marmot"}],["meta",{"property":"og:description","content":"Integrate Marmot into a native host through its C ABI, from building the library to calling it and managing its handles."}],["meta",{"property":"og:url","content":"https://marmot.build/docs/c-interface.html"}],["meta",{"property":"og:image","content":"https://marmot.build/images/share.png"}],["meta",{"property":"og:image:width","content":"1200"}],["meta",{"property":"og:image:height","content":"630"}],["meta",{"property":"og:image:alt","content":"Marmot wordmark and illustration"}],["meta",{"name":"twitter:card","content":"summary_large_image"}],["link",{"rel":"alternate","type":"text/markdown","href":"https://marmot.build/docs/c-interface.md"}]]},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1},{"name":"erskingardner","username":"erskingardner","email":"202880+erskingardner@users.noreply.github.com","commits":1,"url":"https://github.com/erskingardner"}],"changelog":[{"hash":"0330b27fbdf24e99917ca75283be54594a9152e3","time":1794986838000,"email":"202880+erskingardner@users.noreply.github.com","author":"Jeff Gardner","message":"Add Marmot analytics and search discovery metadata"},{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/c-interface.md"}');export{u as comp,g as data};
+`,u={__name:"c-interface.html",setup(m){return(p,t)=>{const n=i("DocumentationPage");return c(),a("div",null,[t[0]||(t[0]=o("h1",{id:"c-and-native-hosts",tabindex:"-1"},[o("a",{class:"header-anchor",href:"#c-and-native-hosts"},[o("span",null,"C and native hosts")])],-1)),r(n,{document:{repo:e(d),version:e(s),sourceUrl:e(l),html:e(h)}},null,8,["document"])])}}},g=JSON.parse('{"path":"/docs/c-interface.html","title":"C and native hosts","lang":"en-US","frontmatter":{"title":"C and native hosts","description":"Integrate Marmot into a native host through its C ABI, from building the library to calling it and managing its handles.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0,"head":[["link",{"rel":"canonical","href":"https://marmot.build/docs/c-interface.html"}],["link",{"rel":"describedby","href":"https://marmot.build/llms.txt"}],["meta",{"property":"og:type","content":"website"}],["meta",{"property":"og:site_name","content":"Marmot"}],["meta",{"property":"og:title","content":"C and native hosts | Marmot"}],["meta",{"property":"og:description","content":"Integrate Marmot into a native host through its C ABI, from building the library to calling it and managing its handles."}],["meta",{"property":"og:url","content":"https://marmot.build/docs/c-interface.html"}],["meta",{"property":"og:image","content":"https://marmot.build/images/share.png"}],["meta",{"property":"og:image:width","content":"1200"}],["meta",{"property":"og:image:height","content":"630"}],["meta",{"property":"og:image:alt","content":"Marmot wordmark and illustration"}],["meta",{"name":"twitter:card","content":"summary_large_image"}],["link",{"rel":"alternate","type":"text/markdown","href":"https://marmot.build/docs/c-interface.md"}]]},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1},{"name":"erskingardner","username":"erskingardner","email":"202880+erskingardner@users.noreply.github.com","commits":1,"url":"https://github.com/erskingardner"}],"changelog":[{"hash":"0330b27fbdf24e99917ca75283be54594a9152e3","time":1794986838000,"email":"202880+erskingardner@users.noreply.github.com","author":"Jeff Gardner","message":"Add Marmot analytics and search discovery metadata"},{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/c-interface.md"}');export{u as comp,g as data};

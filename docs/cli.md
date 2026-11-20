@@ -1,6 +1,6 @@
 # Terminal and scripts
 
-> MDK 0.17.0 · [Read on Marmot](https://marmot.build/docs/cli.html) · [Version-pinned source](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/cli/README.md)
+> MDK 0.18.0 · [Read on Marmot](https://marmot.build/docs/cli.html) · [Version-pinned source](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cli/README.md)
 
 ## wn
 
@@ -21,7 +21,7 @@ The crate (source `crates/cli`, Cargo package `wn-cli`) builds two binaries:
 *   [Commands](https://marmot.build/docs/cli.html#commands)
     *   [Accounts](https://marmot.build/docs/cli.html#accounts)
     *   [KeyPackages](https://marmot.build/docs/cli.html#keypackages)
-    *   [Device linking (dev builds)](https://marmot.build/docs/cli.html#device-linking-dev-builds)
+    *   [Device linking](https://marmot.build/docs/cli.html#device-linking)
     *   [Chats](https://marmot.build/docs/cli.html#chats)
     *   [Groups](https://marmot.build/docs/cli.html#groups)
     *   [Messages](https://marmot.build/docs/cli.html#messages)
@@ -231,6 +231,9 @@ wn --account <npub-or-hex> groups disband-status <group-hex>
 wn --account <npub-or-hex> groups acknowledge-disband-failure <group-hex>
 wn --account <npub-or-hex> groups recovery-status <group-hex>
 wn --account <npub-or-hex> groups commit-delivery <group-hex>
+wn --account <npub-or-hex> groups pending-commit <group-hex>
+wn --account <npub-or-hex> groups changes-not-delivered <group-hex>
+wn --account <npub-or-hex> groups acknowledge-change-not-delivered <group-hex> <commit-hex>
 wn --account <npub-or-hex> groups confirm-rejoin <welcome-id-hex> --local-state-token <hex> --confirm
 wn --account <npub-or-hex> groups decline-rejoin <welcome-id-hex>
 wn --account <npub-or-hex> groups quarantined
@@ -253,6 +256,10 @@ The hidden legacy `group` namespace keeps `create`, `members`, `invite` (with `-
 
 **Changes not yet on every relay.** A group change counts as published once one group relay accepts it; MDK keeps retrying the others with the same event. Until they accept it, members who read only those relays cannot follow it, so once a change has been owed to a relay for two minutes, group changes fail with JSON error code `group_commit_undelivered`. A relay that refuses a change for good (too large for it, or any other final answer) will never carry it, so group changes fail with the same code at once, until you accept the refusal. `groups commit-delivery <group-hex>` shows the oldest change a relay refused, or else the oldest change still owed to a relay, with the relays owing it, the relays that refused it (`refused_relays`, each with its `cause`) and when the first relay accepted it; it reports owed relays immediately, before the two minutes pass. Retry once they accept it, or pass `--accept-undelivered` to make the change anyway, which also dismisses the group's refusals for good; scheduled self-updates wait up to an hour.
 
+**A change still being sent.** A group takes one commit at a time. While this device's last commit in the group has not confirmed, group changes fail with JSON error code `group_commit_pending`, ahead of `group_catching_up` and `group_commit_undelivered`; messages still send, and disbanding and an admin's leave are still accepted. `groups pending-commit <group-hex>` shows it under `pending_commit` (`null` when none): `commit_id_hex`, `origin` and `intent_kind` for a change of yours (absent for one MDK made on its own), `first_attempt_at`, `state`, and the relays. `state` is `sending` for its first ten minutes and while no relay may hold it, and `stuck` once some relay may hold it and none has acknowledged it: MDK keeps resending it and never gives it up. `unconfirmed_relay_urls` may hold it, `owed_relay_urls` never received it, and `refused_relays` gave a final latest answer with its `cause`.
+
+**Changes that were not applied.** A group change can return before MDK knows whether it reached the group. When MDK later gives such a change up, nothing reached members and nothing sends it again. Unlike `commit-delivery`, which shows a change members can see but some relay still owes, these changes never took effect. `groups changes-not-delivered <group-hex>` lists them, oldest first, under `changes_not_delivered`. Each entry has `commit_id_hex`, `origin` (`{"type": "direct"}`, or `{"type": "queued_intent", "intent_id_hex": ...}` for a queued change), `intent_kind` (such as `update_group_data`), `reason` and `at` (Unix seconds). The `reason` is `not_delivered` if no relay received it, `event_too_large` if it fits none of the group's relays, or `refused` if every relay refused it. An entry stays, across restarts and later changes, until `groups acknowledge-change-not-delivered <group-hex> <commit-hex>` clears it (`acknowledged` is `false` if there was nothing to clear). A change that failed inside its own command, or one MDK made on its own, such as a scheduled self-update, is never listed.
+
 **Group identifiers.** Every `<group-hex>` is the canonical MLS group id (`group_id` in JSON; opaque bytes, 16 bytes for OpenMLS-created groups). It is not the 32-byte Nostr routing handle shown under `nostr_routing.nostr_group_id_hex`, which is transport state the group can rotate. Filters, lookups, and JSON always key on the MLS group id.
 
 **Publication versus durable completion.** `published` and `message_ids` on a mutation result mean the relay accepted the events this device sent. They do not prove that any other member has processed them. Outcomes that finish later are queryable after the command returns and after a restart: `groups disband-status`, `groups recovery-status`, `groups pending-welcomes`, and `groups maintenance-status`.
@@ -263,7 +270,7 @@ The hidden legacy `group` namespace keeps `create`, `members`, `invite` (with `-
 
 Group creation and member invites resolve each requested account independently using fresh KeyPackages. Eligible accounts proceed even if others are unavailable. JSON `member_outcomes` lists each canonical account once, with `account_id_hex`, `status`, and `selected_device_count`. `selected` means eligible for the operation, not joined or delivered. Other statuses are `missing_key_package`, `obsolete_key_package`, `invalid_key_package`, `incompatible_key_package`, `missing_inbox_route`, and `incomplete`. If no requested account is eligible, creation returns `group_id: null`; an invite returns `summary: null` and nullable publication fields, without changing the group. An empty create roster still creates a creator-only group.
 
-**Names and admins.** `groups update` is the canonical spelling for name and/or description changes; `groups rename` and legacy `group update` keep working. `groups add-members ... --admin <member>` (and legacy `group invite --admin`) grants admin to an invitee inside the same invite commit. An `--admin` that is not one of the invitees fails with `initial_admin_not_invited` before anything is published. Invite results carry selected `initial_admins` and the original `requested_initial_admins`. An unavailable invitee receives no admin rights. `groups management` mirrors the MarmotKit management state (`is_self_admin`, `can_invite`, `can_leave`, `requires_self_demote_before_leave`, `leave_blocked`, `can_enable_disbanding`, `can_disband`, `disbanding_blockers`, per-member `member_actions`). Leave hints use the shared core capability selector and remain advisory; the command rechecks current authority. `can_leave` is false for unaccepted invitations and unrecoverable groups. `requires_self_demote_before_leave` is true for an admin, including an admin invitee: `groups leave` and `groups decline` refuse an admin with `admin_policy` before anything is written or published, until `groups self-demote`; the last admin promotes another account first. TUI `L` shows an admin why it cannot leave yet instead of confirming. A `dev-device-groups` build instead demotes an eligible nonlast admin account itself before its ordinary departure, so the flag is false there: the last active admin account is refused before a new shared invitation choice or departure publication, TUI `L` confirms and invokes the same command, and a committed demotion remains if a later departure fails. An admitted Leave can still be settling; success is not proof every device departed.
+**Names and admins.** `groups update` is the canonical spelling for name and/or description changes; `groups rename` and legacy `group update` keep working. `groups add-members ... --admin <member>` (and legacy `group invite --admin`) grants admin to an invitee inside the same invite commit. An `--admin` that is not one of the invitees fails with `initial_admin_not_invited` before anything is published. Invite results carry selected `initial_admins` and the original `requested_initial_admins`. An unavailable invitee receives no admin rights. `groups management` mirrors the MarmotKit management state (`is_self_admin`, `can_invite`, `can_leave`, `requires_self_demote_before_leave`, `leave_blocked`, `can_enable_disbanding`, `can_disband`, `disbanding_blockers`, per-member `member_actions`). Leave hints use the shared core capability selector and remain advisory; the command rechecks current authority. `can_leave` is false for unaccepted invitations and unrecoverable groups. Leave demotes an eligible nonlast admin account itself before its ordinary departure, so `requires_self_demote_before_leave` is false: the last active admin account is refused before a new shared invitation choice or departure publication, TUI `L` confirms and invokes the same command, and a committed demotion remains if a later departure fails. With `WN_DEVICE_GROUPS=0` (see [device linking](https://marmot.build/docs/cli.html#device-linking)) the flag is instead true for an admin, including an admin invitee: `groups leave` and `groups decline` refuse an admin with `admin_policy` before anything is written or published, until `groups self-demote`; the last admin promotes another account first, and TUI `L` shows an admin why it cannot leave yet instead of confirming. An admitted Leave can still be settling; success is not proof every device departed.
 
 **Retention.** `groups retention <group-hex>` shows the disappearing-message policy (`disappearing_message_secs`, `enabled`, and the full `message_retention` component). `--set <duration>` publishes a component update: a bare integer is seconds, `s`/`m`/`h`/`d`/`w` suffixes scale a positive integer, and `0` or `off` disables retention. `groups create --retention <duration>` puts the policy in the founding commit instead of a second commit. Only admins may change the policy (`not_group_admin`). A message keeps the policy of the epoch that delivered it: `messages list` rows carry a `retention` object (`retention_seconds`, `expires_at`, or `null` for legacy rows) and timeline rows carry `retention_seconds` / `retention_expires_at`, so changing the policy never re-labels older messages.
 
@@ -405,7 +412,7 @@ wn usage-diagnostics disable
 *   `users search` searches your follow graph; `--radius START..END` defaults to `0..1` (0 is you, 1 who you follow, 2 follows-of-follows).
 *   `notifications subscribe` streams daemon-backed local notification updates as JSON lines.
 *   `relay-stats` prints device-local relay telemetry: aggregate lifecycle counters, cross-relay arrival spread, per-relay first-deliverer and first-event/EOSE timing, and redacted relay health. It reads the live `wnd` runtime when a daemon socket exists. Per-relay rows use opaque device-local indices, never relay URLs.
-*   `usage-diagnostics show|enable|disable` manages the local combined "Share usage and diagnostics" permission. An active `wnd` owns the update. Audit consent is separate. See the [host and operator contract](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/usage-diagnostics.md) for disclosure, endpoint/key configuration, and reporting limitations.
+*   `usage-diagnostics show|enable|disable` manages the local combined "Share usage and diagnostics" permission. An active `wnd` owns the update. Audit consent is separate. See the [host and operator contract](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/usage-diagnostics.md) for disclosure, endpoint/key configuration, and reporting limitations.
 
 ### Agent text streams
 
@@ -451,20 +458,18 @@ wn --account <npub-or-hex> sync
 
 `sync` is a diagnostic and repair command. Normal daemon-backed chat, group, and stream flows use runtime subscriptions and should not need it.
 
-## Device linking (dev builds)
+## Device linking
 
-Build matching `wn` and `wnd` with the explicit default-off capability:
+Device groups are on by default in every `wn`/`wnd` build, with production settlement/retry timing. Export `WN_DEVICE_GROUPS=0` (or `false`, `off`, `no`) for both `wn` and `wnd` (the daemon owns the runtime, and the TUI reads it for Leave) to turn them off. A debug build needs the repository's existing [debug-binary stack requirement](https://marmot.build/docs/#development) when running `wn`/`wnd` directly:
 
 ```sh
 export RUST_MIN_STACK=4194304
-cargo build -p wn-cli --bins --features dev-device-groups --locked
+cargo build -p wn-cli --bins --locked
 ```
 
-The export retains the repository's existing [debug-binary stack requirement](https://marmot.build/docs/#development) when running `wn`/`wnd` directly; it is not a timing override.
+Leave `WN_DEV_SETTLEMENT_QUIESCENCE_MS` and other policy-test overrides unset. Against a `wnd` started with `WN_DEVICE_GROUPS=0`, `devices link` commands fail with `device group refused: pairing_unsupported` (JSON code `command_failed`) and `devices list` shows no devices; `wn daemon status --json` reports the daemon's `device_groups`.
 
-This enables device groups in that dev CLI/daemon and keeps production settlement/retry timing. It does **not** enable `test-policy-overrides`; leave `WN_DEV_SETTLEMENT_QUIESCENCE_MS` and other policy-test overrides unset. Ordinary release builds do not expose `devices` or enable the capability. App-binding adoption is separate.
-
-Use a dedicated account and home for dogfooding. Sign in to that same account on both devices using the existing `login --nsec-stdin` flow; never put an nsec in argv. Run a persistent daemon on each device with its selected home, secret store, discovery relays and account relays, using the matching dev `wn`/`wnd` binaries. For example, with `WN_HOME` and `WN_SOCKET` exported and the intended real relay lists configured:
+Use a dedicated account and home for dogfooding. Sign in to that same account on both devices using the existing `login --nsec-stdin` flow; never put an nsec in argv. Run a persistent daemon on each device with its selected home, secret store, discovery relays and account relays, using matching `wn`/`wnd` binaries. For example, with `WN_HOME` and `WN_SOCKET` exported and the intended real relay lists configured:
 
 ```sh
 wn daemon start --discovery-relays "$DISCOVERY_RELAYS" --default-account-relays "$ACCOUNT_RELAYS"
@@ -488,6 +493,8 @@ wn --account "$ACCOUNT" devices link status
 
 Both confirmations are required; either may happen first. The existing device shows `linking` until the new device's first selected change arrives, then `linked`; the new device also shows `linked`. Read `devices list` on both to see their own distinct slots. `devices link cancel` cancels on the new device. Approval uses the existing defaults of adding to existing chats and bringing history; `--no-add-to-all-chats` and `--no-bring-history` opt out individually. No command creates or authenticates a device by its account key alone.
 
+The link status JSON includes `chat_progress` for each recent approved link. On the new device, `remaining` counts chats still joining. On its approver, it counts Adds still owed. An empty list means progress is unavailable.
+
 Running the same `devices link start` flow on an already linked device moves only that device to the destination's device group. `link status` adds `moves[]`: Joining still trusts the old group; Made is the trust switch after the new device's first selected change. Old siblings remain local recognition hints, not automatic links. A known failed link before Made keeps old trust and forgets only the destination. The move leaves existing chat membership intact and does not promise traffic between device groups; admitted old-group traffic can finish normally. An unrecoverable destination can stay pending indefinitely while ordinary repair applies, keeping old trust and preventing another confirmed move. Corrupt or unreadable local move records may need manual local recovery or reset. These conditions do not themselves unlink this device. See [move behavior and limits](https://marmot.build/docs/native-apps.html#moving-this-device-to-another-device-group).
 
 To deliberately discard only this device's local hidden device-group copy before fresh code pairing:
@@ -506,7 +513,7 @@ Other existing dev account commands can still start one-shot live workers. Such 
 
 This dogfood CLI does not expose the existing-device **Not now** action. Do not approve an unwanted request or mismatching codes; cancel from the requesting/new device or let the exchange expire. `devices link cancel` applies only to the requesting/new device; it does not dismiss an existing-device prompt.
 
-This dev CLI also cannot manually dismiss a move's old-sibling recognition hint. A later confirmed link or selected departure can end the hint automatically; dismissing a hint does not link or remove a device.
+This CLI also cannot manually dismiss a move's old-sibling recognition hint. A later confirmed link or selected departure can end the hint automatically; dismissing a hint does not link or remove a device.
 
 `--json` returns the existing state without terminal escaping: `devices list` has `devices[]` with public slot, label/status, own-device flag and settings; `link` responses have nullable `new_device` and `prompts[]` with flat `state` strings. Comparing states include `code[]` objects with `emoji`/`description`; prompts include their opaque `prompt_id`. Keep comparison codes in the user-facing response, not logs or transcripts.
 
@@ -534,7 +541,7 @@ wn daemon stop
 *   `wn daemon stop` prints `daemon stopped` only once the daemon process has exited. The daemon answers the request before it shuts down its runtime, which can wait on relays; if it is still running 30 seconds later, the command fails with `daemon_stop_timeout` and names its pid, and leaves it to finish shutting down.
 *   When a daemon socket exists for a home, normal `wn --home <path> ...` commands are forwarded to it. `wn daemon status`, `wn daemon stop`, and `wn tui` handle daemon access directly. Use `--socket` or `WN_SOCKET` to target a specific daemon.
 *   `wnd` answers on its socket as soon as it binds it, before it has opened its accounts, which the runtime allows 45 seconds. Meanwhile `wn daemon status` prints `daemon starting` (`"starting": true` in `--json`), `wn daemon stop` stops it, and other commands wait until the accounts are open.
-*   `wn daemon status --json` includes `last_runtime_activity`, background `stream_watches`, and a redacted `relay_health` object with aggregate relay counts and connection-status buckets. It does not include relay URLs, account ids, group ids, subscription ids, or message ids.
+*   `wn daemon status --json` includes `device_groups` (false when that `wnd` runs with `WN_DEVICE_GROUPS=0`), `last_runtime_activity`, background `stream_watches`, and a redacted `relay_health` object with aggregate relay counts and connection-status buckets. It does not include relay URLs, account ids, group ids, subscription ids, or message ids.
 *   Subscription commands (see [Messages](https://marmot.build/docs/cli.html#messages)) use the daemon socket directly.
 
 Run `wnd` directly when a process supervisor should own the daemon lifecycle. It accepts `--home` (alias `--data-dir`), `--logs-dir`, `--socket`, `--discovery-relays`, `--default-account-relays`, `--secret-store`, and `--keychain-service`:
@@ -752,8 +759,8 @@ The intended first-class public installer is the namespaced Homebrew tap, whose 
 brew install marmot-protocol/tap/wn
 ```
 
-The formula lives in `github.com/marmot-protocol/homebrew-tap`; the project-side checklist is [`docs/release/wn-homebrew.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/release/wn-homebrew.md). `cargo install wn-cli` from crates.io is not available: the workspace has `publish = false` and the CLI depends on local workspace crates.
+The formula lives in `github.com/marmot-protocol/homebrew-tap`; the project-side checklist is [`docs/release/wn-homebrew.md`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/release/wn-homebrew.md). `cargo install wn-cli` from crates.io is not available: the workspace has `publish = false` and the CLI depends on local workspace crates.
 
 ## Changelog
 
-Release notes for the CLI crate live in [`CHANGELOG.md`](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/cli/CHANGELOG.md).
+Release notes for the CLI crate live in [`CHANGELOG.md`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cli/CHANGELOG.md).

@@ -1,6 +1,6 @@
 # MarmotKit distribution
 
-> MDK 0.17.0 · [Read on Marmot](https://marmot.build/docs/distribution.html) · [Version-pinned source](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/DISTRIBUTION.md)
+> MDK 0.18.0 · [Read on Marmot](https://marmot.build/docs/distribution.html) · [Version-pinned source](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/DISTRIBUTION.md)
 
 ## MarmotKit Binary Distribution
 
@@ -8,7 +8,7 @@ MarmotKit releases publish generated Swift/Kotlin APIs with matching native libr
 
 The shared Apple Swift asset includes MDK's [`nextCancellable()` subscription adapters](https://marmot.build/docs/native-api.html#swift-cancellation-adapters). Remove any host-owned copy of `CancellablePresentedChatList.swift` when adopting this asset, or Swift will reject the duplicate methods. The existing Swift asset hash covers the generated bindings and adapters together; there is no extra support-file download.
 
-Experimental device-group host test builds are separate from these published release/snapshot assets. Use the [explicit build flag and experimental constructor](https://marmot.build/docs/native-apps.html#experimental-device-group-test-builds), retain matching native and generated inputs, and take artifacts only from `output-dev-device-groups/`. Ordinary release automation and constructors do not opt in; never add policy-test timing overrides to a host artifact.
+From 0.18.0, published release and snapshot assets include [device groups](https://marmot.build/docs/native-apps.html#device-groups), and every constructor turns them on; earlier artifacts keep them off unless opened with the experimental constructor. There is no separate device-group artifact. Never add policy-test timing overrides to a host artifact.
 
 ## Apple privacy migration
 
@@ -40,7 +40,7 @@ Platform manifests identify this layout with `distribution: static-library-and-p
 
 Release CI builds a simulator consumer and archives iOS app/notification-extension and macOS consumers from the released ZIP, matching Swift and privacy assets. It checks resource content in each consumer, unchanged static linkage, real Rust references, executable/dSYM UUIDs, and absence of the empty framework stub. The fixture uses a local binary target after checking the downloaded ZIP's hash; existing remote SwiftPM link checks still exercise the URL and checksum path. Signed export, Organizer privacy report and App Store Connect upload remain separate host checks. Rust source-level debug information is unchanged and belongs in the crash-symbol PR.
 
-[Consumer migration tracking](https://github.com/marmot-protocol/mdk/issues/1874) records downstream adoption and host release evidence. See the [privacy audit and adoption guide](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/apple-privacy/README.md) for outstanding privacy questions.
+[Consumer migration tracking](https://github.com/marmot-protocol/mdk/issues/1874) records downstream adoption and host release evidence. See the [privacy audit and adoption guide](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/apple-privacy/README.md) for outstanding privacy questions.
 
 ## iOS
 
@@ -179,13 +179,13 @@ Use nightlies only for testing. Pin a formal `marmotkit-v<version>` release for 
 https://raw.githubusercontent.com/marmot-protocol/mdk/nightly-meta/latest.json
 ```
 
-It lists every asset's URL and SHA-256 for MarmotKit, Marmot C and WN Agent. See [nightly builds](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/release.md#nightly-builds) for naming, publication and retention.
+It lists every asset's URL and SHA-256 for MarmotKit, Marmot C and WN Agent. See [nightly builds](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/release.md#nightly-builds) for naming, publication and retention.
 
 ## Publishing
 
 Pushing a formal `marmotkit-v*` tag publishes iOS, macOS, and Android bindings. To publish an untagged snapshot, run the `MarmotKit Bindings` workflow with a full SHA on `master`. Its immutable release tag is derived from that SHA. Snapshots publish the iOS, macOS, and Android bindings from the same source SHA.
 
-Set the dispatch input `build_only=true` to build and validate workflow artifacts without publishing. This also permits testing the workflow on a development branch. Publishing retains the `master` workflow/source-ancestry restrictions. See [parallel builds and rehearsals](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/release.md#parallel-builds-and-build-only-rehearsals) for phase boundaries, concurrency limits and evidence scope.
+Set the dispatch input `build_only=true` to build and validate workflow artifacts without publishing. This also permits testing the workflow on a development branch. Publishing retains the `master` workflow/source-ancestry restrictions. See [parallel builds and rehearsals](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/release.md#parallel-builds-and-build-only-rehearsals) for phase boundaries, concurrency limits and evidence scope.
 
 Publishing first uploads and verifies every asset on a draft, then publishes it under repository-enforced immutable releases. A retry discards only an incomplete draft. Publishing fails if a public release already exists, and snapshot publishing also fails if its derived tag already exists. Assets and snapshot tags are never replaced or moved; a changed build requires a new formal version or a new source SHA.
 
@@ -193,4 +193,4 @@ Each platform manifest records both the packaged source SHA and the workflow bui
 
 ## Apple privacy resources
 
-Apple exporters publish raw static libraries and the reviewed SDK manifest as separate matching release inputs. The consuming Swift wrapper owns the privacy resource. See the [privacy audit and adoption guide](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/apple-privacy/README.md) for declarations, archive validation and unresolved release questions.
+Apple exporters publish raw static libraries and the reviewed SDK manifest as separate matching release inputs. The consuming Swift wrapper owns the privacy resource. See the [privacy audit and adoption guide](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/apple-privacy/README.md) for declarations, archive validation and unresolved release questions.

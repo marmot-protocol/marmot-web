@@ -1,4 +1,4 @@
-import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-CjXjy52L.js";const r="mdk",i="0.17.0",l="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
+import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-DgITpRfK.js";const r="mdk",i="0.18.0",l="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
 <p><code>wn</code> is the command-line app for the White Noise/Marmot stack. It manages Nostr-keyed accounts, relay lists,
 KeyPackages, chats, groups, messages, media, live runtime subscriptions, and a terminal UI. Use it to drive Marmot from
 a shell or script, or interactively with <code>wn tui</code>.</p>
@@ -18,7 +18,7 @@ setup, group and message projection, and Nostr directory refresh.</p>
 <ul>
 <li><a href="#accounts">Accounts</a></li>
 <li><a href="#keypackages">KeyPackages</a></li>
-<li><a href="#device-linking-dev-builds">Device linking (dev builds)</a></li>
+<li><a href="#device-linking">Device linking</a></li>
 <li><a href="#chats">Chats</a></li>
 <li><a href="#groups">Groups</a></li>
 <li><a href="#messages">Messages</a></li>
@@ -230,6 +230,9 @@ wn --account &lt;npub-or-hex&gt; groups disband-status &lt;group-hex&gt;
 wn --account &lt;npub-or-hex&gt; groups acknowledge-disband-failure &lt;group-hex&gt;
 wn --account &lt;npub-or-hex&gt; groups recovery-status &lt;group-hex&gt;
 wn --account &lt;npub-or-hex&gt; groups commit-delivery &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups pending-commit &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups changes-not-delivered &lt;group-hex&gt;
+wn --account &lt;npub-or-hex&gt; groups acknowledge-change-not-delivered &lt;group-hex&gt; &lt;commit-hex&gt;
 wn --account &lt;npub-or-hex&gt; groups confirm-rejoin &lt;welcome-id-hex&gt; --local-state-token &lt;hex&gt; --confirm
 wn --account &lt;npub-or-hex&gt; groups decline-rejoin &lt;welcome-id-hex&gt;
 wn --account &lt;npub-or-hex&gt; groups quarantined
@@ -259,6 +262,22 @@ never carry it, so group changes fail with the same code at once, until you acce
 owing it, the relays that refused it (<code>refused_relays</code>, each with its <code>cause</code>) and when the first relay accepted it; it
 reports owed relays immediately, before the two minutes pass. Retry once they accept it, or pass <code>--accept-undelivered</code>
 to make the change anyway, which also dismisses the group's refusals for good; scheduled self-updates wait up to an hour.</p>
+<p><strong>A change still being sent.</strong> A group takes one commit at a time. While this device's last commit in the group has
+not confirmed, group changes fail with JSON error code <code>group_commit_pending</code>, ahead of <code>group_catching_up</code> and
+<code>group_commit_undelivered</code>; messages still send, and disbanding and an admin's leave are still accepted. <code>groups pending-commit &lt;group-hex&gt;</code> shows it under <code>pending_commit</code> (<code>null</code> when none): <code>commit_id_hex</code>, <code>origin</code> and
+<code>intent_kind</code> for a change of yours (absent for one MDK made on its own), <code>first_attempt_at</code>, <code>state</code>, and the relays.
+<code>state</code> is <code>sending</code> for its first ten minutes and while no relay may hold it, and <code>stuck</code> once some relay may hold it
+and none has acknowledged it: MDK keeps resending it and never gives it up. <code>unconfirmed_relay_urls</code> may hold it,
+<code>owed_relay_urls</code> never received it, and <code>refused_relays</code> gave a final latest answer with its <code>cause</code>.</p>
+<p><strong>Changes that were not applied.</strong> A group change can return before MDK knows whether it reached the group. When MDK
+later gives such a change up, nothing reached members and nothing sends it again. Unlike <code>commit-delivery</code>, which shows
+a change members can see but some relay still owes, these changes never took effect. <code>groups changes-not-delivered &lt;group-hex&gt;</code> lists them, oldest first, under <code>changes_not_delivered</code>. Each entry has <code>commit_id_hex</code>, <code>origin</code>
+(<code>{&quot;type&quot;: &quot;direct&quot;}</code>, or <code>{&quot;type&quot;: &quot;queued_intent&quot;, &quot;intent_id_hex&quot;: ...}</code> for a queued change), <code>intent_kind</code> (such
+as <code>update_group_data</code>), <code>reason</code> and <code>at</code> (Unix seconds). The <code>reason</code> is <code>not_delivered</code> if no relay received it,
+<code>event_too_large</code> if it fits none of the group's relays, or <code>refused</code> if every relay refused it. An entry stays,
+across restarts and later changes, until <code>groups acknowledge-change-not-delivered &lt;group-hex&gt; &lt;commit-hex&gt;</code> clears it
+(<code>acknowledged</code> is <code>false</code> if there was nothing to clear). A change that failed inside its own command, or one MDK made
+on its own, such as a scheduled self-update, is never listed.</p>
 <p><strong>Group identifiers.</strong> Every <code>&lt;group-hex&gt;</code> is the canonical MLS group id (<code>group_id</code> in JSON; opaque bytes, 16 bytes for
 OpenMLS-created groups). It is not the 32-byte Nostr routing handle shown under <code>nostr_routing.nostr_group_id_hex</code>,
 which is transport state the group can rotate. Filters, lookups, and JSON always key on the MLS group id.</p>
@@ -287,13 +306,14 @@ original <code>requested_initial_admins</code>. An unavailable invitee receives 
 <code>requires_self_demote_before_leave</code>, <code>leave_blocked</code>, <code>can_enable_disbanding</code>, <code>can_disband</code>, <code>disbanding_blockers</code>,
 per-member <code>member_actions</code>). Leave hints use the shared core capability selector and remain advisory; the command
 rechecks current authority. <code>can_leave</code> is false for unaccepted invitations and unrecoverable groups.
-<code>requires_self_demote_before_leave</code> is true for an admin, including an admin invitee: <code>groups leave</code> and
-<code>groups decline</code> refuse an admin with <code>admin_policy</code> before anything is written or published, until <code>groups self-demote</code>;
-the last admin promotes another account first. TUI <code>L</code> shows an admin why it cannot leave yet instead of confirming. A
-<code>dev-device-groups</code> build instead demotes an eligible nonlast admin account itself before its ordinary departure, so
-the flag is false there: the last active admin account is refused before a new shared invitation choice or departure
-publication, TUI <code>L</code> confirms and invokes the same command, and a committed demotion remains if a later departure
-fails. An admitted Leave can still be settling; success is not proof every device departed.</p>
+Leave demotes an eligible nonlast admin account itself before its ordinary departure, so
+<code>requires_self_demote_before_leave</code> is false: the last active admin account is refused before a new shared invitation
+choice or departure publication, TUI <code>L</code> confirms and invokes the same command, and a committed demotion remains if a
+later departure fails. With <code>WN_DEVICE_GROUPS=0</code> (see <a href="#device-linking">device linking</a>) the flag is instead true for an
+admin, including an admin invitee: <code>groups leave</code> and <code>groups decline</code> refuse an admin with <code>admin_policy</code> before
+anything is written or published, until <code>groups self-demote</code>; the last admin promotes another account first, and TUI <code>L</code>
+shows an admin why it cannot leave yet instead of confirming. An admitted Leave can still be settling; success is not proof every device
+departed.</p>
 <p><strong>Retention.</strong> <code>groups retention &lt;group-hex&gt;</code> shows the disappearing-message policy (<code>disappearing_message_secs</code>,
 <code>enabled</code>, and the full <code>message_retention</code> component). <code>--set &lt;duration&gt;</code> publishes a component update: a bare integer
 is seconds, <code>s</code>/<code>m</code>/<code>h</code>/<code>d</code>/<code>w</code> suffixes scale a positive integer, and <code>0</code> or <code>off</code> disables retention. <code>groups create --retention &lt;duration&gt;</code> puts the policy in the founding commit instead of a second commit. Only admins may change the
@@ -555,7 +575,7 @@ per-relay first-deliverer and first-event/EOSE timing, and redacted relay health
 when a daemon socket exists. Per-relay rows use opaque device-local indices, never relay URLs.</li>
 <li><code>usage-diagnostics show|enable|disable</code> manages the local combined &quot;Share usage and diagnostics&quot; permission. An active
 <code>wnd</code> owns the update. Audit consent is separate. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/usage-diagnostics.md">host and operator contract</a> for disclosure, endpoint/key
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/usage-diagnostics.md">host and operator contract</a> for disclosure, endpoint/key
 configuration, and reporting limitations.</li>
 </ul>
 <h3 id="agent-text-streams">Agent text streams</h3>
@@ -610,19 +630,20 @@ bundled Mozilla roots (<code>webpki-roots</code>) that relays and HTTP also use,
 </code></pre>
 <p><code>sync</code> is a diagnostic and repair command. Normal daemon-backed chat, group, and stream flows use runtime subscriptions
 and should not need it.</p>
-<h2 id="device-linking-dev-builds">Device linking (dev builds)</h2>
-<p>Build matching <code>wn</code> and <code>wnd</code> with the explicit default-off capability:</p>
+<h2 id="device-linking">Device linking</h2>
+<p>Device groups are on by default in every <code>wn</code>/<code>wnd</code> build, with production settlement/retry timing. Export
+<code>WN_DEVICE_GROUPS=0</code> (or <code>false</code>, <code>off</code>, <code>no</code>) for both <code>wn</code> and <code>wnd</code> (the daemon owns the runtime, and the TUI reads
+it for Leave) to turn them off. A debug build needs the repository's existing <a href="__MARMOT_BASE__docs/#development">debug-binary stack requirement</a>
+when running <code>wn</code>/<code>wnd</code> directly:</p>
 <pre><code class="language-sh">export RUST_MIN_STACK=4194304
-cargo build -p wn-cli --bins --features dev-device-groups --locked
+cargo build -p wn-cli --bins --locked
 </code></pre>
-<p>The export retains the repository's existing <a href="__MARMOT_BASE__docs/#development">debug-binary stack requirement</a>
-when running <code>wn</code>/<code>wnd</code> directly; it is not a timing override.</p>
-<p>This enables device groups in that dev CLI/daemon and keeps production settlement/retry timing. It does <strong>not</strong>
-enable <code>test-policy-overrides</code>; leave <code>WN_DEV_SETTLEMENT_QUIESCENCE_MS</code> and other policy-test overrides unset.
-Ordinary release builds do not expose <code>devices</code> or enable the capability. App-binding adoption is separate.</p>
+<p>Leave <code>WN_DEV_SETTLEMENT_QUIESCENCE_MS</code> and other policy-test overrides unset. Against a <code>wnd</code> started with <code>WN_DEVICE_GROUPS=0</code>,
+<code>devices link</code> commands fail with <code>device group refused: pairing_unsupported</code> (JSON code <code>command_failed</code>) and
+<code>devices list</code> shows no devices; <code>wn daemon status --json</code> reports the daemon's <code>device_groups</code>.</p>
 <p>Use a dedicated account and home for dogfooding. Sign in to that same account on both devices using the existing
 <code>login --nsec-stdin</code> flow; never put an nsec in argv. Run a persistent daemon on each device with its selected home,
-secret store, discovery relays and account relays, using the matching dev <code>wn</code>/<code>wnd</code> binaries. For example, with
+secret store, discovery relays and account relays, using matching <code>wn</code>/<code>wnd</code> binaries. For example, with
 <code>WN_HOME</code> and <code>WN_SOCKET</code> exported and the intended real relay lists configured:</p>
 <pre><code class="language-sh">wn daemon start --discovery-relays &quot;$DISCOVERY_RELAYS&quot; --default-account-relays &quot;$ACCOUNT_RELAYS&quot;
 wn --account &quot;$ACCOUNT&quot; devices list
@@ -642,6 +663,8 @@ first selected change arrives, then <code>linked</code>; the new device also sho
 their own distinct slots. <code>devices link cancel</code> cancels on the new device. Approval uses the existing defaults of
 adding to existing chats and bringing history; <code>--no-add-to-all-chats</code> and <code>--no-bring-history</code> opt out individually.
 No command creates or authenticates a device by its account key alone.</p>
+<p>The link status JSON includes <code>chat_progress</code> for each recent approved link. On the new device, <code>remaining</code> counts chats
+still joining. On its approver, it counts Adds still owed. An empty list means progress is unavailable.</p>
 <p>Running the same <code>devices link start</code> flow on an already linked device moves only that device to the destination's
 device group. <code>link status</code> adds <code>moves[]</code>: Joining still trusts the old group; Made is the trust switch after the new
 device's first selected change. Old siblings remain local recognition hints, not automatic links. A known failed link
@@ -676,7 +699,7 @@ behavior, so inspect <code>devices list</code> before retrying. Restarting does 
 <p>This dogfood CLI does not expose the existing-device <strong>Not now</strong> action. Do not approve an unwanted request or
 mismatching codes; cancel from the requesting/new device or let the exchange expire. <code>devices link cancel</code> applies
 only to the requesting/new device; it does not dismiss an existing-device prompt.</p>
-<p>This dev CLI also cannot manually dismiss a move's old-sibling recognition hint. A later confirmed link or selected
+<p>This CLI also cannot manually dismiss a move's old-sibling recognition hint. A later confirmed link or selected
 departure can end the hint automatically; dismissing a hint does not link or remove a device.</p>
 <p><code>--json</code> returns the existing state without terminal escaping: <code>devices list</code> has <code>devices[]</code> with public slot,
 label/status, own-device flag and settings; <code>link</code> responses have nullable <code>new_device</code> and <code>prompts[]</code> with flat
@@ -723,7 +746,8 @@ daemon.</li>
 <li><code>wnd</code> answers on its socket as soon as it binds it, before it has opened its accounts, which the runtime allows 45
 seconds. Meanwhile <code>wn daemon status</code> prints <code>daemon starting</code> (<code>&quot;starting&quot;: true</code> in <code>--json</code>), <code>wn daemon stop</code>
 stops it, and other commands wait until the accounts are open.</li>
-<li><code>wn daemon status --json</code> includes <code>last_runtime_activity</code>, background <code>stream_watches</code>, and a redacted <code>relay_health</code>
+<li><code>wn daemon status --json</code> includes <code>device_groups</code> (false when that <code>wnd</code> runs with <code>WN_DEVICE_GROUPS=0</code>),
+<code>last_runtime_activity</code>, background <code>stream_watches</code>, and a redacted <code>relay_health</code>
 object with aggregate relay counts and connection-status buckets. It does not include relay URLs, account ids, group
 ids, subscription ids, or message ids.</li>
 <li>Subscription commands (see <a href="#messages">Messages</a>) use the daemon socket directly.</li>
@@ -996,8 +1020,8 @@ depend on the JSON shape, so treat response changes as API changes.</p>
 <pre><code class="language-sh">brew install marmot-protocol/tap/wn
 </code></pre>
 <p>The formula lives in <code>github.com/marmot-protocol/homebrew-tap</code>; the project-side checklist is
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/release/wn-homebrew.md"><code>docs/release/wn-homebrew.md</code></a>. <code>cargo install wn-cli</code> from crates.io is not
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/release/wn-homebrew.md"><code>docs/release/wn-homebrew.md</code></a>. <code>cargo install wn-cli</code> from crates.io is not
 available: the workspace has <code>publish = false</code> and the CLI depends on local workspace crates.</p>
 <h2 id="changelog">Changelog</h2>
-<p>Release notes for the CLI crate live in <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/cli/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
-`,m={__name:"cli.html",setup(h){return(p,t)=>{const n=c("DocumentationPage");return d(),a("div",null,[t[0]||(t[0]=o("h1",{id:"terminal-and-scripts",tabindex:"-1"},[o("a",{class:"header-anchor",href:"#terminal-and-scripts"},[o("span",null,"Terminal and scripts")])],-1)),s(n,{document:{repo:e(r),version:e(i),sourceUrl:e(l),html:e(u)}},null,8,["document"])])}}},b=JSON.parse('{"path":"/docs/cli.html","title":"Terminal and scripts","lang":"en-US","frontmatter":{"title":"Terminal and scripts","description":"Set up the White Noise CLI and use terminal commands or scripts to manage accounts, groups, and encrypted messages.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0,"head":[["link",{"rel":"canonical","href":"https://marmot.build/docs/cli.html"}],["link",{"rel":"describedby","href":"https://marmot.build/llms.txt"}],["meta",{"property":"og:type","content":"website"}],["meta",{"property":"og:site_name","content":"Marmot"}],["meta",{"property":"og:title","content":"Terminal and scripts | Marmot"}],["meta",{"property":"og:description","content":"Set up the White Noise CLI and use terminal commands or scripts to manage accounts, groups, and encrypted messages."}],["meta",{"property":"og:url","content":"https://marmot.build/docs/cli.html"}],["meta",{"property":"og:image","content":"https://marmot.build/images/share.png"}],["meta",{"property":"og:image:width","content":"1200"}],["meta",{"property":"og:image:height","content":"630"}],["meta",{"property":"og:image:alt","content":"Marmot wordmark and illustration"}],["meta",{"name":"twitter:card","content":"summary_large_image"}],["link",{"rel":"alternate","type":"text/markdown","href":"https://marmot.build/docs/cli.md"}]]},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1},{"name":"erskingardner","username":"erskingardner","email":"202880+erskingardner@users.noreply.github.com","commits":1,"url":"https://github.com/erskingardner"}],"changelog":[{"hash":"0330b27fbdf24e99917ca75283be54594a9152e3","time":1794986838000,"email":"202880+erskingardner@users.noreply.github.com","author":"Jeff Gardner","message":"Add Marmot analytics and search discovery metadata"},{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/cli.md"}');export{m as comp,b as data};
+<p>Release notes for the CLI crate live in <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cli/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
+`,m={__name:"cli.html",setup(h){return(p,t)=>{const n=c("DocumentationPage");return d(),a("div",null,[t[0]||(t[0]=o("h1",{id:"terminal-and-scripts",tabindex:"-1"},[o("a",{class:"header-anchor",href:"#terminal-and-scripts"},[o("span",null,"Terminal and scripts")])],-1)),s(n,{document:{repo:e(r),version:e(i),sourceUrl:e(l),html:e(u)}},null,8,["document"])])}}},w=JSON.parse('{"path":"/docs/cli.html","title":"Terminal and scripts","lang":"en-US","frontmatter":{"title":"Terminal and scripts","description":"Set up the White Noise CLI and use terminal commands or scripts to manage accounts, groups, and encrypted messages.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0,"head":[["link",{"rel":"canonical","href":"https://marmot.build/docs/cli.html"}],["link",{"rel":"describedby","href":"https://marmot.build/llms.txt"}],["meta",{"property":"og:type","content":"website"}],["meta",{"property":"og:site_name","content":"Marmot"}],["meta",{"property":"og:title","content":"Terminal and scripts | Marmot"}],["meta",{"property":"og:description","content":"Set up the White Noise CLI and use terminal commands or scripts to manage accounts, groups, and encrypted messages."}],["meta",{"property":"og:url","content":"https://marmot.build/docs/cli.html"}],["meta",{"property":"og:image","content":"https://marmot.build/images/share.png"}],["meta",{"property":"og:image:width","content":"1200"}],["meta",{"property":"og:image:height","content":"630"}],["meta",{"property":"og:image:alt","content":"Marmot wordmark and illustration"}],["meta",{"name":"twitter:card","content":"summary_large_image"}],["link",{"rel":"alternate","type":"text/markdown","href":"https://marmot.build/docs/cli.md"}]]},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1},{"name":"erskingardner","username":"erskingardner","email":"202880+erskingardner@users.noreply.github.com","commits":1,"url":"https://github.com/erskingardner"}],"changelog":[{"hash":"0330b27fbdf24e99917ca75283be54594a9152e3","time":1794986838000,"email":"202880+erskingardner@users.noreply.github.com","author":"Jeff Gardner","message":"Add Marmot analytics and search discovery metadata"},{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/cli.md"}');export{m as comp,w as data};

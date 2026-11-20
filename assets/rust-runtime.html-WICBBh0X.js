@@ -1,13 +1,11 @@
-import{c as a,b as t,d as i,u as e,r,o as s}from"./app-CjXjy52L.js";const c="mdk",d="0.17.0",l="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-app/README.md",h=`<div id="marmot-app" class="mm-source-title">marmot-app</div>
+import{c as a,b as t,d as i,u as e,r,o as s}from"./app-DgITpRfK.js";const c="mdk",d="0.18.0",l="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-app/README.md",h=`<div id="marmot-app" class="mm-source-title">marmot-app</div>
 <p><code>marmot-app</code> is the multi-account app runtime for Marmot clients. It wires the app-owned <code>AccountHome</code> to encrypted
 session storage, the Nostr MLS peeler, the Nostr transport adapter, and relay-backed transport state, and exposes the
 result as <code>MarmotApp</code> / <code>MarmotAppRuntime</code>. It sits below presentation layers (<code>wn</code>, the UniFFI and C bindings) and above
 the generic account, session, and engine crates. Read this if you are building a host app or binding on top of MDK.</p>
-<p>The default-off <code>dev-device-groups</code> capability permits the adopted device roster independently of policy-test timing.
-The app still requires runtime intent; a dev <code>wn</code>/<code>wnd</code> build supplies it. Ordinary release builds keep it off.
-An account that holds or is joining a device group opens only with both: otherwise its session fails with
+<p>Device groups are on by default; a host turns them off with <code>MarmotAppConfig::with_device_groups(false)</code>. An account that holds or is joining a device group opens only with them on: otherwise its session fails with
 <code>AppError::ExperimentalDeviceGroupsRequired</code> before anything of it is read, sent or subscribed (mdk#3012).
-See <a href="__MARMOT_BASE__docs/cli.html#device-linking-dev-builds">dev device linking</a>.</p>
+See <a href="__MARMOT_BASE__docs/cli.html#device-linking">device linking</a>.</p>
 <h2 id="contents">Contents</h2>
 <ul>
 <li><a href="#runtime-overview">Runtime overview</a></li>
@@ -38,7 +36,7 @@ runtime-owned subscriptions plus typed events; explicit catch-up remains availab
 <p>Account workers start authenticated rejoin for durably and natively <code>Unrecoverable</code> copies without
 restarting healthy peers or requiring a host Repair command. The existing Repair action can rearm an eligible
 parked episode; restarting alone does not reset its budget. Usable forks retain explicit replacement consent.
-See the <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/invitation-recovery.md#automatic-rejoin-of-an-unrecoverable-copy">automatic rejoin contract</a>
+See the <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/invitation-recovery.md#automatic-rejoin-of-an-unrecoverable-copy">automatic rejoin contract</a>
 for device authorization, durable retries and the limits of history recovery.</p>
 <p>The runtime exposes account status, group listing/showing, message listing, and snapshot-plus-live subscription APIs,
 so CLI, TUI, and native surfaces never open the databases directly.</p>
@@ -100,12 +98,12 @@ These session-local rows do not establish message delivery.
 See the <a href="__MARMOT_BASE__docs/native-apps.html#relay-liveness">binding contract</a> for state and privacy semantics.</p>
 <p><strong>Shutdown.</strong> Hosts whose process can be suspended must call <code>MarmotAppRuntime::shutdown_and_close</code>, which closes every
 database and releases file locks; <code>shutdown</code> alone does not. See
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/local-artifact-safety.md">local artifact safety</a>. A projection update
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/overview/local-artifact-safety.md">local artifact safety</a>. A projection update
 reaches live subscriptions only after the write behind it has committed, so an update a host received that way is
 still stored after <code>shutdown_and_close</code>.</p>
-<p>For where the code lives (<code>src/runtime/</code>, <code>src/client/</code>, <code>src/media/</code>, and so on; the user directory is the <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/nostr-directory"><code>nostr-directory</code></a> crate
-and the diagnostics exporters are the <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-observability"><code>marmot-observability</code></a> crate) see
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-app/AGENTS.md"><code>AGENTS.md</code></a>.</p>
+<p>For where the code lives (<code>src/runtime/</code>, <code>src/client/</code>, <code>src/media/</code>, and so on; the user directory is the <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/nostr-directory"><code>nostr-directory</code></a> crate
+and the diagnostics exporters are the <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-observability"><code>marmot-observability</code></a> crate) see
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-app/AGENTS.md"><code>AGENTS.md</code></a>.</p>
 <h2 id="remote-signer-accounts">Remote signer accounts</h2>
 <p>The runtime owns NIP-46 sessions for <code>bunker://</code> and client-initiated
 <code>nostrconnect://</code> pairing. Each account has an independent transport and
@@ -124,7 +122,7 @@ Explicit session cancellation, disconnect, or logout interrupts adoption; shutdo
 interrupts and settles owned adoption before returning. Failed completed-account
 rebind restores prior local signer state and activation, but does not retract
 already-published KeyPackages. Host callback/NIP-55 login behavior is unchanged.
-See <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/external-signer-accounts.md#nip-46-sessions">external signer accounts</a>
+See <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/external-signer-accounts.md#nip-46-sessions">external signer accounts</a>
 for pairing, permission versions, recovery, cancellation, and credential storage.</p>
 <h2 id="socks5-routing">SOCKS5 routing</h2>
 <p>Set the process environment before the first network-policy use (including runtime or NIP-46 client construction):</p>
@@ -218,7 +216,7 @@ setup still owns its lists.</li>
 KeyPackage ref separately. Normal publish reuses only a cached current-profile last-resort package; explicit rotate, a
 legacy cache entry, or a lifetime-policy rejection creates a new current-profile package under the same slot. The
 session runtime refreshes the slot at least weekly, after a consumed Welcome and when supported capabilities change;
-see <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-session/README.md#this-devices-keypackage-slot">marmot-session</a>.</p>
+see <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-session/README.md#this-devices-keypackage-slot">marmot-session</a>.</p>
 <p><strong>Inventory.</strong> <code>account_key_package_records</code> / <code>account_key_packages</code> expose one current relay event per addressable
 slot in the validated fetch window. <code>account_key_package_relay_events</code> returns that window's current and superseded
 public events, so a client can delete a superseded event id without targeting the current winner or inventing a second
@@ -246,6 +244,18 @@ including their Media V1 state, but membership additions and re-additions are re
 event, pre-cache direct follows, and cache profile metadata for those likely contacts. Runtime startup builds chunked
 directory subscriptions for local accounts and known users so profile, follow-list, relay-list, and KeyPackage updates
 keep warming the cache.</p>
+<p><strong>Direct-follow availability.</strong> <code>follow_availability_page(account_ref, after, limit)</code> reads a keyset-paged projection
+of the selected account's direct cached follows without networking. <code>ready</code> records a selected current compatible
+KeyPackage and its <code>fresh_until</code> deadline (the earlier of MLS expiry and publication freshness), not proof that a
+particular client is installed. <code>unknown</code> covers missing, stale,
+incomplete, malformed, replaced, and expired results. A completed clean, deleted, or obsolete miss is <code>not_found</code> for 15
+minutes, with check and expiry timestamps plus network provenance.</p>
+<p><code>refresh_follow_availability</code> processes at most 100 follows with four concurrent target lookups, a 10-second target
+deadline, and a five-minute target-processing budget. Results persist per target and remain readable while the refresh runs.
+Poll <code>follow_availability_status</code> for aggregate progress and call <code>cancel_follow_availability</code> with
+the observed operation id to stop it without cancelling a newer operation. Completed refreshes have a 60-second
+cadence. Pages contain at most 100 rows and always join the current follow list, so account switches and unfollows do
+not expose another account's projection.</p>
 <p><strong>Profile sanitization.</strong> Incoming kind <code>0</code> strings are sanitized in <code>nostr-directory</code>'s <code>src/records.rs</code> before they
 are cached:</p>
 <ul>
@@ -292,6 +302,13 @@ membership, provider response, profile hydration, and network completion, withou
     account_ref: &amp;str,
     peer_account_id: &amp;str,
 ) -&gt; Result&lt;GroupId, AppError&gt;
+
+pub async fn start_direct_conversation_with_options(
+    &amp;self,
+    account_ref: &amp;str,
+    peer_account_id: &amp;str,
+    options: DirectConversationOptions,
+) -&gt; Result&lt;GroupId, AppError&gt;
 </code></pre>
 <p><code>MarmotAppRuntime::start_direct_conversation</code> accepts a hex or npub peer identity. The account worker serializes the
 existing deterministic direct-conversation lookup with creation. If no reusable conversation exists, it creates an unnamed
@@ -304,13 +321,22 @@ even when the chat-list projection is missing. If a matching canonical group is 
 returns an error rather than creating another group. Removed and disbanded copies do not block a fresh start. Concurrent
 starts on the same account return one local group. Simultaneous starts by different accounts can create two groups, each
 with both accounts as founding admins.</p>
+<p><code>start_direct_conversation_with_options</code> takes founding options for a new group. A nonzero
+<code>DirectConversationOptions::disappearing_message_secs</code> is written into the founding MLS state and Welcome, as
+<code>AppCreateGroupOptions</code> does for generic creation, so the recipient joins with that duration and no retention commit
+follows. Options apply only when the call creates the group: reuse, retry, and same-account concurrent starts return the
+existing group with its founding duration and roles, whatever duration they propose. A nonzero duration requires the
+peer's KeyPackages to support message retention; without it the start fails and nothing is created.
+<code>start_direct_conversation</code> is the same call with default options, which leave disappearing messages disabled.</p>
 <p>There is no immutable cross-client DM provenance, so MDK cannot prove legacy groups eligible for automatic admin repair.
 Legacy and generic groups retain their authoritative roles, including unnamed two-member groups. Clients using generic
 creator-only creation remain interoperable: recipients accept the founding admin set through the Welcome, but cannot
 self-promote if they are not admins. Those clients must adopt the explicit start operation to create symmetric direct chats.</p>
 <p><strong>Experimental shared invitation decisions.</strong> With device groups enabled, updated clients share Accept/Decline for
 one authenticated admission generation and its automatic sibling Adds (mdk#2628 D96). A separate external Add batch
-or admission fork can prompt again; older unidentified invites stay local-only. Higher version wins, with decline
+or admission fork can prompt again; older unidentified invites stay local-only. A sibling Add forwards how the adding
+device holds the chat: its original inviter, and for an unidentified copy whether it is confirmed, so the new device
+shows it confirmed or as an invitation from that inviter (mdk#3546). Higher version wins, with decline
 winning an equal version. Acceptance preserves membership, block/rejoin checks and explicit archive intent. Decline
 records durable work for this matching local leaf's ordinary Leave; a later accept never cancels an already-requested
 Leave or joins a device. <code>published = 0</code> with <code>CompletionUnknown</code> reports pending work, not completed departure by
@@ -377,7 +403,7 @@ targets.</p>
 <p><strong>Leaving.</strong> An admin account's Leave, including declining a pending invitation that made it an admin, is refused with
 <code>AdminCannotSelfRemove</code> before anything is written or sent; the host demotes it first (<code>self_demote_admin</code>) and then
 leaves, and a last admin first makes another member an admin. <code>requires_self_demote_before_leave</code> says so. With
-experimental device groups on (<code>MarmotApp::admin_leave_steps_down</code>), User Leave instead records the leave and lets the
+device groups on (the default; <code>MarmotApp::admin_leave_steps_down</code>), User Leave instead records the leave and lets the
 engine step this account down when another active administrator account remains, then request its own leaf's SelfRemove;
 the call returns before the step-down is published. The last active administrator account is refused on all its devices
 before a choice or departure is published (mdk#3014 keeps that automatic step-down off elsewhere). Queued work is
@@ -423,17 +449,17 @@ wall-clock windows refresh from storage instead of applying unfiltered projectio
 <li><strong>Drafts.</strong> Rust app/runtime draft commands expose selected metadata, conditional save/clear, keyed attachment bytes,
 and revision-bound sends. Post-commit invalidations let conversation owners reload the selected composer; durable
 outbox acceptance clears only the submitted revision. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/conversation-drafts.md">draft lifecycle contract</a>.</li>
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/further-context/conversation-drafts.md">draft lifecycle contract</a>.</li>
 <li><strong>Presentation.</strong> The shared conversation presentation builds a compact header, shared capability hints, and a
 complete dictionary for its bounded visible identity references from local caches. Native management policy delegates
 to the same Rust selector. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/conversation-presentation.md">conversation presentation contract</a>.</li>
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/further-context/conversation-presentation.md">conversation presentation contract</a>.</li>
 <li><strong>Live window.</strong> <code>MarmotAppRuntime::open_conversation_window</code> combines that presentation with bounded history,
 retained read state, and the selected draft in one initial/live handle. It opens at first unread or latest, follows
 new arrivals in latest mode, preserves explicit/history anchors, and serializes paging with refreshes. Capture
 failures keep timed retries; account teardown and subscription drop close the handle. It never marks read or loads
 attachment bytes. UniFFI and C expose the same handle. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/further-context/conversation-live-window-plan.md">live conversation contract</a>.</li>
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/further-context/conversation-live-window-plan.md">live conversation contract</a>.</li>
 </ul>
 <p><code>MarmotAppRuntime::submit_media_attachments</code> admits previously uploaded references
 with an optional <code>reply_to_message_id</code> before its client-token argument. A target
@@ -463,6 +489,28 @@ does not rewrite existing group state. An active group admin can migrate an exis
 <p>Encrypted group images differ: no endpoint is stored in group state, so upload and fetch both resolve against the
 deployment's <code>group_image_endpoint</code>. Clients configured with different values therefore look for group images in
 different places; re-setting the group image republishes it to the current endpoint.</p>
+<h3 id="attachment-derivative-eviction">Attachment derivative eviction</h3>
+<p><code>MarmotAppRuntime::attachment_removals(account_ref, cursor, limit)</code> reads
+historical body removals without starting acquisition, a worker, or network
+activity. Each record identifies the group, message, original source message,
+and attachment index, with a <code>CleanedBySetting</code>, <code>Removed</code>,
+<code>CompletedUnretained</code>, or <code>Unavailable</code> state. Expiry records follow native
+cleanup; attachment reads still enforce the deadline immediately.</p>
+<p>Keep one cursor per account-device store. Pages contain at most <code>limit</code>
+records (<code>1..=256</code>), and the journal retains the latest 4,096 records.</p>
+<ol>
+<li>Read with your saved cursor, or <code>None</code> on first use.</li>
+<li>If <code>reset_required</code>, keep the returned cursor while reconciling every
+derivative against fresh native attachment state. Save that cursor after
+reconciliation, then read from it to catch concurrent removals.</li>
+<li>Otherwise, evict each listed derivative before saving <code>next_cursor</code>.
+Repeat while <code>has_more</code>.</li>
+</ol>
+<p>Evictions must be idempotent. A record describes a past loss, so a body may
+have been downloaded again by the time you apply it. Never use the journal
+to authorize a derivative read; retain the fresh native-state check.
+An interrupted eviction can replay its page. A cursor from another store,
+a store reset, or trimmed history requires full reconciliation.</p>
 <h2 id="custom-emoji-sets">Custom emoji sets</h2>
 <p><code>MarmotApp</code> reads NIP-51 emoji sets (kind 30030) so a host can offer opt-in custom emoji. Every network step is a
 separate call the host makes after a user action:</p>
@@ -478,7 +526,7 @@ separate call the host makes after a user action:</p>
 <tr role="row">
 <td data-label="Call" role="cell"><code>sync_emoji_sets</code>, <code>fetch_emoji_set</code>, <code>user_emoji_list</code></td>
 <td data-label="Network" role="cell">Relays, text only</td>
-<td data-label="What it reaches" role="cell">The sticker discovery relays (account relays), plus up to 8 relay hints from a pasted <code>naddr</code></td>
+<td data-label="What it reaches" role="cell">Sets: the account relays and the runtime's configured relays (the sticker pack read relays), plus up to 8 relay hints from a pasted <code>naddr</code>. The account's own kind-10030 list: the account relays only</td>
 </tr>
 <tr role="row">
 <td data-label="Call" role="cell"><code>fetch_emoji_set_asset</code>, <code>fetch_emoji_set_cover</code></td>
@@ -548,7 +596,8 @@ address never reach a group.</p>
 </tbody>
 </table>
 <p>Invalid, duplicate, failed and over-cap entries are dropped and reported in <code>skipped</code>; a set fails only when no entry
-is usable. Shortcode collisions between installed sets are flagged on each <code>installed_custom_emoji</code> row and left to
+is usable. Reinstalling the installed version keeps each verified image whose refresh fails or does not fit: that
+entry stays installed, counts in <code>installed_count</code> and is not in <code>skipped</code>. Shortcode collisions between installed sets are flagged on each <code>installed_custom_emoji</code> row and left to
 the host.</p>
 <h2 id="application-owned-group-state">Application-owned group state</h2>
 <p><code>MarmotAppRuntime::group_app_component</code> reads opaque application-owned component bytes from local MLS state;
@@ -614,8 +663,7 @@ Welcomes travel privately through the device group, independently of the other a
 <p><code>MarmotAppRuntime::linked_devices(account_ref)</code> lists this account's own devices as <code>LinkedDevice</code>s, from the roster of
 the device group this device trusts (mdk#2628): this device first (<code>is_this_device</code>), then by <code>linked_at</code>. Each carries
 its KeyPackage slot (<code>slot_id_hex</code>, the handle device actions take), label, client and platform, who linked it, its
-<code>LinkedDeviceStatus</code> and its settings. It is empty until this device trusts a device group, or while explicit
-device-group capability and runtime intent are absent. The device group's own events never reach hosts; <code>MarmotAppEvent::LinkedDevicesChanged</code>
+<code>LinkedDeviceStatus</code> and its settings. It is empty until this device trusts a device group, or while the host keeps device groups off. The device group's own events never reach hosts; <code>MarmotAppEvent::LinkedDevicesChanged</code>
 says to re-read. It also fires once each time the account's worker opens or reconnects, so it may fire with no visible
 change.</p>
 <p>Each device writes its own <code>client</code> and <code>platform</code>: <code>MarmotAppConfig::key_package_client_name</code> and
@@ -633,10 +681,13 @@ changes any linked device's supplied settings, this device included. Each settin
 from the current roster on the account worker, so changing one toggle does not restore another from a stale screen.
 A patch that still matches after earlier-edit recovery sends no new edit. Enabling <strong>Add to all my chats</strong> permits
 eligible direct post-link Adds while that flow is still adding, and gap filling under its conditions; turning it off
-does not leave joined chats. The approving device's direct post-link pass sends no gap-fill claim (kind 458). With
-three or more devices, it can race another sibling's gap filling and cause extra Add attempts, private-KeyPackage
-consumption, or Commits and convergence passes; selected-parent presence checks and ordinary branch selection still
-apply. <strong>Bring chat history</strong> applies to future sibling Adds and transfers still owed; enabling
+does not leave joined chats. The approving device's direct post-link pass sends no gap-fill claim (kind 458), so
+other devices leave a newly linked device to it, in the chats it is in, while it is active: for up to a week after
+the link, until two hours pass without a heartbeat from the approver. The approver does not add the device to a chat
+another device holds a live claim for. This prevents competing Adds in the usual case only: a claim that arrives late
+at the hand-off, or a device running a version before this rule, which gap-fills at once, can still race the
+approver; selected-parent presence checks and ordinary branch selection still apply.
+<strong>Bring chat history</strong> applies to future sibling Adds and transfers still owed; enabling
 it does not backfill chats already joined or recreate a transfer discarded while it was off. <strong>Keep while inactive</strong>
 stops automatic removal of an <code>Inactive</code> device; it does not stop the mark, explicit removal or sign-out. The devices
 mark and remove inactive siblings themselves; see the <a href="__MARMOT_BASE__docs/native-apps.html#linked-devices">shared linked-devices contract</a>.</p>
@@ -647,7 +698,7 @@ This does not recall deliveries already handed off or change what another device
 tries the existing recovery of an earlier lost edit and re-reads the roster. Retry <code>device_group_busy</code> only while it
 remains unsettled. A successful no-op never leaves an opposite lost intention to apply later. A competing user edit
 of that device wins as a whole, even if it changed a different toggle. Refresh the displayed label and flags on
-<code>LinkedDevicesChanged</code>. These commands remain behind the device-group development gate. Custom clients writing post-link settings must adopt
+<code>LinkedDevicesChanged</code>. These commands are refused only while the host keeps device groups off. Custom clients writing post-link settings must adopt
 this user-edit marker rule before using the feature; earlier draft writers must update first.</p>
 <p>When another of the account's devices removes this one, the account stops on this device once it reads the removal, and
 nothing more is sent from it. <code>MarmotAppEvent::DeviceUnlinked</code> fires once, after the account is signed out; from then on
@@ -679,7 +730,8 @@ roster entry already carrying its tag signature key. It applies only to chats th
 removal and have the required tagged leaves. <code>groups_left_to_siblings</code> records a handoff, not confirmation that removal
 completed. Outside admin chats, <code>groups_left</code> counts successful local leave calls, not confirmed membership removal. The call still attempts
 local account deletion when remote departure fails: show the chats in <code>group_leave_failures</code> and check
-<code>local_cleanup.completed</code> separately. Completed local cleanup does not prove this device left every chat.</p>
+<code>local_cleanup.completed</code> separately. Completed local cleanup does not prove this device left every chat.
+A queued member Leave appears in <code>group_leave_failures</code>.</p>
 <p>An account that cannot run a worker here (signed out, lacking its registered external signer, or excluded by
 onboarding's worker gate) signs out on its own immediately. Unfinished onboarding that runs setup traffic but still
 refuses ordinary commands also signs out on its own immediately. Temporary worker-start failures and unreadable
@@ -701,7 +753,7 @@ It shows facts only: a chat with nothing to bring sends nothing, so no chat wait
 after a week leaves nothing. A delivery for a chat this device does not hold yet appears once it joins.
 <code>MarmotAppEvent::ChatHistoryImportsChanged</code> fires whenever that answer changes, as rows are pruned or a source device
 is renamed too, and once each time the account's worker opens or reconnects. Everything here is empty and silent unless
-<code>dev_device_groups</code> is on.</p>
+<code>device_groups</code> is on.</p>
 <h3 id="recovery-words">Recovery words</h3>
 <p>An account's backups are sealed to a recovery key that 12 recovery words derive, separate from the nsec (mdk#2628).
 <code>MarmotAppRuntime::begin_recovery_words(account_ref)</code> makes new words as <code>RecoveryWords</code>: show the 12 <code>words</code> once,
@@ -734,8 +786,7 @@ force a backup, wait for future due work or establish global idle state. Cancell
 worker stop/replacement returns <code>TransportClosed</code>. Once queued, this caller's wait has no additional timeout; the host
 bounds its OS execution opportunity. Manual restore and
 supported lower-level <code>AppClient</code> APIs remain independent.</p>
-<p>Backup setup and manual restore require <code>dev_device_groups</code> (off by default) and a build with experimental
-device-group support; unsupported setup/restore returns <code>DeviceGroupRefused(&quot;roster_unsupported&quot;)</code>.
+<p>Backup setup and manual restore require <code>device_groups</code> (on by default); unsupported setup/restore returns <code>DeviceGroupRefused(&quot;roster_unsupported&quot;)</code>.
 The runtime-wide fact report remains local, and the due-pass wait returns <code>NotStarted</code> when device groups are disabled.</p>
 <h3 id="manual-backup-history-restore">Manual backup history restore</h3>
 <p>The Rust runtime accepts words for one on-demand operation with
@@ -767,7 +818,7 @@ stays. Already-running bounded crypto work may finish off the worker; it owns no
 cancelled result, and drops its keys with that work. Closing a watch only stops observing. No secret-backed job or
 cursor is persisted or resumed: a later explicit
 attempt supplies words again. Core Rust operation handles and methods are available here; complete UniFFI/C controls,
-provenance DTOs and operation-token codecs remain separate work. Restore uses the same experimental device-group gate
+provenance DTOs and operation-token codecs remain separate work. Restore uses the same device-group gate
 as the writer.</p>
 <h3 id="overdue-keypackage-refresh">Overdue KeyPackage refresh</h3>
 <p>While this device trusts a device group, each KeyPackage it publishes is first announced in its own roster entry there,
@@ -777,8 +828,8 @@ publish is still unannounced, and the slot's newest publication by this device i
 days, so tell the user. A routine refresh announces and publishes in one maintenance pass and never shows; one that is
 announced but failing at the relays doesn't count. The client recomputes the answer after each maintenance pass, and
 <code>MarmotAppEvent::KeyPackageRefreshOverdueChanged</code> says to re-read. Like <code>LinkedDevicesChanged</code>, it also fires once each
-time the account's worker opens or reconnects. It is false, and the event silent, without explicit device-group
-capability and runtime intent.</p>
+time the account's worker opens or reconnects. It is false, and the event silent, unless the host
+turns device groups on.</p>
 <h2 id="unrecognized-sign-ins">Unrecognized sign-ins</h2>
 <p><code>MarmotAppRuntime::unrecognized_sign_ins(account_ref)</code> lists sign-ins of this account that this device does not
 recognize as <code>UnrecognizedSignIn</code>s (mdk#2628), the earliest to appear first. Each is a fresh, valid KeyPackage of the
@@ -809,12 +860,17 @@ already in the first roster this device trusts count as seen, and a rejected sig
 a device. <code>dismiss_compromise_warning</code> marks everything it gathers as seen, on this device only; a rejection that
 branch selection drops and restores stays seen. <code>CompromiseWarningReason</code> gains reasons in later releases; show one the
 host does not know as a generic one. <code>MarmotAppEvent::CompromiseWarningChanged</code> says to re-read, and also fires once
-each time the account's worker opens. All of it is empty and silent without explicit device-group capability and
-runtime intent.</p>
+each time the account's worker opens. All of it is empty and silent unless the host turns device
+groups on.</p>
 <h2 id="linking-a-new-device">Linking a new device</h2>
-<p>Device linking (mdk#2628) runs through the account runtime. It requires the <code>unreleased-device-pairing</code> feature,
-explicit device-group build capability (<code>dev-device-groups</code>, or policy-test builds), and the per-client
-<code>dev_device_groups</code> runtime intent; every call is refused otherwise. Each call returns a <code>DeviceLinkSnapshot</code>: the new device's own
+<p>After pairing reaches <code>Linked</code>, read <code>chat_progress</code> on each <code>DeviceLinkChanged</code>. Each entry identifies the new device by
+<code>slot_id_hex</code>. On the approver, <code>remaining</code> counts eligible chats that still need an Add. On the new device,
+<code>on_new_device</code> is true and <code>remaining</code> counts expected chats that have yet to join locally. Show the joining banner while
+that count is positive. Zero means complete for the reported <code>total</code>. The total can change as the approver's chats change.
+An absent entry means progress is unavailable, including before a complete report arrives, with older peers, after opt-out,
+or when the direct-add window expires. History import and chats known only to other siblings have their own lifecycles.</p>
+<p>Device linking (mdk#2628) runs through the account runtime. It requires the per-client <code>device_groups</code> switch
+(on by default); every call is refused otherwise. Each call returns a <code>DeviceLinkSnapshot</code>: the new device's own
 link (<code>new_device</code>) and the prompts for sign-ins this device can link (<code>prompts</code>).</p>
 <ul>
 <li>On the new device, <code>start_device_link</code> asks a device already signed in to link this one. Its state goes from
@@ -927,7 +983,7 @@ state; later demotion does not revoke an established verdict. Group size and nam
 records expose <code>has_reports</code> through existing subscriptions. There is no shared queue, counter, or aggregate review
 status. Hosts choose review UI and notifications. Report explanations follow their own retention and survive target
 deletion while retained.</p>
-<p>See <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/overview/content-moderation.md">the implementation contract</a> for source-state
+<p>See <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/overview/content-moderation.md">the implementation contract</a> for source-state
 authorization, durable recovery, retention, and client compatibility.</p>
 <h2 id="moderation-reports-to-the-operator">Moderation reports to the operator</h2>
 <p><code>MarmotAppRuntime::submit_moderation_report</code> privately reports an account to the deployment's moderation team. It
@@ -941,12 +997,12 @@ never authenticates as the account. The signed wrap is staged in the account dat
 <code>CompletionUnknown</code> outcomes are retried in the background after <code>catch_up_accounts</code>, or on demand with
 <code>retry_pending_moderation_reports</code>. Repeats within 10 minutes return the existing outcome. Each account may send 20
 reports per hour. Sign-out and wipe delete the account's queued reports.</p>
-<p>See <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/moderation-reports.md">moderation reports</a> for the wire format and reader steps.</p>
+<p>See <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/moderation-reports.md">moderation reports</a> for the wire format and reader steps.</p>
 <h2 id="audit-v5-welcome-evidence">Audit v5 Welcome evidence</h2>
-<p>Opt-in audit recording writes v5 files (see <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-forensics/README.md"><code>marmot-forensics</code></a>); historical v4 files
+<p>Opt-in audit recording writes v5 files (see <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-forensics/README.md"><code>marmot-forensics</code></a>); historical v4 files
 stay local until retention expires them. With audit logging enabled, the app records v5 Welcome evidence from
 real founding, publication, receipt, peel, join and checkpoint boundaries. The
-<a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-app/tests/audit-v5-welcome-probe.md">Welcome probe notes</a> describe those boundaries and the unit tests that exercise them:</p>
+<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-app/tests/audit-v5-welcome-probe.md">Welcome probe notes</a> describe those boundaries and the unit tests that exercise them:</p>
 <pre><code class="language-sh">cargo test -p marmot-app --lib audit_v5_probe -- --nocapture --test-threads=1
 </code></pre>
 <p>Local forensic files expire automatically 30 days after their last write, including files that have not been
@@ -960,5 +1016,5 @@ cargo test -p marmot-app --features test-policy-overrides
 # Opt-in OTLP exporter wire encoding and push:
 cargo test -p marmot-app --features otlp-export
 </code></pre>
-<p>See <a href="https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-app/AGENTS.md"><code>AGENTS.md</code></a> for the module map, invariants, and privacy-safe telemetry rules.</p>
+<p>See <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-app/AGENTS.md"><code>AGENTS.md</code></a> for the module map, invariants, and privacy-safe telemetry rules.</p>
 `,g={__name:"rust-runtime.html",setup(p){return(u,n)=>{const o=r("DocumentationPage");return s(),a("div",null,[n[0]||(n[0]=t("h1",{id:"rust-application-runtime",tabindex:"-1"},[t("a",{class:"header-anchor",href:"#rust-application-runtime"},[t("span",null,"Rust application runtime")])],-1)),i(o,{document:{repo:e(c),version:e(d),sourceUrl:e(l),html:e(h)}},null,8,["document"])])}}},v=JSON.parse('{"path":"/docs/rust-runtime.html","title":"Rust application runtime","lang":"en-US","frontmatter":{"title":"Rust application runtime","description":"Use the Rust application runtime to manage Marmot accounts, messaging, storage, and networking in a Rust application.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0,"head":[["link",{"rel":"canonical","href":"https://marmot.build/docs/rust-runtime.html"}],["link",{"rel":"describedby","href":"https://marmot.build/llms.txt"}],["meta",{"property":"og:type","content":"website"}],["meta",{"property":"og:site_name","content":"Marmot"}],["meta",{"property":"og:title","content":"Rust application runtime | Marmot"}],["meta",{"property":"og:description","content":"Use the Rust application runtime to manage Marmot accounts, messaging, storage, and networking in a Rust application."}],["meta",{"property":"og:url","content":"https://marmot.build/docs/rust-runtime.html"}],["meta",{"property":"og:image","content":"https://marmot.build/images/share.png"}],["meta",{"property":"og:image:width","content":"1200"}],["meta",{"property":"og:image:height","content":"630"}],["meta",{"property":"og:image:alt","content":"Marmot wordmark and illustration"}],["meta",{"name":"twitter:card","content":"summary_large_image"}],["link",{"rel":"alternate","type":"text/markdown","href":"https://marmot.build/docs/rust-runtime.md"}]]},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1},{"name":"erskingardner","username":"erskingardner","email":"202880+erskingardner@users.noreply.github.com","commits":1,"url":"https://github.com/erskingardner"}],"changelog":[{"hash":"0330b27fbdf24e99917ca75283be54594a9152e3","time":1794986838000,"email":"202880+erskingardner@users.noreply.github.com","author":"Jeff Gardner","message":"Add Marmot analytics and search discovery metadata"},{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/rust-runtime.md"}');export{g as comp,v as data};

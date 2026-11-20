@@ -1,283 +1,315 @@
 # Upgrade guide
 
-> MDK 0.17.0 · [Read on Marmot](https://marmot.build/docs/upgrading.html) · [Version-pinned source](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/integration/0.17.0.md)
+> MDK 0.18.0 · [Read on Marmot](https://marmot.build/docs/upgrading.html) · [Version-pinned source](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/integration/0.18.0.md)
 
-## Upgrading MDK 0.16.0 → 0.17.0
+## Upgrading MDK 0.17.0 → 0.18.0
 
 ## Scope and provenance
 
-This guide compares `v0.16.0` / `marmotkit-v0.16.0` / `marmotc-v0.16.0` / `wn-agent-v0.16.0`, which all peel to `a2e0558a634bbd20607cdd5afb93abc6220ee58d`, with the source to be shipped as `v0.17.0`. All four 0.17.0 cohort tags must peel to the release PR's merged commit, and packaged manifests must record that exact SHA. The comparison was prepared against `origin/master` at `9cf81ea674a8e6e63f9f899261ee7fe58b529681` (45 commits after `v0.16.0`); the release commit is this documentation update's merge on top of it. Use the full release SHA from the tags for artifact verification. This guide ships in the release commit, not a later supplement. See the [release notes](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/release/0.17.0.md), [previous upgrade guide](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/integration/0.16.0.md), and [current binding reference](https://marmot.build/docs/native-apps.html).
+This guide compares `v0.17.0` / `marmotkit-v0.17.0` / `marmotc-v0.17.0` / `wn-agent-v0.17.0`, which all peel to `4df811aea99269b437a6023be9446a5141e93cbe`, with the source to be shipped as `v0.18.0`. All four 0.18.0 cohort tags must peel to the release PR's merged commit, and packaged manifests must record that exact SHA. The comparison was prepared against `origin/master` at `470d4b4d53e5b29b59b7df75595fbcacc52a9725` (76 commits after `v0.17.0`, the last being [#3568](https://github.com/marmot-protocol/mdk/pull/3568)); the release commit is this documentation update's merge on top of it. Use the full release SHA from the tags for artifact verification. This guide ships in the release commit, not a later supplement. See the [release notes](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/release/0.18.0.md), [previous upgrade guide](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/integration/0.17.0.md), and [current binding reference](https://marmot.build/docs/native-apps.html).
 
 Readers: native app hosts (Swift/Kotlin through MarmotKit), C hosts, Rust hosts that embed `marmot-app` or lower crates, and WN Agent operators.
 
-The largest client change is the create and invite result shape: these calls now go ahead with the members who are available and report every requested account's outcome. The v4 whole-file audit upload is removed. `MarmotKitError` gains one case (`CreatedGroupMemberReportUnavailable`), C gains one status (`130`), and no `MarmotEventFfi` case is added. Account databases migrate from schema 201 to 207. The wire format and conformance vectors are unchanged apart from their version stamp.
+The largest client change is that multi-device is built into every artifact and on in every constructor. Until 0.17.0 it existed only in `dev-device-groups` test builds. `MarmotKitError` gains three cases (`GroupCommitPending`, `NoUsableRelay`, `ReactionNotFound`), C gains three statuses (`131`–`133`), `GroupEventKindFfi` gains `GroupChangeNotDelivered`, and no `MarmotEventFfi` case is added. Account databases migrate from schema 207 to 216, the shared database from 4 to 5, and each account's directory cache from 2 to 3. Conformance vectors are unchanged apart from their version stamp; the sibling Welcome gains a version 3 (see [Device groups on by default](https://marmot.build/docs/upgrading.html#device-groups-on-by-default)).
 
 ## Upgrade decisions
 
 | Category | Required action or effect |
 | --- | --- |
-| Required | Replace generated Swift/Kotlin, native libraries and C headers together. Adopt the new create and invite result records. Replace `setAuditLogTrackerConfig` with `setAuditLogSource` and remove calls to `postAuditLogFile` and `postAuditLogTrackerUpdate`. Handle `MarmotKitError.CreatedGroupMemberReportUnavailable`. Stop reading `AppPerformanceSnapshotFfi.accountGroupReadSnapshot` and the removed v4 fields of the v5 tracker result. |
-| Required for C hosts | Recompile. Create and invite outputs are new structs with their own free functions; `marmot_created_group_free` is removed. `marmot_set_audit_log_source` replaces both tracker-config setters. `MarmotAuditLogTrackerUpdateResultV5` and `MarmotAppPerformanceSnapshot` change layout. See [C host changes](https://marmot.build/docs/upgrading.html#c-host-changes). |
-| Required storage | Allow account migrations 0202 to 0207 (schema 201 → 207) on first open. The shared database is unchanged. Downgrade is unsupported. |
-| Required for Rust hosts | Creates and invites return `GroupMemberResult<T>`; `TransportPeeler::peel_group_message` takes a `PreparedGroupMessage`; `GroupStorage::put_group` is replaced; `StorageProvider` requires `CommittedRosterStorage`. See [Rust host changes](https://marmot.build/docs/upgrading.html#rust-host-changes). |
-| Required for agent-control clients | None. Creates and invites stay all-or-nothing and fail as before when any requested member is unavailable. |
-| New defaults | A group relay's lasting refusal of a confirmed change warns until acknowledged and gates group changes; creates and invites proceed with available members; account and group reads answer from the published read state; no coverage-ledger history notices; broken recovery units probe quietly; four concurrent attachment downloads with on-screen work first; storage-blocked downloads park until space covers them; commits over 64 KiB withheld from relays of unknown limit; sends a relay answered `rate-limited:` or `auth-required:` stay pending after a later refusal; deleted failed sends leave the timeline; bare `note1`/`nevent1`/`naddr1` references become `NostrUri`; White Noise's new groups drop `cdn.hzrd149.com`. |
-| Optional adoption | `discardFailedSend`, `createTaggedPoll`, `sendTaggedSticker`, `stickerPackShareLink`, the `read_state_publish` runtime operation, the native-host test recipe. |
-| Automatic fixes | `quinn` RustSec advisories; repeated history reconstruction from undecryptable envelopes; external-signer archive, forget and delete; foreground sends behind optional-relay retries; `NotificationUpdate.isDm`; attachment promotion resumes; directory fetch failures during create and invite; double snapshots in rewind windows without savepoints; timeline triggers after withdrawals; one-shot CLI exits. |
+| Required | Replace generated Swift/Kotlin, native libraries and C headers together, in the app and in every extension that opens the root. Plan for device groups being on (linking, backups, admin step-down on Leave). Handle `MarmotKitError.GroupCommitPending`, `.NoUsableRelay` and `.ReactionNotFound`, `GroupEventKindFfi.GroupChangeNotDelivered` and `OnboardingActionFfi.RemoveUnusableRelays` in exhaustive switches. Pass the new fields where you construct changed records. |
+| Required for C hosts | Recompile. Seven structs change layout, three statuses and two enum values are appended, and the `dev-device-groups` build flags are gone. See [C host changes](https://marmot.build/docs/upgrading.html#c-host-changes). |
+| Required storage | Allow account migrations 0208 to 0216 (schema 207 → 216), shared migration 0005 (schema 4 → 5) and directory-cache migration 0003 (2 → 3) on first open. Downgrade is unsupported. |
+| Required for Rust hosts | `MarmotAppConfig::dev_device_groups` is renamed `device_groups` and defaults to true; the device-group Cargo features are gone; `OutboundIntentStorage` gains three methods; several engine, traits and `storage-sqlite` signatures change. See [Rust host changes](https://marmot.build/docs/upgrading.html#rust-host-changes). |
+| Required for agent-control clients | None. The protocol is unchanged. The connector's accounts now run with device groups on. |
+| New defaults | Device groups on; idle accounts no longer wake every 15 s; group changes fail with `GroupCommitPending` while the group's own commit is pending; a pending commit is confirmed by echo or read-back and given up when it reached no relay; queued messages are prepared once across retries and restarts; a send with no usable relay fails as `NoUsableRelay`; sticker and emoji reads also use the configured relays; onboarding relay checks wait up to 8 s (not 3 s) for a relay's answer after connecting and authenticate on a wrapped `auth-required`; usage-diagnostics consent asks again for the expanded scope. |
+| Optional adoption | `groupPendingCommit`, `groupChangesNotDelivered` / `acknowledgeChangeNotDelivered`, direct-follow availability, file-backed draft attachments, `unreactFromMessageMatching`, `startDirectConversationWithOptions`, `attachmentRemovals`, link `chatProgress`, onboarding `RemoveUnusableRelays` and inconclusive-check repair, `OnboardingDevicePackageFfi.client`. |
+| Automatic fixes | Linked devices get chats as the adding device holds them; the approver adds a new device without racing siblings; invitation answers sync between linked devices within seconds; removed devices stay out of sign-ins; history recovery across partial epoch advances and on newly linked devices; NIP-22 comment projection and media keys; emoji-set reinstalls keep images; sticker packs found on configured relays; idle ticks take no writer. |
 
 ## Required upgrade steps
 
-1.  Pin all MDK, MarmotKit, Marmot C and WN Agent inputs to 0.17.0. Verify the source SHA in each manifest and every sibling checksum. Do not combine new generated records or headers with 0.16.0 native libraries. See the [distribution guide](https://marmot.build/docs/distribution.html).
+1.  Pin all MDK, MarmotKit, Marmot C and WN Agent inputs to 0.18.0. Verify the source SHA in each manifest and every sibling checksum. Do not combine new generated records or headers with 0.17.0 native libraries. See the [distribution guide](https://marmot.build/docs/distribution.html).
     
-2.  Adopt the create and invite results. See [Partial group creates and invites](https://marmot.build/docs/upgrading.html#partial-group-creates-and-invites).
+2.  Ship the 0.18.0 library in **every** process that opens the root, including a notification service extension or background worker. Once 0.18.0 has opened an account, a 0.17.0 process cannot open its database at all: it refuses the newer schema (`UnsupportedSchemaVersion`), even for an account with a single device. Separately, a runtime with device groups off fails a compatible account that holds or is joining a device group with `MarmotKitError.Runtime` `experimental_device_groups_required`. See [Storage upgrade](https://marmot.build/docs/upgrading.html#storage-upgrade) and [Device groups on by default](https://marmot.build/docs/upgrading.html#device-groups-on-by-default).
     
-    | Method | 0.16.0 returned | 0.17.0 returns |
+3.  Add the new error cases to exhaustive error handling:
+    
+    | Case | Meaning | Host action |
     | --- | --- | --- |
-    | `createGroup`, `createGroupWithOptions`, the initial-image and prepared-image creates | `String` (group id) | `GroupCreationResultFfi` |
-    | `createGroupDetailed`, `createGroupWithOptionsDetailed`, `createGroupWithInitialImageDetailed` | `CreatedGroupFfi` | `DetailedGroupCreationResultFfi` |
-    | `inviteMembers`, `inviteMembersWithInitialAdmins` | `SendSummaryFfi` | `InviteMembersResultFfi` |
-    | `inviteMembersDetailed`, `inviteMembersDetailedWithInitialAdmins` | `GroupMutationResultFfi` | `GroupInviteResultFfi` |
+    | `GroupCommitPending(groupIdHex:)` | The group's own last commit has not confirmed. Group changes, a member's leave and an invite decline fail with it; disbanding and an admin's leave are accepted. Messages are accepted but wait in the queue until the commit resolves, and a send of media encrypted before the commit can fail with `MediaReferenceEpochUnsettled` or, once the epoch moves, `MediaReferenceStaleEpoch`. | Say the previous change is still being sent; retry once it confirms. Show queued messages as pending, not sent, and upload media again after `MediaReferenceStaleEpoch`. Read `groupPendingCommit` to show it. |
+    | `NoUsableRelay` | MDK may send to none of the group's relays (for example, all at private-network addresses). Nothing was sent and a commit rolled back. It was `Publish` before. | Do not offer a retry: it fails the same way while the group's relays stay the same. |
+    | `ReactionNotFound` | A reaction removal found no matching active reaction locally; nothing was published. | Refresh state; do not treat it as proof other devices converged. |
     
-    Other detailed group mutations keep `GroupMutationResultFfi`, and `startDirectConversation` keeps its signature: it stays all-or-nothing.
+    `GroupCommitPending` is checked before `GroupCatchingUp` and `GroupCommitUndelivered`, and no acknowledgement releases it, so those acknowledgements stay unspent.
     
-3.  Replace the audit source setter. `setAuditLogSource(AuditLogSourceFfi)` takes the same `hardwareModel`, `platform` and `appVersion` as the removed `AuditLogTrackerConfigV4Ffi` minus the upload URL and token, and returns the trimmed stored value (a blank field becomes absent). Call it on every launch before opening accounts: a recorder already open keeps the source it started with. The hardware model must come from system model information, never a device name, hostname or serial number. Remove `postAuditLogFile` and `postAuditLogTrackerUpdate`; keep calling `postAuditLogTrackerUpdateV5`, whose `AuditLogTrackerUpdateResultV5Ffi` now holds only `enabled` and `v5`. Builds no longer embed `MARMOT_AUDIT_LOG_TRACKER_ENDPOINT`. `MarmotServiceEndpoints` no longer carries a tracker endpoint. Local v4 files stay listable and deletable until retention expires them, and startup deletes the orphaned `audit-upload-checkpoint.json`.
+4.  Handle `GroupEventKindFfi.GroupChangeNotDelivered { commitIdHex, intentKind, reason }` and `OnboardingActionFfi.RemoveUnusableRelays` in exhaustive `switch`/`when`. See [Group changes that confirm, stick or are given up](https://marmot.build/docs/upgrading.html#group-changes-that-confirm-stick-or-are-given-up) and [Onboarding](https://marmot.build/docs/upgrading.html#onboarding).
     
-    ```swift
-    _ = try kit.setAuditLogSource(source: AuditLogSourceFfi(
-        hardwareModel: systemModelIdentifier(), platform: "ios", appVersion: appVersion))
-    ```
+5.  Pass the new fields where you construct these records yourself (tests and previews, typically). Fields with a default compile without change in Swift and Kotlin; the others must be passed:
     
-    ```kotlin
-    marmot.setAuditLogSource(AuditLogSourceFfi(Build.MODEL, "android", appVersion))
-    ```
+    | Record | New field |
+    | --- | --- |
+    | `AppMessageRecordFfi` | `invalidated: Bool` (no default; true for a raw row kept only as an invalidated tombstone) |
+    | `DeviceLinkSnapshotFfi` | `chatProgress: [LinkChatProgressFfi]` (default empty) |
+    | `OnboardingDevicePackageFfi` | `client: String?` (no default) |
+    | `OnboardingRelayTagChangeFfi` | `removalReason: OnboardingRelayRemovalReasonFfi` (no default; `.none` for an entry not removed) |
+    | `OnboardingRepairProposalFfi` | `inconclusive: Bool` (default `false`) |
+    | `SelectedMessageDraftAttachmentFfi` | `fileBacked: Bool` (default `false`) |
+    | `AttachmentStorageUsageFfi` | `draftBytes: UInt64` (default `0`) |
     
-4.  Handle `MarmotKitError.CreatedGroupMemberReportUnavailable(groupIdHex:)` (Kotlin `MarmotKitException.CreatedGroupMemberReportUnavailable`). A prepared-image create that reuses an upload consumed before this release finds the group that upload created, but no member report was kept for it. Open that group; do not create another. Exhaustive error switches must add the case.
+6.  Remove any `--dev-device-groups` flag from local build scripts and any reference to `output-dev-device-groups/`. `xcframework.sh`, `xcframework-macos.sh`, `kotlin-bindings.sh`, `options-smoke.sh` and `c-bindings.sh` build the one library every constructor uses.
     
-5.  Remove reads of `AppPerformanceSnapshotFfi.accountGroupReadSnapshot`. The startup group-read snapshot it timed no longer exists, because group reads answer from the published read state. `accountProfileLoad` stays and now times the profile load each member read takes.
+7.  Expect usage-diagnostics consent to need acceptance again. The registry adds the `mdk_onboarding_summary` aggregate, so its revision changes and a granted receipt from 0.17.0 no longer covers it. Hosts need no new calls. See [Usage diagnostics: onboarding pauses](https://marmot.build/docs/upgrading.html#usage-diagnostics-onboarding-pauses).
     
-6.  Keep `HistoryNoticeCauseFfi.UnprovenHistory` in exhaustive switches. It is no longer emitted; see [History notices](https://marmot.build/docs/upgrading.html#history-notices).
+8.  If you export v5 audit records, repin and deploy the White Noise audit receiver before shipping, so it accepts the new kinds (`welcome_event_size`, `welcome_withdrawn`, `pending_commit_changed`). An older receiver rejects a whole batch that contains an unknown kind; MDK then splits and retries the batch and skips the rejected rows, so other rows can arrive late. See the [receiver contract](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/audit-logging.md#downstream-whitenoise-data).
     
 
 ## Storage upgrade
 
-Account databases run six migrations on first open, moving from schema 201 to 207:
+Account databases run nine migrations on first open, moving from schema 207 to 216:
 
 | Migration | Change |
 | --- | --- |
-| 0202 | Adds `relays_json` to sticker packs, defaulting existing packs to an empty hint list. |
-| 0203 | Adds `member_outcomes_json` to prepared group-image uploads, so a retried create returns its original member report. |
-| 0204 | Drops the timeline rows of own sends that failed and were then deleted. The source rows stay. A deleted failed send with a live peer reaction or a kept receipt is settled as delivered instead (failure cleared, recipient confirmed) and keeps its placeholder. |
-| 0205 | Adds `attachment_acquisition.storage_readmitted` for storage-parked downloads. |
-| 0206 | Adds the committed-roster tables and an account-wide roster revision. It seeds nothing: the engine records each group's roster the next time it fully hydrates the group. |
-| 0207 | Adds `cgka_commit_refusals`, the confirmed own commits a group relay refused for good, kept until acknowledged. |
+| 0208 | Repairs retained NIP-22 comment parents, media and accepted author edits, and backfills attachment slots, encrypted-media source-epoch references and cached-secret retention for them. Raw events, deleted tombstones and unrelated custom rows are kept. |
+| 0209 | Lets a draft attachment own a staged media file instead of holding bytes. |
+| 0210 | Adds `cgka_changes_not_delivered`, the group changes given up after their call returned, kept until acknowledged. |
+| 0211 | Adds `account_sign_in_removals`, the slots the trusted device roster recorded as removed. |
+| 0212 | Adds the bounded attachment body-removal journal. |
+| 0213 | Persists the end of each epoch-gap visit. |
+| 0214 | Persists link chat progress across restarts. |
+| 0215 | Adds `stall_evidence` to released transport receipts. |
+| 0216 | Changes no table; gates the new stored Welcome payload tags 14 and 15 so an older binary refuses the database. |
 
-None of these rewrites message history; 0204 deletes only the affected timeline rows. The shared database (`shared.sqlite3`) is unchanged. A 0.16.0 binary refuses the upgraded account database before reading or writing its tables.
+The shared database (`shared.sqlite3`) runs migration 0005, moving from schema 4 to 5: per-slot publication journals and barrier state for direct-follow availability, bounded to 500 slots per account and 1,000 rows in all, holding event ids and timestamps, never KeyPackage bytes.
 
-Downgrade to 0.16.0 is unsupported. If you may need to roll back, keep a device-local copy of the MDK data directory taken before upgrading while the app and every extension (such as a notification extension) are stopped, so no database or its WAL file is open while it is copied. Never remove migration rows by hand. See the [storage-format contract](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/docs/marmot-architecture/storage-format-v2.md).
+Each account's directory cache runs its migration 0003, moving from 2 to 3: a table for the direct-follow availability projection. A new account database also records, in an unnumbered `cgka_database_origin` row, that it was created empty, so an early read no longer makes a fresh account look upgraded.
 
-## Partial group creates and invites
+None of these rewrites message history; 0208 repairs only NIP-22 comment projections. A 0.17.0 binary refuses either upgraded database before reading or writing its tables.
 
-A create or invite used to stop at the first unavailable account. Now directory resolution returns one outcome per requested account, deduplicated and in request order, and the call runs one MLS operation for the available accounts.
+Downgrade to 0.17.0 is unsupported. If you may need to roll back, keep a device-local copy of the MDK data directory taken before upgrading while the app and every extension (such as a notification extension) are stopped, so no database or its WAL file is open while it is copied. Leave out `accounts/*/handoff/`: it holds plaintext attachment copies lent to the OS, which the backup would keep after their leases end, and a rollback does not need them. Never remove migration rows by hand. See the [storage-format contract](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/storage-format-v2.md).
 
-*   `GroupCreationResultFfi { groupIdHex: String?, memberOutcomes }`
-*   `DetailedGroupCreationResultFfi { created: CreatedGroupFfi?, memberOutcomes }`
-*   `InviteMembersResultFfi { summary: SendSummaryFfi?, memberOutcomes }`
-*   `GroupInviteResultFfi { invite: InviteMembersResultFfi, details, managementState }`
-*   `MemberResolutionOutcomeFfi { accountIdHex, status, selectedDeviceCount }`. `status` is `selected`, `missingKeyPackage`, `obsoleteKeyPackage`, `invalidKeyPackage`, `incompatibleKeyPackage`, `missingInboxRoute` or `incomplete`; `selectedDeviceCount` is zero for every status but `selected`.
+## Device groups on by default
 
-Read the result in this order:
+Every MarmotKit, Marmot C, `wn` and WN Agent build now includes multi-device, and every constructor opens with device groups on:
 
-1.  If the operation (`groupIdHex`, `created` or `summary`) is absent, nothing changed: a nonempty request found no available member, so no group or commit exists. Show the outcomes. An empty member list still creates a creator-only group.
-2.  If it is present, a create's group is canonical locally. An invite's `summary` keeps its 0.16.0 meaning: read `summary.acceptDisposition` as before. `published` means the commit went out; `acceptedPending` means the invite is queued while the group settles and can still be refused (`QueuedIntentRefused`); `completionUnknown` means the commit is unresolved. Keep showing those members as pending until the change settles. In every case, show the accounts that were not `selected`, for example as "could not be added".
-3.  `selected` means MDK found fresh, compatible devices and a safe inbox route. It is not a join or a Welcome delivery: keep using `pendingWelcomeDeliveries` and `WelcomeDeliveryPending` for that.
+*   `newWithConfiguration` (C `marmot_client_new_with_configuration`) links devices, lists linked devices, reviews sign-ins, transfers history, runs backups, and steps a nonlast admin down on Leave. `requiresSelfDemoteBeforeLeave` is false for a nonlast admin, and `canLeave` includes that Leave. The last active admin is still refused.
+*   `newWithExperimentalDeviceGroups` (C `marmot_client_new_with_experimental_device_groups`) is now the same open, kept so existing hosts compile, and no longer fails with `experimental_device_groups_unavailable`. New code can use `newWithConfiguration`.
+*   There is no binding switch to turn device groups off. Rust hosts can set `MarmotAppConfig::with_device_groups(false)` in every opener of a root; the CLI honors `WN_DEVICE_GROUPS=0` for both `wn` and `wnd`.
 
-`incomplete` means the relay reads for that account did not finish; per-member recovery still applies. Invalid input, authorization, lifecycle, storage and directory fetch failures remain errors and are never turned into outcomes. Initial admins apply only to selected members, in the same commit. A retried prepared-image create returns the original report, kept across restarts.
+What a host should do:
+
+*   Offer device linking and the linked-device screens described in [Linking a new device](https://marmot.build/docs/native-apps.html#linking-a-new-device), [Linked devices](https://marmot.build/docs/native-apps.html#linked-devices) and [Unrecognized sign-ins](https://marmot.build/docs/native-apps.html#unrecognized-sign-ins), or at least handle their events (`DeviceLinkChanged` and the sign-in notices) without crashing.
+*   Re-read `groupManagement` for Leave instead of assuming an admin must demote first.
+*   During linking, read `DeviceLinkSnapshotFfi.chatProgress`. Each `LinkChatProgressFfi { slotIdHex, onNewDevice, total, remaining }` names the new device by slot. On the approver `remaining` counts chats still owed an Add; on the new device it counts expected chats not yet joined. Show a joining banner while it is positive. An absent entry means progress is unavailable (before a complete report, with older peers, after opt-out, or once the direct-add window expires).
+
+Mixed versions: a sibling Welcome that forwards how the adding device holds a chat (its inviter, and whether a copy with no invitation generation is confirmed) is encoded as version 3, which devices older than 0.18.0 refuse. 0.17.0 production artifacts had no device groups, so this matters only for devices that ran `dev-device-groups` builds: update every device of an account together before linking. Every build supports the device-roster component (`marmot.account.device-roster.v1`), and a runtime with device groups on, the default, advertises it in its capabilities.
+
+How linked devices now behave:
+
+*   A newly linked device gets each chat as the device that adds it holds it. A chat confirmed there from before invitation generations arrives confirmed instead of as an invitation from the account itself. One with an invitation generation settles through its shared decision and can show as pending until that decision arrives, and a chat whose inviter this device blocks stays pending ([#3556](https://github.com/marmot-protocol/mdk/issues/3556)). An unanswered invitation arrives pending with the original inviter as `welcomerAccountIdHex`.
+*   When a device is linked to an account that already has two or more devices, the approver adds it to the chats the approver is in while the approver is active (heard from within two hours) and the link is under a week old. The other devices gap-fill only once the approver goes quiet, so they no longer both add it and fork chats. A sibling running an older version still gap-fills at once.
+*   An invitation answered on one linked device shows as answered on the other within seconds. The answer is sent on the worker's next turn, a sibling's winning answer is applied when it arrives, and the chat then reports `GroupStateUpdated`, as a host accept does.
+*   A device the user linked and then removed no longer comes back as a new sign-in once its `removed` roster record expires. A later publication in that slot is still a new sign-in.
+*   History recovery no longer stalls a newly linked device on traffic that may predate its Welcome.
+
+## Group changes that confirm, stick or are given up
+
+0.17.0 retried a group change whose relay answer was unclear until it either confirmed or exhausted its retries, and a change could stay pending indefinitely. 0.18.0 resolves it ([#2332](https://github.com/marmot-protocol/mdk/issues/2332)):
+
+*   **Confirmed by echo.** When the account's own group subscription receives that exact change from one of the group's relays, it confirms. A copy under another event id, or from a relay outside the group's list, confirms nothing.
+*   **Confirmed by read-back.** Ten minutes after the first send, each retry of a relay that may hold the change first reads that exact change back. The read never signs in as the account, sends one request per relay, at most eight per account per relay an hour, and feeds nothing into message handling.
+*   **Given up.** A change no relay accepted and none may hold, with relays still unreached, rolls back ten minutes after its first send once the device shows it is online. A change any relay may hold never rolls back, and an offline device keeps the change pending.
+*   **Prepared once.** A queued message or change names its stored send, so a retry or restart no longer prepares it a second time as a new message with a new identity. The same event can still be republished to relays while its send resolves; that is one logical delivery. A send stored by 0.17.0 can still be prepared once more after a restart.
+
+While the group's own commit is pending, group changes fail with `GroupCommitPending`. To show the user what is happening:
+
+*   `groupPendingCommit(accountRef, groupIdHex)` returns `GroupPendingCommitFfi?` with `state` `Sending` (its first ten minutes, and while no relay may hold it) or `Stuck` (ten minutes on, some relay may hold it, none acknowledged). It names the change by `intentKind`, plus `queuedIntentIdHex` for a queued one, gives `firstAttemptAt`, and lists `unconfirmedRelayUrls`, `owedRelayUrls` and `refusedRelays`. MDK never gives up a stuck commit. No event announces a confirmation, so poll while showing it. It is a local read with no network I/O.
+*   `groupChangesNotDelivered(accountRef, groupIdHex)` returns `GroupChangeNotDeliveredFfi` records, oldest first, for changes given up after their call returned: a direct change that answered `CompletionUnknown`, or a queued one that answered `AcceptedPending`. `reason` is `not_delivered`, `event_too_large` or `refused`. A direct change is also announced by `GroupEventKindFfi.GroupChangeNotDelivered`; a queued one by `QueuedIntentRefused`, as before. Read the records on start: the events only notify. Clear one with `acknowledgeChangeNotDelivered(accountRef, groupIdHex, commitIdHex)`. A change staged by 0.17.0 and given up after the upgrade is not recorded.
 
 ```swift
-let result = try await kit.createGroup(
-    accountRef: account, name: name, memberRefs: members, description: nil)
-let skipped = result.memberOutcomes.filter { $0.status != .selected }
-guard let groupIdHex = result.groupIdHex else {
-    showNobodyAvailable(skipped)
-    return
+// Illustrative.
+if let pending = try await kit.groupPendingCommit(accountRef: account, groupIdHex: group),
+   pending.state == .stuck {
+    showStuckChange(kind: pending.intentKind, relays: pending.unconfirmedRelayUrls)
 }
-openChat(groupIdHex)
-if !skipped.isEmpty { showNotAdded(skipped) }
+for record in try await kit.groupChangesNotDelivered(accountRef: account, groupIdHex: group) {
+    showChangeNotApplied(kind: record.intentKind, reason: record.reason, at: record.at)
+}
 ```
 
 ```kotlin
-val result = marmot.createGroup(account, name, members, null)
-val skipped = result.memberOutcomes.filter { it.status != MemberResolutionStatusFfi.SELECTED }
-val groupIdHex = result.groupIdHex ?: return showNobodyAvailable(skipped)
-openChat(groupIdHex)
-if (skipped.isNotEmpty()) showNotAdded(skipped)
+// Illustrative.
+marmot.groupPendingCommit(account, group)?.takeIf { it.state == GroupPendingCommitStateFfi.STUCK }
+    ?.let { showStuckChange(it.intentKind, it.unconfirmedRelayUrls) }
+marmot.groupChangesNotDelivered(account, group).forEach {
+    showChangeNotApplied(it.intentKind, it.reason, it.at)
+}
 ```
+
+See [A group change still being sent](https://marmot.build/docs/native-apps.html#a-group-change-still-being-sent) and [Group changes that were not applied](https://marmot.build/docs/native-apps.html#group-changes-that-were-not-applied).
 
 ## Changed defaults
 
-### Reads from the published read state
+### Maintenance timing
 
-The account worker now publishes an immutable, versioned read state at each quiescent point: before every reply and host event, during catch-up, and when a time-bound answer expires. These reads answer from it on the caller's task, without waiting in the worker's queue:
+The 15-second maintenance tick no longer drives an idle account. Session maintenance runs at the earliest time its data gives (rotation, leaf refresh, self-update phase, KeyPackage refresh, expiry or relay backoff, a fanout's backoff, a private KeyPackage expiry, a reinvite retry, or the 10-minute component recheck). Device-group passes run at their own times: the sign-in check, and once linked the hourly heartbeat, the small-state broadcast, private KeyPackage request pacing, a leaving sibling's decision, gap filling and inventory pages. Device pairing runs only while linking is under way. Recovery, post-join work, attachments, avatars, presentation, local-submission retries, push windows, history dispatch and the compaction batch each run when an event wakes them and at their own deadlines. Work with no stored time retries 15 s after the last run while it lasts.
 
-*   account reads: quarantined groups, KeyPackage status and the owned list, maintenance policy and per-group maintenance status, commit delivery, and backup restore status and watch;
-*   group reads: `groupMembers`, `groupMemberIdsPage`, `groupMlsState` and its diagnostic form, `groupRoster` / `groupConversationSnapshot`, and `groupAppComponent`.
+Effects a host can see: an idle device uses less CPU and no longer writes the database on each tick; a push token change goes out at once as a plain `PushTokenUpdate`, followed by the announce it owes once the push fetch clock settles (two group messages per group instead of one); KeyPackage publication retries follow their stored backoff (30 s doubling to 1 h). Times a week or more out (history expiry, inactivity, takeover) ride the run the hourly heartbeat brings, so they can be up to an hour late. Nothing changes in the API.
 
-Each answer is what the worker would have given at that publish. Because the worker publishes before it replies, a read made after a mutation returns sees that mutation. During startup, a group read that names a group still awaiting hydration asks the worker to hydrate it and answers once it has: live, quarantined or gone (`UnknownGroup`). A forget sent while startup hydration runs now takes effect at its place in the worker's command order, so a later read cannot bring the group back. Pending Welcomes and some other reads still go through the worker queue (see [Acceptance and remaining work](https://marmot.build/docs/upgrading.html#acceptance-and-remaining-work)).
+### Relays MDK may not send to
 
-No call changes. If your app works around slow reads during sends or catch-up (spinners, caching, timeouts), revisit those paths.
+A group send none of whose relays MDK may send to fails as `NoUsableRelay` instead of `Publish`. A relay the host-safety rule refuses no longer counts as one a send may have reached: a Welcome whose inbox relays it refuses no longer counts toward maintenance's ambiguous-exposure total, and a commit or message every other group relay refused for size fails as `EventTooLarge`.
 
-### Relay refusals of confirmed changes
+### Sticker and emoji relays
 
-A group relay that refuses one of your confirmed changes for good (too large for it, or any other final answer) now warns until the user acknowledges it, and the warning survives restarts. `groupCommitDelivery` names the oldest refused change ahead of any owed one and lists `refusedRelays`, each a `GroupCommitRefusedRelayFfi` with `relayUrl`, `cause` (`GroupCommitRefusalCauseFfi.TooLarge` or `Rejected`) and `sizeClass` (`TooLarge` only, when known). It returns `nil`/`null` only once no relay is owed a change of yours and every refusal has been acknowledged. MDK will not deliver the change there, so members who read only that relay may not have it.
+Sticker pack reads (`syncStickerPacks`, `fetchStickerPack`, `installStickerPack`, resolving a received sticker) and emoji set reads (`syncEmojiSets`, `fetchEmojiSet`, the sets `userEmojiList` points to) query the runtime's configured relays as well as the account's NIP-65 relays. The newest version among the relays that answered wins. The installed lists (kinds 10031 and 10030) are still read from and published to the account's relays only. A pack's share link names only relays that served the version MDK kept.
 
-A refusal makes group changes fail with `GroupCommitUndelivered` at once, without the two-minute grace. `acknowledgeGroupCommitUndelivered` now also dismisses the group's refusals for good, so a "dismiss" action can call it. A relay the host-safety rule refuses is not reported, and a disbanded group reports no refusal. If your commit-delivery UI shows only owed relays, add the refused ones.
+### Onboarding
 
-### Large commits and retryable relay answers
+*   A relay that closes a query with `ERROR: auth-required: ...` is reported as needing authentication, and an account that can sign authenticates and asks again. After connecting (up to 5 s), a check waits up to 8 s for a relay to finish answering, not 3 s, so one relay's inspection can take 13 s; the step cancels a relay's check at 15 s. Relays are checked concurrently. Do not put a shorter watchdog or "timed out" copy in front of that window.
+*   A `RetryableFailure` relay or inbox step whose check was inconclusive also offers `EditRelays` and, where defaults can change the list, `UseRecommendedRelays`. `OnboardingRepairProposalFfi.inconclusive` marks a proposal built on such a check; show an explicit at-your-own-risk confirmation before approving it.
+*   A step offers `RemoveUnusableRelays` when `proposeOnboardingRelayRepair` would return an approvable preview that removes a declared relay: a retired relay, or one that refused the declared-route check with `auth-required` or `payment-required` while the client held the account's local key. Each `Removed` `OnboardingRelayTagChangeFfi` carries `removalReason` (`Retired`, `AuthenticationRequired`, `PaymentRequired`) for a localized explanation; every other entry carries `None`, which exhaustive switches must handle. C uses the non-pointer enum `MarmotOnboardingRelayRemovalReason`. It is advice: readiness never depends on it.
+*   `OnboardingDevicePackageFfi.client` names the app another installation's package reports. See [Onboarding: other-installation client labels](https://marmot.build/docs/upgrading.html#onboarding-other-installation-client-labels).
+*   A single-device acknowledgment survives a pause of more than five minutes before Continue; the notice returns only when discovery finds something new.
 
-A commit over 64 KiB is not sent to a relay whose event limit MDK does not know: neither listed in the deployment's `relayEventLimits` nor advertised by NIP-11. Such a relay could close its socket on the oversized frame and leave the commit possibly seen, which kept it pending for good. MDK connects to such a relay and, once the socket is up, refuses the commit there locally without sending it; a relay that is slow to connect but connects is refused the same way. A commit refused at every relay rolls back as too large (`EventTooLarge`, or `QueuedIntentRefused` with `event_too_large` for a queued change). Only a relay the device cannot connect to holds the commit for a retry, so an offline device never gets a false "too large". The White Noise preset lists 2 MiB for its relays, so its groups are not affected. Custom deployments with large groups should list their relays' limits.
+See [Interactive account onboarding](https://marmot.build/docs/native-apps.html#interactive-account-onboarding).
 
-Exposure is now settled once for every send. A relay that answered `rate-limited:` or `auth-required:` counts as having received the event, so a later refusal there (`invalid:`, `blocked:`) no longer fails or rolls it back: the send stays pending and keeps retrying, and while no relay has accepted it, later sends in the group wait behind it, as they do behind a send that timed out. Expect such a message to stay in its pending state rather than switch to failed.
+### Usage diagnostics: onboarding pauses
 
-### History notices
+Hosts make no new calls. MDK now records the `mdk_onboarding_summary` usage diagnostics aggregate itself (#3440). It shows which interactive onboarding step (profile, follows, relays, inbox relays, single device, KeyPackage) an attempt stopped at and why. Each row has the blocking status, the primary and per-source issue classes, the finding context and a bucketed count of failing sources. It has no relay URL, account, event id or free text. Each attempt counts a distinct step, status and issue once, across retries and restarts, and only while usage-and-diagnostics consent is granted.
 
-The coverage ledger no longer raises "history may be incomplete" notices. A notice now needs evidence that messages are missing (an epoch gap the runner's visits exhausted, a maintenance or known-event park an upgrade kept) or a rejoin. `HistoryNoticeCauseFfi.UnprovenHistory` stays in the enum but is not emitted. Notices shown for it before the upgrade leave the list, and `dismissHistoryNotice` with one of their ids returns `false` and changes nothing.
+The product catalogue gains this family, so the registry revision changes. After the upgrade, a user who had granted usage and diagnostics reads as `AcceptanceRequired` until they accept again. Show the scope-change explanation you already use when registered schemas change (see [Usage and diagnostics](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/usage-diagnostics.md#consent-and-host-integration)), not the one-time legacy explanation. Keep recording `mdk_onboarding_step` as before: the new rows explain a pause, and the host's step events still mark start and completion.
 
-A broken recovery unit, such as a relay that refused the runner or could not prove a route's history, probes quietly on a timer instead of waiting for a dismissal: an hour after it breaks, then on an interval that doubles up to a day. A probe follows the runner's ordinary scheduling, budgets and relay cooldowns, raises no notice and never shows as catching up. Units broken before the upgrade probe once right after it. If that probe fails, a unit that broke for lack of progress under 0.16.0 keeps its earlier retry step and usually waits a full day, while one that broke on a relay refusal (such as an inbox relay that refuses NIP-77) or in the coverage-ledger conversion waits an hour and then doubles up to a day. If your UI explained the old notice or offered a dismiss action for it, remove that copy.
+### Onboarding: other-installation client labels
 
-### Attachment downloads
+Someone importing an existing key almost always has KeyPackages that their previous app published, so the `SingleDevice` notice reports `OtherInstallationPossible` for nearly everyone moving between apps. The generic "Other sign-in records were found" copy can read as a reason to stop. Each `single_device_notice.other_packages` entry now carries an optional `client` string (#3438): `OnboardingDevicePackage::client` in Rust, `OnboardingDevicePackageFfi.client` in Swift/Kotlin and `MarmotOnboardingDevicePackage.client` in C. It comes from the record's NIP-89 `client` tag. Hosts can use it to name the likely source, for example "We found messaging keys from Example Chat".
 
-Downloads run four at a time across a runtime's accounts instead of one, and each account's media HTTP lane grows from four slots to five so one stays free for foreground work. While free space cannot cover four transfers at the largest account limit, they run one at a time. `requestAutomaticAttachment` on queued work moves it ahead of other automatic downloads, most recent request first; call it for what is on screen. Taps still go first.
+*   **Required.** Replace generated Swift/Kotlin, native libraries and C headers together. Code that constructs `OnboardingDevicePackageFfi` directly (previews, fakes) must pass `client`. C hosts must recompile: `MarmotOnboardingDevicePackage` gains a trailing `client` pointer, which `marmot_onboarding_snapshot_free` releases with the rest of the snapshot.
+*   **Untrusted.** The label is whatever the record's signer wrote. Present it as what the records report, render it as plain text (never markup or a link), and never base trust, identity, deduplication or security decisions on it. Keep it out of logs, telemetry and analytics.
+*   **Sanitized by MDK.** Only the first value of the first `client` tag is read, never the handler address or relay hint after it. Control, bidirectional and invisible formatting characters are removed, whitespace runs collapse to one space, and the label keeps at most 64 whole grapheme clusters and 1024 bytes. A missing tag or a label with nothing visible left is `None` (C: `NULL`). C strings never contain an embedded NUL.
+*   **Optional and backward compatible.** Several entries can share a label, and entries without one still need the existing generic wording. Checkpoints saved by 0.17.0 load unchanged and report `None` until `SingleDevice` is checked again. Discovery, consent and the step's actions are unchanged; no network work is added.
 
-A download the worker cannot start for lack of free disk now parks as `AttachmentTransferStateFfi.storageBlocked`, with what it needs as its target, instead of retrying every 15 seconds as `retryScheduled`. It is readmitted once free space covers it; readmission releases parked downloads in priority order only while free space funds them together, so the rest stay `storageBlocked`. Show a storage prompt for that state, as you already do.
+```swift
+// Illustrative.
+let names = Set(notice.otherPackages.compactMap(\.client)).sorted()
+let source = names.isEmpty
+    ? "another app"
+    : ListFormatter.localizedString(byJoining: names)
+```
 
-### Timeline and Markdown
-
-*   A failed own send that the user deletes leaves the timeline instead of staying as a "deleted" row that still reports failure. Migration 0204 drops existing rows of this kind. A deleted failed send with a peer reaction (also one that arrived after the deletion) or a kept receipt is delivered instead: its failure clears and it keeps its placeholder.
-*   A bare `note1`, `nevent1` or `naddr1` reference with a valid bech32 checksum is now a `MarkdownInlineFfi` `NostrUri` instead of text, so copied note ids can render as event cards. An invalid checksum stays text; bare `npub` mentions and explicit `nostr:` URIs are unchanged. The reference is not resolved or fetched by the parser.
-*   Poll rows keep their reply target and parent preview, like chat messages.
-
-### Deployment
-
-The White Noise preset drops `https://cdn.hzrd149.com` from new groups' media endpoints, because it now refuses uploads from unlisted pubkeys. Existing groups keep their signed endpoint list until an admin replaces it.
+The [binding reference](https://marmot.build/docs/native-apps.html#single-device-notice) has the notice copy and discovery limits.
 
 ## Feature adoption
 
-### Discarding a failed send (optional)
+### Direct-follow availability (optional)
 
-`discardFailedSend(accountRef:groupIdHex:messageIdHex:)` removes a failed own send from this device and publishes nothing. Offer it instead of `deleteMessage` on a row whose `invalidationStatus` is `local_publish_failed`: a delete would tell the group about a message nobody received. It returns `DiscardFailedSendResultFfi`:
+`followAvailabilityPage(accountRef, after, limit)` reads the selected account's direct follows from its encrypted cache without networking; pass `nextCursor` as `after`, and `limit` clamps to 1–100. Each row is `ready` (MDK selected a current compatible KeyPackage), `unknown`, or `notFound` (for 15 minutes after a completed miss), with check time, expiry and provenance. It never says which client an account installed. `refreshFollowAvailability` checks at most 100 follows (four at a time, 10 s per target, five minutes in all), committing per target so pages show partial progress; concurrent calls share one refresh, and completed refreshes have a 60-second cadence. Poll `followAvailabilityStatus` and cancel with `cancelFollowAvailability(accountRef, operationId)`, using the same account; a stale id returns false. Keep the synchronous page read off the UI thread. See [Direct-follow availability](https://marmot.build/docs/native-apps.html#direct-follow-availability).
 
-*   `outcome`: `discarded`; `stillSending` when the group has a send the engine may still publish, which could be this one (nothing changed; try again later); or `notFailedSend` for any row that is not a failed own send.
-*   `mediaCiphertextSha256`: hashes of the send's encrypted media, for purging a decrypted-media cache. Empty unless discarded.
-*   `erasurePending`: the send is gone but secure WAL truncation is still pending; the next secure delete in the group retries it.
+### File-backed draft attachments (optional)
 
-The row, its edits and media references are securely deleted, and timeline subscribers receive the removal with reason `Cleared`.
+`stageMessageDraftAttachmentFile(accountRef, revision, request, control)` copies a host file, up to the encrypted-media blob limit, into the account's encrypted media store and adds it to the draft, so no full-size buffer crosses the binding. The draft owns the copy across text-only saves and restarts; clearing or sending the draft releases it. Staging returns the selected draft: use its revision from then on, because the revision you staged with is stale once the copy lands. Then:
 
-```swift
-let result = try await kit.discardFailedSend(
-    accountRef: account, groupIdHex: group, messageIdHex: message)
-if result.outcome == .discarded { purgeMediaCache(result.mediaCiphertextSha256) }
-```
+*   Keep such attachments through edits with `saveMessageDraftInputsIfRevision`, passing `MessageDraftAttachmentInputFfi.retained(id:)` for each one to keep and `.inline(attachment:)` for in-memory ones. A save deletes every attachment its inputs omit, including its staged file.
+*   Read previews with `readMessageDraftAttachment` (1 MiB chunks; `nil` means no such attachment, an empty chunk the end) or hand a file to the OS with `openMessageDraftAttachmentHandoff`. The handoff is a plaintext copy under a lease that outlives draft edits, clears and sends: call `releaseAttachmentHandoff` once the OS consumer has finished with it.
+*   Upload with `uploadMessageDraftAttachments`, then pass its references, in the draft's attachment order and with that same revision, to `sendMessageDraft`.
+*   `SelectedMessageDraftAttachmentFfi.fileBacked` marks them, and storage usage reports staged bytes as `draftBytes`. `messageDraftAttachmentIfRevision` refuses a file-backed attachment (it still reads inline ones), and the legacy whole-draft read refuses a draft that holds one.
 
-```kotlin
-val result = marmot.discardFailedSend(account, group, message)
-if (result.outcome == DiscardFailedSendOutcomeFfi.DISCARDED) purgeMediaCache(result.mediaCiphertextSha256)
-```
+`sendMessageDraft` and captured-media admission now match prepared media to the draft after an upload's normalization (a V1 upload trims the file name; both versions canonicalize the media type), so `" clip.mp4 "` or `Video/MP4` no longer fail to match. See [Conversation windows](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/CONVERSATION-WINDOW.md#file-backed-attachments).
 
-### Tagged polls and stickers (optional)
+### Emoji-scoped reaction removal (optional)
 
-`createTaggedPoll` and `sendTaggedSticker` take the arguments of `createPoll` and `sendSticker` plus a final `messageTags: [[String]]` for a reply `e`, NIP-22 `E`/`K`/`P` or effect tags on the same event. Poll context must not contain `imeta`, `option`, `polltype`, `endsAt` or `response`, and the poll's generated tags plus the context must total at most 32. Sticker context cannot add a second `sticker` or an `imeta`. `createPoll` and `sendSticker` keep their signatures. See [polls](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/POLLS.md) and [stickers](https://marmot.build/docs/native-apps.html#stickers).
+`unreactFromMessageMatching(accountRef, groupIdHex, targetMessageId, emoji)` removes the account's active reactions with that exact emoji and keeps its others. Both removal calls return `ReactionNotFound` for a local no-match. Target-wide `unreactFromMessage` is unchanged.
 
-### Sticker pack share links (optional)
+### Direct chats with a disappearing-message duration (optional)
 
-`stickerPackShareLink(accountRef:coordinate:)` builds a canonical Sonar viewer link locally, with no network work, carrying up to eight retained relay hints. Newer fetch candidates displace older hints, and the current relay safety policy filters them. A pack with no usable hint uses the account's relays. Hints that would exceed the link parser's size limit are left out. Use it instead of building the URL in the host.
+`startDirectConversationWithOptions(accountRef, peerAccountId, DirectConversationOptionsFfi(disappearingMessageSecs:))` founds a new direct chat with that duration in its founding MLS state and Welcome; zero disables it. A nonzero duration requires the peer to support message retention, as `createGroupWithOptions` does; otherwise the call fails and creates no chat, so explain that the peer cannot keep disappearing messages and create the chat with `startDirectConversation` only after the user agrees to go without them. Reuse and retry keep the existing chat's duration and roles. `startDirectConversation` is unchanged.
 
-### Read-state telemetry (optional)
+### Attachment removal cursors (optional)
 
-`runtimeOperations` in the performance snapshot gains `read_state_publish`: the count and duration of each new version of an account's published read state.
+`attachmentRemovals(accountRef, cursor, limit)` returns `AttachmentBodyRemovalPageFfi`: ordered, durable removal identities for host derivative caches (thumbnails, decoded copies). Persist the returned cursor after evicting. A first-use, reset or trimmed cursor asks for a full cache reconciliation against the captured high-water mark. Pages hold up to 256 records and the journal 4,096. A removal never authorizes a byte read.
 
-### Native-host test recipe (optional)
+### Raw messages: invalidated tombstones
 
-The [native-host test recipe](https://github.com/marmot-protocol/mdk/blob/4df811aea99269b437a6023be9446a5141e93cbe/crates/marmot-uniffi/NATIVE-HOST-TESTS.md) runs generated Swift against a local MockRelay with injected test-only secret storage, checking delivery and same-root reopening without production credentials: `bash crates/marmot-uniffi/native-host-smoke.sh`. It also gives the matching Android configuration.
+`messages` returns raw rows retained after invalidation, including kind-7 reactions and kind-1111 comments. Those rows now carry `invalidated` in `AppMessageRecordFfi` and `MarmotAppMessageRecord` (#3411). The flag is true for a row kept only as a tombstone and false for a live row.
+
+*   **Required.** Replace generated Swift/Kotlin bindings, native libraries and `marmot.h` together. Code that constructs `AppMessageRecordFfi` directly must pass `invalidated`.
+*   **Required for C.** Recompile against the matching header and library. `MarmotAppMessageRecord` gains a trailing `bool`, which changes the record size and the item stride in `MarmotAppMessageRecordList`.
+*   **Required for raw reactions and comments.** Check `invalidated` before treating a row as live. Hide the tombstone or render its invalidated state; do not render its reaction emoji or comment as live content.
+
+Validate the binding with one live row and one invalidated row in the same `messages` result. Their flags must be false and true respectively.
 
 ## C host changes
 
-Recompile every consumer against the 0.17.0 header and library.
+Recompile every consumer against the 0.18.0 header and library.
 
-*   Create outputs are `MarmotGroupCreationResult` (`group_id_hex` NULL when no group was created) or `MarmotDetailedGroupCreationResult` (`created` NULL likewise); invite outputs are `MarmotInviteMembersResult` (`summary` NULL when nothing changed) or `MarmotGroupInviteResult`. Each carries `member_outcomes` / `member_outcomes_len` of `MarmotMemberResolutionOutcome`. Free each root with `marmot_group_creation_free`, `marmot_detailed_creation_free`, `marmot_invite_members_free` or `marmot_group_invite_free`, never `marmot_string_free` or `marmot_send_summary_free`. `marmot_created_group_free` is removed; the created group is embedded in the detailed result.
-*   `MARMOT_STATUS_CREATED_GROUP_MEMBER_REPORT_UNAVAILABLE` (`130`) is the C form of `CreatedGroupMemberReportUnavailable`; open the group the error detail names.
-*   `marmot_set_audit_log_source` replaces `marmot_set_audit_log_tracker_config` and `marmot_set_audit_log_tracker_config_v4`. It borrows a `MarmotAuditLogSource` (`hardware_model`, `platform`, `app_version`) and returns a copy freed with `marmot_audit_log_source_free`. `marmot_post_audit_log_file`, `marmot_post_audit_log_tracker_update`, their result types and frees, and the tracker config types and frees are removed. `MarmotAuditLogTrackerUpdateResultV5` drops `v4_uploaded`, `v4_uploaded_len` and `v4_skipped_reason`.
-*   `MarmotAppPerformanceSnapshot` drops `account_group_read_snapshot`.
-*   `MarmotGroupCommitDelivery` appends `refused_relays` / `refused_relays_len` after `since`, each a `MarmotGroupCommitRefusedRelay` (`relay_url`, a `MarmotGroupCommitRefusalCause`, `has_size_class` / `size_class`), freed by `marmot_group_commit_delivery_free`.
-*   New: `marmot_discard_failed_send` (free with `marmot_discard_failed_send_result_free`); `marmot_create_tagged_poll` and `marmot_send_tagged_sticker`, which borrow `MarmotStringArray` tag rows; `marmot_sticker_pack_share_link`, whose string you free with `marmot_string_free`. Existing entry points and record layouts for polls and stickers are unchanged.
-
-```c
-struct MarmotGroupCreationResult *result = NULL;
-MarmotStatus status = marmot_create_group(client, account, name, members, members_len, NULL, &result);
-if (status == MARMOT_STATUS_OK) {
-    if (result->group_id_hex == NULL) { /* nobody available; inspect member_outcomes */ }
-    marmot_group_creation_free(result);
-}
-```
+*   Layout changes (trailing fields unless noted):
+    *   `MarmotAppMessageRecord` gains `invalidated`.
+    *   `MarmotDeviceLinkSnapshot` gains `chat_progress` / `chat_progress_len`.
+    *   `MarmotOnboardingDevicePackage` gains a nullable `client` string, freed by `marmot_onboarding_snapshot_free`; the `other_packages` stride changes.
+    *   `MarmotOnboardingRelayTagChange` gains `removal_reason` (`MarmotOnboardingRelayRemovalReason`); the `changes` stride changes.
+    *   `MarmotOnboardingRepairProposal` gains `inconclusive`.
+    *   `MarmotSelectedMessageDraftAttachment` gains `file_backed`, and draft attachments are read as an array; `MarmotAttachmentStorageUsage` gains `draft_bytes`.
+*   New statuses: `MARMOT_STATUS_GROUP_COMMIT_PENDING` (`131`), `MARMOT_STATUS_REACTION_NOT_FOUND` (`132`), `MARMOT_STATUS_NO_USABLE_RELAY` (`133`; it was `MARMOT_STATUS_PUBLISH`).
+*   Appended enum values: `MARMOT_GROUP_EVENT_KIND_GROUP_CHANGE_NOT_DELIVERED` and `MARMOT_ONBOARDING_ACTION_REMOVE_UNUSABLE_RELAYS`. Existing values keep their numbers.
+*   New functions: `marmot_group_pending_commit` (free with `marmot_group_pending_commit_free`); `marmot_group_changes_not_delivered` (free with `marmot_group_change_not_delivered_list_free`) and `marmot_acknowledge_change_not_delivered`; `marmot_follow_availability_page`, `marmot_refresh_follow_availability`, `marmot_follow_availability_status` and `marmot_cancel_follow_availability` with their deep-free functions; `marmot_stage_message_draft_attachment_file`, `marmot_read_message_draft_attachment`, `marmot_open_message_draft_attachment_handoff`, `marmot_upload_message_draft_attachments` and `marmot_save_message_draft_inputs_if_revision` with `MarmotMessageDraftAttachmentSaveInput`; `marmot_unreact_matching`; `marmot_start_direct_chat_with_options` with the borrowed `MarmotDirectConversationOptions`; `marmot_attachment_removals` (copy the cursor before freeing the page with `marmot_body_removal_page_free`).
+*   `marmot_client_new_with_configuration` opens with device groups on, and `marmot_client_new_with_experimental_device_groups` is the same open; it no longer returns `MARMOT_STATUS_RUNTIME` for an unavailable build. The `dev-device-groups` feature, `c-bindings.sh --dev-device-groups` and `output-dev-device-groups/` are gone.
 
 See the [C guide](https://marmot.build/docs/c-interface.html) and [symbol inventory](https://marmot.build/docs/c-api.html).
 
 ## Rust host changes
 
-*   `marmot-app`: `create_group`, `create_group_detailed`, `create_group_with_options*`, the initial-image creates and `invite_members*` return `GroupMemberResult<T>` (`operation: Option<T>`, `member_outcomes`). `invite_members_with_initial_admins` takes a `MemberResolutionPolicy`, and `AppCreateGroupOptions` gains `member_resolution`; `Partial`, the default, proceeds with available members and `Atomic` keeps the all-or-nothing behavior, failing with the directory error when any member is unavailable. `AppError` gains `CreatedGroupMemberReportUnavailable`.
-*   `marmot-app` audit: `post_audit_log_file`, `AuditLogUploadResult`, `AuditLogTrackerConfig`, `set_audit_log_tracker_config` and `MarmotServiceEndpoints::audit_log_tracker_endpoint` are removed. Use `MarmotAppRuntime::set_audit_log_source(AuditLogSource)`. `AuditLogTrackerUpdateResult` keeps only `enabled` and `v5`.
-*   `marmot-app` commit delivery: `GroupCommitDelivery` gains `refused_relays: Vec<GroupCommitRefusedRelay>`; struct literals add it.
-*   `storage-sqlite`: `list_prepared_group_image_uploads` is replaced by `list_prepared_group_image_upload_statuses` (statuses without image data or secrets; use `prepared_group_image_upload(upload_id)` for one full record), and `account_group_self_memberships` by the per-group `group_standing`.
-*   `marmot-app` reads: `AppPerformanceSnapshot` drops `account_group_read_snapshot`; `MarmotAppConfig` drops `dev_force_group_read_snapshot_failure` and its builder.
-*   `marmot-app` downloads: storage-blocked downloads park as described in [Attachment downloads](https://marmot.build/docs/upgrading.html#attachment-downloads). `SqliteAppStorage::readmit_storage_blocked_attachments` takes a `need` function, and `request_automatic_attachment` returns whether the order changed.
-*   `cgka_traits`: `TransportPeeler::peel_group_message` takes `&PreparedGroupMessage<'_>`. Move context-independent validation and decoding into `prepare_group_message` (the default borrows the raw payload); a wrapping peeler delegates preparation to the peeler that decrypts. `GroupStorage::put_group` is replaced by `put_group_with_roster(group, committed)` for writes that merge, clear or re-derive membership and `put_group_keeping_roster(group)` for every other write. `StorageProvider` requires `CommittedRosterStorage` and adds `has_atomic_group_savepoints`, `past_peel_context_generation` and `mls_storage_failure`, each with a safe default.
-*   `cgka_traits` transport: `TransportEndpointFailure` gains `pre_send: bool`; struct literals must set it. Set it `true` only when no frame can have left (a dial refusal, a DNS failure, a socket that never opened, or the adapter refused the event itself); a relay's `rate-limited:` or `auth-required:` answer is never pre-send. `false` counts the target as possibly exposed, so a later refusal there no longer rolls back the commit. `TransportAdapter` adds `commit_size_refusals` (default refuses nothing) and `publish_commit` (default `publish`); an adapter that applies the 64 KiB commit floor at relays of unknown limit overrides both.
-*   `nostr-directory`: `Directory::resolve_compatible_member_key_packages` takes a `MemberResolutionPolicy`, and `ResolvedMemberKeyPackages` gains `member_outcomes`. Pass `Atomic` for the previous behavior, which fails on the first unavailable member; `Partial` returns per-account outcomes.
-*   `storage-sqlite`: `RecoveryUnitPolicy` gains `probe_base_seconds` and `probe_cap_seconds`; `dismiss_recovery_route_park` and `dismiss_recovery_route_park_on` are removed. `put_group` stays only under `test-support`.
-*   Engine, session and runtime add `durably_owned_key_packages_with_validity`, and `durably_owned_key_packages` now fails with the storage error when a stored bundle cannot be read.
-*   `marmot-forensics` adds three v5 audit kinds (`recovery_runner_fetched`, `recovery_runner_raced`, `recovery_runner_changed`) and their vocabularies.
-*   The `incident-replay` crate is removed.
+*   `marmot-app`: `MarmotAppConfig::dev_device_groups` / `with_dev_device_groups` are renamed `device_groups` / `with_device_groups`, default to true and take effect in every build. The `dev-device-groups` and `unreleased-device-pairing` features are gone; `marmot-pairing` is always linked. A host that must stay off sets `with_device_groups(false)` in every opener of a root.
+*   `marmot-app`: `DeviceLinkSnapshot` gains `chat_progress`; `RelayTelemetryRollup` gains `relay_read_back_requests` and `relay_read_back_found`; `AppError` gains `GroupCommitPending` and `NoUsableRelay` (`ReactionNotFound` already existed and is now a typed binding error); `marmot_session::PublishFailure` gains `no_usable_relay`. New runtime methods mirror the binding additions (`group_pending_commit`, `group_changes_not_delivered`, `acknowledge_change_not_delivered`, the follow-availability calls, the file-backed draft calls, `start_direct_conversation_with_options`).
+*   `cgka_traits`: `OutboundIntentStorage` gains `put_change_not_delivered`, `changes_not_delivered` and `delete_change_not_delivered`; custom storage must implement them. `SendIntent::AddOwnAccountDevices` and `GroupEvent::GroupJoined` gain `forwarded: ForwardedInvitation`, and `GroupEvent` gains `GroupChangeNotDelivered`. `EngineError` gains `SiblingAddUnsettled`. `TransportAdapter` adds `read_back` and `event_size_class`, `MessageStorage` adds `release_message_for_replay_without_stall_evidence`, and `TransportEndpointFailure` adds `is_endpoint_prohibited`, each with a default. `OutboundFanout` gains acknowledgement, abandonment, stuck and queued-intent state; `FanoutTargetStatus` gains `Abandoned`. `StoredMessagePayload::OutboundWelcome` and `StagedInviteWelcome` gain `key_package_event_id`, so explicit constructors and exhaustive field patterns need it.
+*   `marmot-app` onboarding: `OnboardingRepairProposal` gains `inconclusive` and a private field, so it can no longer be built with a struct literal. Use the proposal onboarding returns, and update fixtures that construct it.
+*   `marmot-uniffi`: the Rust helper `require_experimental_device_groups` is removed; every runtime has device groups.
+*   `cgka-engine`: `SiblingWelcome` gains `forwarded` (version 3 when anything is forwarded); `OutboundWelcomeStatus::Settled` carries a `WelcomeSettlement`; `publish_failed_fanout`, `publish_not_delivered` and `publish_refused_as_too_large` take a `RollbackPass`; `Identity::load_or_generate` and `openmls_projection::apply_openmls_canonicalization_result` take the wall-clock time as a `Timestamp`. `EngineBuilder::monotonic_clock` installs a test clock; `SystemMonotonicClock`, `SystemWallClock` and `OsMaintenanceRandom` are public.
+*   `storage-sqlite`: `save_message_draft_if_revision` takes `&[StoredMessageDraftAttachmentInput]` (wrap bodies in `Inline`, keep held ones with `Retained(id)`); `message_draft` returns `Result<_, MessageDraftRevisionError>`; `RecoveryEpochGapRetry` needs `visit_until_seconds`; `merge_invitation_decisions` returns whether any decision won; `device_pairing_state_exists` counts only linking still under way.
 
 See the crate changelogs for `marmot-app`, `cgka-engine`, `cgka-traits` and `storage-sqlite`.
 
 ## WN Agent and integrations
 
-The agent-control protocol is unchanged, and creates and invites through it stay all-or-nothing: the connector uses the atomic policy, so a request with any unavailable member fails as it did in 0.16.0 (`app_error`) and nothing is created or committed. Hermes, OpenClaw and the terminal harnesses need no change; upgrade them with the connector as usual.
+The agent-control protocol is unchanged. The connector opens its accounts with the runtime's default configuration, so they now run with device groups on: the agent's account advertises the device roster and runs the sign-in check. It has no switch to turn them off. Hermes and the terminal harnesses need no change; upgrade them with the connector as usual. The OpenClaw plugin now declares its `marmot_history` and `marmot_group_profile` tools and ships an empty Doctor contract, so it installs, and updates with a pending Doctor-inspection record, on OpenClaw 2026.10.10 and later.
 
-`wn` CLI: group creation and invites keep eligible members when another requested member is unavailable. JSON adds `member_outcomes` with each account's status and selected device count; creation returns `group_id: null` and invites `summary: null` when no member is eligible. One-shot commands now shut their runtime down before exiting.
+`wn` CLI and `wnd`: every build includes multi-device, on by default; export `WN_DEVICE_GROUPS=0` for both to turn it off, and `wn daemon status` JSON adds `device_groups`. `wn devices` linking, the device roster and admin step-down on Leave work without setup, so `groups management` reports `requires_self_demote_before_leave` false for a nonlast admin. Device-link status shows remaining chats per device (JSON `chat_progress`). New: `wn groups pending-commit`, `wn groups changes-not-delivered` and `wn groups acknowledge-change-not-delivered`. JSON error codes add `group_commit_pending` (ahead of `group_catching_up` and `group_commit_undelivered`) and `no_usable_relay` (in place of `publish_failed` for that case).
 
 ## Changes requiring no new calls
 
-*   `quinn-proto` 0.11.19 and `quinn-udp` 0.5.16 fix RUSTSEC-2026-0523, RUSTSEC-2026-0524 and RUSTSEC-2026-0538.
-*   Live ingest reuses cached historical peel contexts, so correctly signed envelopes encrypted with an unrelated key no longer make the receiver rebuild past group state once per envelope ([#2492](https://github.com/marmot-protocol/mdk/issues/2492)). This applies to SQLite storage; a custom provider that keeps the default `past_peel_context_generation` of `None` stays uncached.
-*   Archive, forget and delete for an external-signer account's chat go through its running worker. Before, the worker's next save of the chat could unarchive it, and after a forget or delete it kept answering for the group.
-*   A foreground send no longer waits behind a scheduled retry to an optional relay that withholds its acknowledgement.
-*   `NotificationUpdate.isDm` follows the chat-list conversation kind for messages, group-state notices and invitations, including pending DM Welcomes.
-*   Outgoing attachment promotion resumes after a skipped batch without waiting for the maintenance tick.
-*   Create and invite abort on directory fetch failures instead of reporting recipients as `incomplete` in a successful result.
-*   On storage without atomic group savepoints, a contained rewind window writes one snapshot, so a crash no longer quarantines the group on the next open. SQLite is unchanged.
-*   Timeline updates after a withdrawn delete of an edit report `MessageEditedOrReprojected` and `ReplyPreviewChanged` instead of `ReactionAdded`, and batch withdrawals attribute each row to an event that changed it.
-*   Every engine OpenMLS load refuses a group whose rewind restore failed. No current path reached that state.
+*   History recovery continues across partial MLS epoch advances: retained unreadable messages can arm the next recovery request after local replay settles, without reopening the account or waiting for fresh traffic.
+*   Queued detached Welcomes no longer start relay publication after their native origin loses.
+*   Retrying an emoji-set install no longer deletes emoji the user already has; `skipped` names only entries left without an image. Emoji discovery applies its 60-set limit after deduplicating.
+*   NIP-22 comments (kind 1111 with a numeric lowercase `k` tag) project their parent, media and author-only edits, and their media keys are cached and carried in history bundles, so comment media stays decryptable after the epoch advances and on devices that import history ([#3410](https://github.com/marmot-protocol/mdk/issues/3410)).
+*   The compaction batch retries 15 s after the account's storage fails to open.
+*   Runtime shutdown gives Welcome waves still publishing up to 2 s before it cancels them, so a Welcome a create or invite just started usually goes out before exit. A relay can outlast that bound, and `shutdownAndClose` closes storage first, so a send can finish without being recorded; a Welcome still owed is sent on the next start, possibly again.
+*   Destructive sign-out reports a member Leave it could only queue in its leave failures instead of counting the group as left.
+*   A fresh account no longer fails KeyPackage rotation ("legacy key package replacement is pending") or reports `RecoveryRequired` because an early read created its database.
+*   A newly linked device no longer reads pre-join history as an epoch gap, which offered a needless Reset Device List and held its chats back.
+*   A refused Welcome delivery no longer drops a later delivery of the same Welcome as a duplicate.
+*   Background history drains without a live tail end instead of polling slow relays continuously, and `RecoveryStatusChanged` fires per route, not per relay.
+*   History notices, recovery status and the prepared-image, fresh-start and history-import reads answer from the published read state, and no read answers earlier than the worker would.
+*   With device groups on, an idle maintenance tick takes no writer transaction.
 
 ## Acceptance and remaining work
 
-Before shipping an app on 0.17.0:
+Before shipping an app on 0.18.0:
 
-*   Compile against the matched artifacts with every exhaustive `switch`/`when` updated; for C, rebuild every consumer and check every create and invite free path.
-*   Upgrade a 0.16.0 install in place and confirm the account database migrates once and the second open changes nothing. Confirm 0.16.0 refuses to reopen it, and that restoring the pre-upgrade copy works.
-*   Create a group and invite members where one member has no KeyPackage, where every member lacks one, and with an empty member list. Confirm the UI shows skipped accounts and treats a missing operation as "nothing changed".
-*   Confirm `setAuditLogSource` runs on every launch before accounts open, and that v5 audit delivery still reaches the White Noise audit receiver.
-*   Open a busy group during catch-up and confirm member, roster and MLS-state reads return at once.
-*   Confirm no "history may be incomplete" notice appears without a gap, and that notices shown under 0.16.0 for `UnprovenHistory` are gone.
-*   With free space for at least four transfers at the largest account limit, scroll a screen of images and confirm they download in parallel and on-screen first; fill the disk and confirm downloads show `storageBlocked` and resume when space frees.
-*   If adopted: discard a failed send (including one with media) and a still sending one; send a tagged poll and sticker as replies; share a sticker pack link and open it on another device.
+*   Compile against the matched artifacts with every exhaustive `switch`/`when` updated; for C, rebuild every consumer and check the new free paths.
+*   Ship the same library in the app and every extension; confirm an extension delivers notifications for an account that has linked a device.
+*   Upgrade a 0.17.0 install in place and confirm both databases migrate once and the second open changes nothing. Confirm 0.17.0 refuses to reopen them, and that restoring the pre-upgrade copy works.
+*   Link a second and a third device: confirm emoji comparison, chat progress, with an inviter neither device blocks, that a confirmed chat without an invitation generation arrives confirmed at once and one with a generation turns confirmed when its shared decision arrives, that an invitation answered on one device shows on the other within seconds, and that removing a device keeps it out of sign-ins.
+*   As a nonlast admin, leave a group and confirm the step-down happens without a separate demote.
+*   Give up: make a group change with one group relay unreachable throughout and another refusing it. After ten minutes, once the reachable relay has refused a later send or answered the read-back without the event, confirm a `groupChangesNotDelivered` record and `GroupCommitPending` until then. A device whose relays are all unreachable keeps the change pending.
+*   Stuck: make a group change that a relay accepts without answering `OK`, with the account's subscription echo of it suppressed and the relay's read-back answering without it. Confirm `groupPendingCommit` reaches `Stuck` after ten minutes and the change is never given up.
+*   Leave an account idle and confirm it no longer wakes every 15 s (CPU and database writes).
+*   If adopted: page and refresh follow availability and cancel a refresh; stage a large video in a draft, restart, and send it; remove one emoji reaction of several; start a direct chat with a disappearing-message duration, and confirm a peer without message-retention support makes the call fail with no chat created.
 *   Report evidence by stage: source, host smoke, packaged artifact, consuming app, real device.
 
-What was validated: every change in this comparison landed through the merge queue's CI matrix, and the binding-docs gate passes for the MarmotKit method and C symbol inventories at this source. Not validated here: upgrade of a real 0.16.0 installation, large commits against production relays of unknown limit, and app-level adoption on iOS or Android.
+What was validated: every change in this comparison landed through the merge queue's CI matrix, and the binding-docs gate passes for the MarmotKit method and C symbol inventories at this source. Not validated here: upgrade of a real 0.17.0 installation, device linking between production iOS and Android builds, and app-level adoption on iOS or Android.
 
 Known limitations:
 
-*   A photo in a NIP-22 thread reply stops decrypting once retention prunes the chat messages from its epoch ([#3410](https://github.com/marmot-protocol/mdk/issues/3410)).
+*   A linked device can show an accepted chat as an invitation until its decision arrives ([#3556](https://github.com/marmot-protocol/mdk/issues/3556)), and a sibling Add whose Welcome goes out late can still forward "pending" for an invitation the user accepted on this device in between ([#3559](https://github.com/marmot-protocol/mdk/issues/3559)). An Add that would forward invitation facts is no longer queued.
+*   A message sent while a new device is joining a chat can be lost on that device ([#3537](https://github.com/marmot-protocol/mdk/issues/3537)), and the approver hold's hand-off edges remain ([#3561](https://github.com/marmot-protocol/mdk/issues/3561)).
+*   A sibling decline this device cannot apply as the chat's last admin waits for the next maintenance run, up to an hour.
 *   Startup hydration re-drives every outstanding fanout after each batch of four groups, delaying live transport on accounts with many groups ([#3367](https://github.com/marmot-protocol/mdk/issues/3367)).
-*   Pending Welcomes and some other reads still go through the worker queue; moving them is the rest of [#3273](https://github.com/marmot-protocol/mdk/issues/3273).
-*   Relay-safety follow-ups remain open in [#3305](https://github.com/marmot-protocol/mdk/issues/3305).
-*   Still open from earlier releases: adding every device of an account is best effort; right after a reconnect a new send can still go out ahead of older unsent ones; the automatic-rejoin handshake's inner event kind is under discussion ([marmot#451](https://github.com/marmot-protocol/marmot/issues/451)); [#2237](https://github.com/marmot-protocol/mdk/issues/2237), [#2277](https://github.com/marmot-protocol/mdk/issues/2277), [#2283](https://github.com/marmot-protocol/mdk/issues/2283), [#2389](https://github.com/marmot-protocol/mdk/issues/2389), [#2286](https://github.com/marmot-protocol/mdk/issues/2286), [#2253](https://github.com/marmot-protocol/mdk/issues/2253), [#2158](https://github.com/marmot-protocol/mdk/issues/2158) and [#1445](https://github.com/marmot-protocol/mdk/issues/1445).
+*   Pending Welcomes and some other reads still go through the worker queue ([#3273](https://github.com/marmot-protocol/mdk/issues/3273)).
+*   Still open from earlier releases: right after a reconnect a new send can still go out ahead of older unsent ones; the automatic-rejoin handshake's inner event kind is under discussion ([marmot#451](https://github.com/marmot-protocol/marmot/issues/451)); [#2237](https://github.com/marmot-protocol/mdk/issues/2237), [#2277](https://github.com/marmot-protocol/mdk/issues/2277), [#2283](https://github.com/marmot-protocol/mdk/issues/2283), [#2389](https://github.com/marmot-protocol/mdk/issues/2389), [#2286](https://github.com/marmot-protocol/mdk/issues/2286), [#2253](https://github.com/marmot-protocol/mdk/issues/2253), [#2158](https://github.com/marmot-protocol/mdk/issues/2158) and [#1445](https://github.com/marmot-protocol/mdk/issues/1445).
