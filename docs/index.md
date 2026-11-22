@@ -1,6 +1,6 @@
 # Documentation
 
-> MDK 0.18.0 · [Read on Marmot](https://marmot.build/docs/) · [Version-pinned source](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/README.md)
+> MDK 0.19.0 · [Read on Marmot](https://marmot.build/docs/) · [Version-pinned source](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/README.md)
 
 ## MDK — Marmot Development Kit
 
@@ -26,16 +26,16 @@ The protocol specification lives in [marmot-protocol/marmot](https://github.com/
 | I want to… | Start here |
 | --- | --- |
 | Talk to Hermes, OpenClaw, Claude Code, Codex, OpenCode, Pi, or Goose from White Noise | [White Noise + Agents quickstart](https://marmot.build/docs/agents.html) |
-| Write your own bot or client against `wn-agent` | [Build your own client](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/custom-client.md) |
+| Write your own bot or client against `wn-agent` | [Build your own client](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/custom-client.md) |
 | Use White Noise from a terminal (CLI, daemon, TUI) | [`wn` guide](https://marmot.build/docs/cli.html) |
 | Integrate MDK into an iOS, macOS, or Android app | [MarmotKit integration guide](https://marmot.build/docs/native-apps.html) |
 | Integrate from C or another raw-FFI host | [C ABI guide](https://marmot.build/docs/c-interface.html) |
-| Upgrade an app to a new MDK release | [Version upgrade guides](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/integration/README.md) |
+| Upgrade an app to a new MDK release | [Version upgrade guides](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/integration/README.md) |
 | Understand the Marmot protocol | [Marmot specification](https://github.com/marmot-protocol/marmot) |
 | Understand MDK's architecture | [Architecture index](https://marmot.build/docs/architecture.html) |
 | Understand how clients agree on group state | [How convergence works](https://marmot.build/docs/#how-convergence-works) |
 | Contribute code | [Development](https://marmot.build/docs/#development) |
-| Cut a release | [Release guide](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/release.md) |
+| Cut a release | [Release guide](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/release.md) |
 
 ## Chat with an AI agent
 
@@ -43,16 +43,16 @@ The protocol specification lives in [marmot-protocol/marmot](https://github.com/
 
 | Runtime | Connector | Docs |
 | --- | --- | --- |
-| Hermes | Gateway plugin | [integrations/hermes](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/hermes/marmot/README.md) |
-| OpenClaw | Channel plugin | [integrations/openclaw](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/openclaw/marmot/README.md) |
-| Claude Code | Terminal harness | [integrations/claude](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/claude/marmot/README.md) |
-| Codex | Terminal harness | [integrations/codex](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/codex/marmot/README.md) |
-| OpenCode | Terminal harness | [integrations/opencode](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/opencode/marmot/README.md) |
-| Pi | Terminal harness | [integrations/pi](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/pi/marmot/README.md) |
-| Goose | Terminal harness | [integrations/goose](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/goose/marmot/README.md) |
-| Your own client | `wn-agent` only | [Build your own client](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/custom-client.md) |
+| Hermes | Gateway plugin | [integrations/hermes](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/hermes/marmot/README.md) |
+| OpenClaw | Channel plugin | [integrations/openclaw](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/openclaw/marmot/README.md) |
+| Claude Code | Terminal harness | [integrations/claude](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/claude/marmot/README.md) |
+| Codex | Terminal harness | [integrations/codex](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/codex/marmot/README.md) |
+| OpenCode | Terminal harness | [integrations/opencode](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/opencode/marmot/README.md) |
+| Pi | Terminal harness | [integrations/pi](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/pi/marmot/README.md) |
+| Goose | Terminal harness | [integrations/goose](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/goose/marmot/README.md) |
+| Your own client | `wn-agent` only | [Build your own client](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/custom-client.md) |
 
-The [quickstart](https://marmot.build/docs/agents.html) installs a checksum-verified release on macOS or Linux and gets you to a first encrypted chat. For how connectors share one machine, identities, and allowlists, see [How the connectors fit together](https://marmot.build/docs/agents.html#how-the-connectors-fit-together). The connector daemon itself is documented in [`crates/agent-connector`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/agent-connector/README.md).
+The [quickstart](https://marmot.build/docs/agents.html) installs a checksum-verified release on macOS or Linux and gets you to a first encrypted chat. For how connectors share one machine, identities, and allowlists, see [How the connectors fit together](https://marmot.build/docs/agents.html#how-the-connectors-fit-together). The connector daemon itself is documented in [`crates/agent-connector`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/agent-connector/README.md).
 
 ## The `wn` command-line app
 
@@ -71,7 +71,7 @@ Apps embed MDK through the multi-account app runtime ([`marmot-app`](https://mar
 *   **MarmotKit** — UniFFI bindings for Swift (iOS, macOS) and Kotlin (Android). Start with the [integration guide](https://marmot.build/docs/native-apps.html), then the [complete method reference](https://marmot.build/docs/native-api.html) and [distribution notes](https://marmot.build/docs/distribution.html). Every constructor opens with [device groups](https://marmot.build/docs/native-apps.html#device-groups) on.
 *   **Marmot C** — a C ABI over the same runtime, with ownership and blocking-call rules in the [C guide](https://marmot.build/docs/c-interface.html) and every symbol in its [reference](https://marmot.build/docs/c-api.html).
 
-Each release ships a concise [release note](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/release/) and a detailed [upgrade guide](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/integration/README.md) with required changes, new defaults, and optional features. The latest is [0.17.0 → 0.18.0](https://marmot.build/docs/upgrading.html); read every intervening guide when skipping releases. Read docs at the tag matching your binaries — `master` may describe unreleased APIs.
+Each release ships a concise [release note](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/release/) and a detailed [upgrade guide](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/integration/README.md) with required changes, new defaults, and optional features. The latest is [0.18.0 → 0.19.0](https://marmot.build/docs/upgrading.html); read every intervening guide when skipping releases. Read docs at the tag matching your binaries — `master` may describe unreleased APIs.
 
 ## How MDK is built
 
@@ -87,13 +87,12 @@ MDK separates the protocol engine from storage, transport, and application conce
 
  transport-nostr                     the relay plane: shared relay sessions, delivery, directory fetches
  transport-nostr-peeler / -adapter   Nostr events ⇄ engine messages, relay I/O
- transport-quic-stream / -broker     transient live previews for agent replies
  marmot-account                      account homes, signing keys, secret storage
 ```
 
 *   The engine is generic over a storage trait and knows nothing about Nostr; transport code lives in the peeler and adapter.
-*   Nostr plays three roles — identity, app message format, and (pluggable) transport. See [Nostr's role](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/overview/nostr-role.md).
-*   For the full picture, start with the [executive summary](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/overview/executive-summary.md), [target architecture](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/overview/target-architecture.md), and [protocol boundary](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/overview/protocol-boundary.md), all linked from the [architecture index](https://marmot.build/docs/architecture.html).
+*   Nostr plays three roles — identity, app message format, and (pluggable) transport. See [Nostr's role](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/marmot-architecture/overview/nostr-role.md).
+*   For the full picture, start with the [executive summary](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/marmot-architecture/overview/executive-summary.md), [target architecture](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/marmot-architecture/overview/target-architecture.md), and [protocol boundary](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/marmot-architecture/overview/protocol-boundary.md), all linked from the [architecture index](https://marmot.build/docs/architecture.html).
 
 ## How convergence works
 
@@ -101,53 +100,50 @@ In Marmot, commits are the consensus log. Clients fetch from several relays, see
 
 | To understand… | Read |
 | --- | --- |
-| The convergence model | [Distributed convergence](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/distributed-convergence.md) |
-| The engine's canonicalization contract | [Canonicalization contract](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/cgka-engine-canonicalization-contract.md) |
-| Temporal convergence and device-linking models | [Lifecycle models and implementation correspondence](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/formal/liveness/README.md) |
-| How it is tested: scenarios, vectors, generated chaos, property tests | [Conformance simulator](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cgka-conformance-simulator/README.md) |
-| Multi-process and container campaigns | [Campaign runner](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/convergence-campaign-runner/README.md) |
-| Formal proofs and how they map to Rust tests | [Convergence model](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/formal/tamarin/README.md), [pairing authentication](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/formal/pairing/README.md) |
-| What the engine owns and leaves out | [`cgka-engine`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cgka-engine/README.md) |
+| The convergence model | [Distributed convergence](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/marmot-architecture/distributed-convergence.md) |
+| The engine's canonicalization contract | [Canonicalization contract](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/marmot-architecture/cgka-engine-canonicalization-contract.md) |
+| Temporal convergence and device-linking models | [Lifecycle models and implementation correspondence](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/formal/liveness/README.md) |
+| How it is tested: scenarios, vectors, generated chaos, property tests | [Conformance simulator](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/cgka-conformance-simulator/README.md) |
+| Multi-process and container campaigns | [Campaign runner](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/convergence-campaign-runner/README.md) |
+| Formal proofs and how they map to Rust tests | [Convergence model](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/formal/tamarin/README.md), [pairing authentication](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/formal/pairing/README.md) |
+| What the engine owns and leaves out | [`cgka-engine`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/cgka-engine/README.md) |
 
 ## Crate map
 
 | Area | Crate | What it is |
 | --- | --- | --- |
-| Engine | [`cgka-engine`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cgka-engine/README.md) | OpenMLS-backed group state machine and commit convergence |
-|  | [`traits`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/traits/README.md) (`cgka-traits`) | Shared traits and cross-boundary types |
-| Storage | [`storage-sqlite`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/storage-sqlite/README.md) | SQLCipher persistence for engine, session, and simulator |
-|  | [`fs-private`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/fs-private/README.md) | Owner-only file, directory, and socket creation |
-|  | [`media-store`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/media-store/README.md) | Encrypted per-file media store: file format and file lifecycle |
-| Transport | [`transport-nostr-peeler`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/transport-nostr-peeler/README.md) | Nostr event ⇄ engine message boundary |
-|  | [`transport-nostr-adapter`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/transport-nostr-adapter/README.md) | Relay I/O behind an injectable client |
-|  | [`transport-nostr`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/transport-nostr/README.md) | The relay plane: per-account relay sessions, delivery and directory fetches |
-|  | [`transport-quic-stream`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/transport-quic-stream/README.md) | QUIC transport for live agent text previews |
-|  | [`transport-quic-broker`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/transport-quic-broker/README.md) | Memory-only preview broker (`marmot-quic-broker`); [deployment](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/quic-broker-deployment.md) |
-| App | [`marmot-session`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-session/README.md) | Account-device runtime over an encrypted engine session: publish, routing, KeyPackages; [tests](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-session/README.md#tests) |
-|  | [`marmot-account`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-account/README.md) | Account homes, signing keys, secret storage |
-|  | [`marmot-pairing`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-pairing/README.md) | Device pairing: the code both screens show before a new device links (unreleased) |
+| Engine | [`cgka-engine`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/cgka-engine/README.md) | OpenMLS-backed group state machine and commit convergence |
+|  | [`traits`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/traits/README.md) (`cgka-traits`) | Shared traits and cross-boundary types |
+| Storage | [`storage-sqlite`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/storage-sqlite/README.md) | SQLCipher persistence for engine, session, and simulator |
+|  | [`fs-private`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/fs-private/README.md) | Owner-only file, directory, and socket creation |
+|  | [`media-store`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/media-store/README.md) | Encrypted per-file media store: file format and file lifecycle |
+| Transport | [`transport-nostr-peeler`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/transport-nostr-peeler/README.md) | Nostr event ⇄ engine message boundary |
+|  | [`transport-nostr-adapter`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/transport-nostr-adapter/README.md) | Relay I/O behind an injectable client |
+|  | [`transport-nostr`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/transport-nostr/README.md) | The relay plane: per-account relay sessions, delivery and directory fetches |
+| App | [`marmot-session`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-session/README.md) | Account-device runtime over an encrypted engine session: publish, routing, KeyPackages; [tests](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-session/README.md#tests) |
+|  | [`marmot-account`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-account/README.md) | Account homes, signing keys, secret storage |
+|  | [`marmot-pairing`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-pairing/README.md) | Device pairing: the code both screens show before a new device links (unreleased) |
 |  | [`marmot-app`](https://marmot.build/docs/rust-runtime.html) | Multi-account app runtime, projections and host background controls used by every front end |
-|  | [`nostr-directory`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/nostr-directory/README.md) | Directory of other people's public Nostr data: lookups, search, KeyPackage resolution |
-|  | [`marmot-observability`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-observability/README.md) | Diagnostics exporters: relay telemetry, product analytics and its consent state, audit delivery |
-|  | [`marmot-markdown`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-markdown/README.md) | Odin CommonMark + Nostr parser with a Rust AST bridge |
-|  | [`marmot-markdown-ast`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-markdown-ast/README.md) | Owned Markdown types and serde implementations; compiled alongside the native parser |
-|  | [`marmot-forensics`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-forensics/README.md) | Append-only JSONL forensic audit schema |
-| Bindings | [`marmot-uniffi`](https://marmot.build/docs/native-apps.html) | MarmotKit: Swift and Kotlin bindings; [native-host test recipe](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/NATIVE-HOST-TESTS.md) |
-|  | [`marmot-uniffi-macros`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi-macros/README.md) | Runs MarmotKit's async exports on its own Tokio runtime |
+|  | [`nostr-directory`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/nostr-directory/README.md) | Directory of other people's public Nostr data: lookups, search, KeyPackage resolution |
+|  | [`marmot-observability`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-observability/README.md) | Diagnostics exporters: relay telemetry, product analytics and its consent state, audit delivery |
+|  | [`marmot-markdown`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-markdown/README.md) | Odin CommonMark + Nostr parser with a Rust AST bridge |
+|  | [`marmot-markdown-ast`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-markdown-ast/README.md) | Owned Markdown types and serde implementations; compiled alongside the native parser |
+|  | [`marmot-forensics`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-forensics/README.md) | Append-only JSONL forensic audit schema |
+| Bindings | [`marmot-uniffi`](https://marmot.build/docs/native-apps.html) | MarmotKit: Swift and Kotlin bindings; [native-host test recipe](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-uniffi/NATIVE-HOST-TESTS.md) |
+|  | [`marmot-uniffi-macros`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-uniffi-macros/README.md) | Runs MarmotKit's async exports on its own Tokio runtime |
 |  | [`marmot-c`](https://marmot.build/docs/c-interface.html) | C ABI bindings |
 | Front ends | [`cli`](https://marmot.build/docs/cli.html) (`wn-cli`) | `wn`, `wnd`, and `wn tui` |
-| Agents | [`agent-connector`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/agent-connector/README.md) | The `wn-agent` connector daemon and its `doctor` setup check |
-|  | [`agent-control`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/agent-control/README.md) | Agent control protocol messages and framing |
-|  | [`agent-stream-compose`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/agent-stream-compose/README.md) | Live-preview stream composition |
+| Agents | [`agent-connector`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/agent-connector/README.md) | The `wn-agent` connector daemon and its `doctor` setup check |
+|  | [`agent-control`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/agent-control/README.md) | Agent control protocol messages and framing |
 |  | [`integrations/`](https://marmot.build/docs/agents.html) | Per-runtime plugins and terminal harnesses |
-| Verification | [`cgka-conformance-simulator`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cgka-conformance-simulator/README.md) | Multi-client scenarios, vectors, chaos, property tests |
-|  | [`convergence-campaign-runner`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/convergence-campaign-runner/README.md) | Distributed container/VM campaigns |
-|  | [`formal/tamarin`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/formal/tamarin/README.md) | Tamarin models for convergence and lifecycle |
-|  | [`formal/pairing`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/formal/pairing/README.md) | Symbolic pairing authentication and Welcome binding |
+| Verification | [`cgka-conformance-simulator`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/cgka-conformance-simulator/README.md) | Multi-client scenarios, vectors, chaos, property tests |
+|  | [`convergence-campaign-runner`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/convergence-campaign-runner/README.md) | Distributed container/VM campaigns |
+|  | [`formal/tamarin`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/formal/tamarin/README.md) | Tamarin models for convergence and lifecycle |
+|  | [`formal/pairing`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/formal/pairing/README.md) | Symbolic pairing authentication and Welcome binding |
 
 ## Development
 
-The toolchain is pinned in [`rust-toolchain.toml`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/rust-toolchain.toml); most tasks run through [`just`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/Justfile).
+The toolchain is pinned in [`rust-toolchain.toml`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/rust-toolchain.toml); most tasks run through [`just`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/Justfile).
 
 Builds that include `marmot-markdown` also require Odin `dev-2026-10`. The shared installer verifies pinned release checksums before extraction:
 
@@ -156,17 +152,17 @@ bash scripts/install-odin.sh "$HOME/.local/share/mdk-odin"
 export ODIN="$HOME/.local/share/mdk-odin/odin"
 ```
 
-See the [Markdown crate](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-markdown/README.md#build-requirements) for the compiler pin and native ownership boundary. CI and the campaign/integration container builds install this toolchain automatically.
+See the [Markdown crate](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-markdown/README.md#build-requirements) for the compiler pin and native ownership boundary. CI and the campaign/integration container builds install this toolchain automatically.
 
 &lt;details> &lt;summary>Nix / NixOS (x86\_64 Linux)&lt;/summary>
 
-From this checkout, enter the environment in [`flake.nix`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/flake.nix):
+From this checkout, enter the environment in [`flake.nix`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/flake.nix):
 
 ```bash
 nix --extra-experimental-features 'nix-command flakes' develop
 ```
 
-The FHS shell provides Clang, pkg-config, nextest, cargo-audit, cargo-llvm-cov, cbindgen, valgrind, Python with uv, Tamarin, Java for TLC and rustup. Rustup reads the toolchain and required components from [`rust-toolchain.toml`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/rust-toolchain.toml). Cargo keeps its usual `target/` output directory so the TUI recipes find the binaries they build. The packages are pinned by [`flake.lock`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/flake.lock); no global `nix-ld` configuration is required.
+The FHS shell provides Clang, pkg-config, nextest, cargo-audit, cargo-llvm-cov, cbindgen, valgrind, Python with uv, Tamarin, Java for TLC and rustup. Rustup reads the toolchain and required components from [`rust-toolchain.toml`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/rust-toolchain.toml). Cargo keeps its usual `target/` output directory so the TUI recipes find the binaries they build. The packages are pinned by [`flake.lock`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/flake.lock); no global `nix-ld` configuration is required.
 
 For a single command, use the app entrypoint rather than `nix develop -c`, whose arguments the FHS shell hook does not forward:
 
@@ -188,9 +184,9 @@ Pull requests run a pre-check of a few minutes: formatting, the static and contr
 
 Workspace test shards keep the runner's unused SDKs when at least 32 GiB is free; below that budget they reclaim SDK space before downloading the test archive. Builders still reclaim it unconditionally. Archive consumers verify the checksum and require the manifest's expanded size plus a 2 GiB disk reserve before extraction, regardless of whether cleanup ran.
 
-To compare archive layouts before merge, run `gh workflow run ci.yml --ref <branch> -f archive_layout_experiment=true` on a branch at the exact revision under investigation. This also runs the normal manual CI suite. After merge, you can dispatch [Archive layout experiment](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/.github/workflows/archive-layout-experiment.yml) directly. The experiment builds once and compares fourteen full-archive `slice:14` consumers with two binary-local groups of seven slices, balanced by selected test counts, not measured duration. Download the one-day diagnostics: compare archive bytes and creation time, download/extraction time, and test-duration skew within each layout. Compare paired runs; do not add medians from unrelated jobs. Main CI defaults stay unchanged until measurements show an improvement without worse tail latency or lost coverage.
+To compare archive layouts before merge, run `gh workflow run ci.yml --ref <branch> -f archive_layout_experiment=true` on a branch at the exact revision under investigation. This also runs the normal manual CI suite. After merge, you can dispatch [Archive layout experiment](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/.github/workflows/archive-layout-experiment.yml) directly. The experiment builds once and compares fourteen full-archive `slice:14` consumers with two binary-local groups of seven slices, balanced by selected test counts, not measured duration. Download the one-day diagnostics: compare archive bytes and creation time, download/extraction time, and test-duration skew within each layout. Compare paired runs; do not add medians from unrelated jobs. Main CI defaults stay unchanged until measurements show an improvement without worse tail latency or lost coverage.
 
-Add `ci:full` and re-run all jobs to run the full matrix on a pull request, along with complete Android/Apple candidate packaging. `ci:apple` adds the iOS clippy lane and Apple packaging, and `ci:android` adds Android packaging; for packaging, re-run all candidate-workflow jobs or push a new commit. Ordinary PRs skip complete native candidate packaging, including Android target compilation and linking; use the opt-in when a change needs that signal before merging. Candidate packaging also runs on master when its inputs change, and the [nightly release](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/release.md#nightly-builds) builds and validates the same packages on nights it does not skip. Existing nightly and weekly campaigns retain their wider coverage. Broker image publishing stays serialized per ref so an older build cannot overwrite a newer `latest` image.
+Add `ci:full` and re-run all jobs to run the full matrix on a pull request, along with complete Android/Apple candidate packaging. `ci:apple` adds the iOS clippy lane and Apple packaging, and `ci:android` adds Android packaging; for packaging, re-run all candidate-workflow jobs or push a new commit. Ordinary PRs skip complete native candidate packaging, including Android target compilation and linking; use the opt-in when a change needs that signal before merging. Candidate packaging also runs on master when its inputs change, and the [nightly release](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/release.md#nightly-builds) builds and validates the same packages on nights it does not skip. Existing nightly and weekly campaigns retain their wider coverage.
 
 Common targeted runs:
 
@@ -214,16 +210,16 @@ just relay-down
 
 Notes:
 
-*   **Stack size.** [`.cargo/config.toml`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/.cargo/config.toml) sets `RUST_MIN_STACK=4194304` for Cargo-launched tests and debug binaries; unoptimized OpenMLS can overflow the default 2 MiB thread stack. Export the same value if you run a debug binary directly.
+*   **Stack size.** [`.cargo/config.toml`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/.cargo/config.toml) sets `RUST_MIN_STACK=4194304` for Cargo-launched tests and debug binaries; unoptimized OpenMLS can overflow the default 2 MiB thread stack. Export the same value if you run a debug binary directly.
 *   **WASM.** `just wasm-check` is a compile-only gate for `cgka-traits`, `cgka-engine`, and `transport-nostr-peeler` on `wasm32-unknown-unknown` (`rustup target add wasm32-unknown-unknown`; set `CC_wasm32_unknown_unknown` to a Clang with a wasm32 backend if needed). It does not claim browser support for storage, the runtime, bindings, or the CLI.
 *   **Commits** must be cryptographically signed.
 
 ## Releases
 
-MDK versions the whole workspace as one compatibility cohort and publishes separate artifact tracks from the same commit: the source snapshot (`v<version>`), the `wn-agent` connector (`wn-agent-v<version>`), MarmotKit bindings (`marmotkit-v<version>`), and the C bindings (`marmotc-v<version>`). The [release guide](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/release.md) is the checklist; per-release notes live in [`docs/release/`](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/release/).
+MDK versions the whole workspace as one compatibility cohort and publishes separate artifact tracks from the same commit: the source snapshot (`v<version>`), the `wn-agent` connector (`wn-agent-v<version>`), MarmotKit bindings (`marmotkit-v<version>`), and the C bindings (`marmotc-v<version>`). The [release guide](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/release.md) is the checklist; per-release notes live in [`docs/release/`](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/release/).
 
-Nightly pre-releases such as `marmotkit-v0.14.0-nightly.20261020` are built every day from the newest master commit that passed CI. They are for testing only: pin a formal release for anything you ship, expect each nightly to be deleted after 30 days, and don't count on going back to an older nightly. See [nightly builds](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/release.md#nightly-builds).
+Nightly pre-releases such as `marmotkit-v0.14.0-nightly.20261020` are built every day from the newest master commit that passed CI. They are for testing only: pin a formal release for anything you ship, expect each nightly to be deleted after 30 days, and don't count on going back to an older nightly. See [nightly builds](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/release.md#nightly-builds).
 
 ## License
 
-[MIT](https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/LICENSE).
+[MIT](https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/LICENSE).

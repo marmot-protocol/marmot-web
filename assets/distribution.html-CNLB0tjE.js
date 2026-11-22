@@ -1,4 +1,4 @@
-import{c as i,b as t,d as n,u as e,r,o as s}from"./app-DgITpRfK.js";const c="mdk",d="0.18.0",l="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/DISTRIBUTION.md",m=`<div id="marmotkit-binary-distribution" class="mm-source-title">MarmotKit Binary Distribution</div>
+import{c as i,b as t,d as n,u as e,r,o as s}from"./app-Dp0Wmi0L.js";const c="mdk",d="0.19.0",l="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-uniffi/DISTRIBUTION.md",m=`<div id="marmotkit-binary-distribution" class="mm-source-title">MarmotKit Binary Distribution</div>
 <p>MarmotKit releases publish generated Swift/Kotlin APIs with matching native libraries as immutable GitHub Release
 assets. Apple consumers use a binary-target XCFramework ZIP, generated Swift, and a separate SDK privacy manifest.
 Android consumers unpack the Kotlin and JNI bundle into their app build.</p>
@@ -50,7 +50,7 @@ binary target after checking the downloaded ZIP's hash; existing remote SwiftPM 
 checksum path. Signed export, Organizer privacy report and App Store Connect upload remain separate host checks.
 Rust source-level debug information is unchanged and belongs in the crash-symbol PR.</p>
 <p><a href="https://github.com/marmot-protocol/mdk/issues/1874">Consumer migration tracking</a> records downstream adoption and host
-release evidence. See the <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/apple-privacy/README.md">privacy audit and adoption guide</a> for outstanding privacy questions.</p>
+release evidence. See the <a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-uniffi/apple-privacy/README.md">privacy audit and adoption guide</a> for outstanding privacy questions.</p>
 <h2 id="ios">iOS</h2>
 <p>The iOS binary asset carries no platform token in its name, for backward compatibility with URLs consumers already
 pin. macOS assets are explicitly prefixed <code>-macos-</code>; an unprefixed <code>MarmotKitFFI-&lt;identifier&gt;</code> asset is always iOS.</p>
@@ -188,7 +188,7 @@ nightly, read <code>latest.json</code> on the <code>nightly-meta</code> branch:<
 <pre><code class="language-text">https://raw.githubusercontent.com/marmot-protocol/mdk/nightly-meta/latest.json
 </code></pre>
 <p>It lists every asset's URL and SHA-256 for MarmotKit, Marmot C and WN Agent. See
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/release.md#nightly-builds">nightly builds</a> for naming, publication and retention.</p>
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/release.md#nightly-builds">nightly builds</a> for naming, publication and retention.</p>
 <h2 id="publishing">Publishing</h2>
 <p>Pushing a formal <code>marmotkit-v*</code> tag publishes iOS, macOS, and Android bindings. To publish an untagged snapshot, run
 the <code>MarmotKit Bindings</code> workflow with a full SHA on <code>master</code>. Its immutable release tag is derived from that SHA.
@@ -196,7 +196,7 @@ Snapshots publish the iOS, macOS, and Android bindings from the same source SHA.
 <p>Set the dispatch input <code>build_only=true</code> to build and validate workflow artifacts
 without publishing. This also permits testing the workflow on a development
 branch. Publishing retains the <code>master</code> workflow/source-ancestry restrictions.
-See <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/release.md#parallel-builds-and-build-only-rehearsals">parallel builds and rehearsals</a>
+See <a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/release.md#parallel-builds-and-build-only-rehearsals">parallel builds and rehearsals</a>
 for phase boundaries, concurrency limits and evidence scope.</p>
 <p>Publishing first uploads and verifies every asset on a draft, then publishes it under repository-enforced immutable
 releases. A retry discards only an incomplete draft. Publishing fails if a public release already exists, and snapshot
@@ -209,6 +209,6 @@ inputs—including the Cargo workspace, UniFFI configuration, and Kotlin support
 SHA so the generated API and JNI libraries remain a matched set.</p>
 <h2 id="apple-privacy-resources">Apple privacy resources</h2>
 <p>Apple exporters publish raw static libraries and the reviewed SDK manifest as separate matching release inputs.
-The consuming Swift wrapper owns the privacy resource. See the <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/marmot-uniffi/apple-privacy/README.md">privacy audit and adoption guide</a>
+The consuming Swift wrapper owns the privacy resource. See the <a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-uniffi/apple-privacy/README.md">privacy audit and adoption guide</a>
 for declarations, archive validation and unresolved release questions.</p>
 `,g={__name:"distribution.html",setup(h){return(p,a)=>{const o=r("DocumentationPage");return s(),i("div",null,[a[0]||(a[0]=t("h1",{id:"marmotkit-distribution",tabindex:"-1"},[t("a",{class:"header-anchor",href:"#marmotkit-distribution"},[t("span",null,"MarmotKit distribution")])],-1)),n(o,{document:{repo:e(c),version:e(d),sourceUrl:e(l),html:e(m)}},null,8,["document"])])}}},f=JSON.parse('{"path":"/docs/distribution.html","title":"MarmotKit distribution","lang":"en-US","frontmatter":{"title":"MarmotKit distribution","description":"Choose and install the published MarmotKit packages for Apple and Android platforms, or build the native bindings from source.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0,"head":[["link",{"rel":"canonical","href":"https://marmot.build/docs/distribution.html"}],["link",{"rel":"describedby","href":"https://marmot.build/llms.txt"}],["meta",{"property":"og:type","content":"website"}],["meta",{"property":"og:site_name","content":"Marmot"}],["meta",{"property":"og:title","content":"MarmotKit distribution | Marmot"}],["meta",{"property":"og:description","content":"Choose and install the published MarmotKit packages for Apple and Android platforms, or build the native bindings from source."}],["meta",{"property":"og:url","content":"https://marmot.build/docs/distribution.html"}],["meta",{"property":"og:image","content":"https://marmot.build/images/share.png"}],["meta",{"property":"og:image:width","content":"1200"}],["meta",{"property":"og:image:height","content":"630"}],["meta",{"property":"og:image:alt","content":"Marmot wordmark and illustration"}],["meta",{"name":"twitter:card","content":"summary_large_image"}],["link",{"rel":"alternate","type":"text/markdown","href":"https://marmot.build/docs/distribution.md"}]]},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1},{"name":"erskingardner","username":"erskingardner","email":"202880+erskingardner@users.noreply.github.com","commits":1,"url":"https://github.com/erskingardner"}],"changelog":[{"hash":"0330b27fbdf24e99917ca75283be54594a9152e3","time":1794986838000,"email":"202880+erskingardner@users.noreply.github.com","author":"Jeff Gardner","message":"Add Marmot analytics and search discovery metadata"},{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/distribution.md"}');export{g as comp,f as data};

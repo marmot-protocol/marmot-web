@@ -1,9 +1,9 @@
-import{c as a,b as t,d as r,u as e,r as s,o as i}from"./app-DgITpRfK.js";const l="mdk",d="0.18.0",c="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/README.md",h=`<div id="marmot-integrations" class="mm-source-title">Marmot Integrations</div>
+import{c as a,b as t,d as r,u as e,r as s,o as i}from"./app-Dp0Wmi0L.js";const d="mdk",l="0.19.0",c="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/README.md",h=`<div id="marmot-integrations" class="mm-source-title">Marmot Integrations</div>
 <p>Connectors that let you chat with an agent runtime you already run (Hermes, OpenClaw, Claude Code, Codex, OpenCode,
 Pi, or Goose) from White Noise, over end-to-end encrypted Marmot groups. Each connector runs next to the local <code>wn-agent</code>
 service on your Mac or Linux machine. Start with <a href="#get-started-white-noise--agents">Get Started</a>; the later sections
 explain topology, identities, and sharing for operators. To write your own client against <code>wn-agent</code> instead, such as a
-notifier bot, see <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/custom-client.md">Build your own client</a>.</p>
+notifier bot, see <a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/custom-client.md">Build your own client</a>.</p>
 <h2 id="contents">Contents</h2>
 <ul>
 <li><a href="#get-started-white-noise--agents">Get Started: White Noise + Agents</a></li>
@@ -51,7 +51,7 @@ cannot confirm them. For a custom set, configure the connector to match it.</p>
 <tr role="row">
 <td data-label="Runtime" role="cell">Hermes</td>
 <td data-label="Connector style" role="cell">Gateway plugin</td>
-<td data-label="Best fit" role="cell">Rich chat history, reactions, media, and live previews</td>
+<td data-label="Best fit" role="cell">Rich chat history, reactions, and media</td>
 </tr>
 <tr role="row">
 <td data-label="Runtime" role="cell">OpenClaw</td>
@@ -86,7 +86,7 @@ cannot confirm them. For a custom set, configure the connector to match it.</p>
 <tr role="row">
 <td data-label="Runtime" role="cell">Your own client</td>
 <td data-label="Connector style" role="cell"><code>wn-agent</code> only</td>
-<td data-label="Best fit" role="cell">Notifier bots, scripts and custom runtimes (<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/custom-client.md">guide</a>)</td>
+<td data-label="Best fit" role="cell">Notifier bots, scripts and custom runtimes (<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/custom-client.md">guide</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -138,12 +138,12 @@ install; explicit overrides describe a custom deployment.</p>
   bash &quot;$tmpdir/$installer_script&quot; &quot;$@&quot;
 )
 </code></pre>
-<pre><code class="language-sh">base_url=&quot;https://github.com/marmot-protocol/mdk/releases/download/wn-agent-v0.18.0&quot;
+<pre><code class="language-sh">base_url=&quot;https://github.com/marmot-protocol/mdk/releases/download/wn-agent-v0.19.0&quot;
 </code></pre>
 <h3 id="hermes">Hermes</h3>
 <p>Hermes 0.19.0 or newer must already be installed and working.</p>
 <p>If Hermes has multiple profiles or a custom home, read
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/hermes/marmot/README.md#first-install-and-profile-selection">first install and profile selection</a>
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/hermes/marmot/README.md#first-install-and-profile-selection">first install and profile selection</a>
 <strong>before</strong> invoking the installer. Export the intended <code>HERMES_HOME</code>, and choose
 separate connector homes/sockets/service names for independent agents. The
 installer does not infer the intended profile from the installation prompt.</p>
@@ -196,7 +196,7 @@ and runnable as <code>goose</code>. The Goose harness supports the <code>inherit
 installer installs and starts <code>wn-agent</code> alone, without a harness or plugin.
 <code>--bootstrap</code> creates the agent identity; <code>--import-identity</code> imports an
 existing key instead. The connector's identity must not also be signed in on
-another client. Continue with <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/custom-client.md">Build your own client</a>.</p>
+another client. Continue with <a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/custom-client.md">Build your own client</a>.</p>
 <p><code>install-wn-agent.sh</code> is published from WN Agent 0.15.0 onward. If you pin
 0.14.0 or earlier in <code>base_url</code>, run the installer from a clone of this
 repository instead. It downloads and verifies that release's <code>wn-agent</code> bundle
@@ -246,8 +246,8 @@ the installation steps alone. Once that capability is available, you can grant
 the verified agent admin permission for title edits in a normal group. This
 also allows group and member changes. Direct messages do not provide the same
 editable group-title workflow. See the shared
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/terminal-harness/README.md#organize-your-task-groups">session workflow</a> and
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/terminal-harness/onboarding-design.md">onboarding design</a> for the proposed
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/terminal-harness/README.md#organize-your-task-groups">session workflow</a> and
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/terminal-harness/onboarding-design.md">onboarding design</a> for the proposed
 defaults and their remaining dependencies.</p>
 <p>Hermes and OpenClaw print one final gateway restart command because the installer
 does not restart an existing gateway. Claude Code, Codex, OpenCode, Pi, and Goose services are
@@ -344,7 +344,7 @@ yes; keep a shared group member-only unless its owner chooses otherwise.</li>
 Keep the selected runtime's existing permissions as the execution default.</li>
 </ul>
 <p>Agent setup and chat policy is collected in
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/AGENTS.md#suggested-agent-chat-instructions">the integration instructions</a>.
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/AGENTS.md#suggested-agent-chat-instructions">the integration instructions</a>.
 These instructions are not installed automatically; tools still need deployment
 configuration and the acceptance check below.</p>
 <h3 id="check-the-tools-before-promising-the-experience">Check the tools before promising the experience</h3>
@@ -352,7 +352,7 @@ configuration and the acceptance check below.</p>
 <li><strong>Hermes:</strong> <code>marmot_group_profile</code> updates a name/description as an admin;
 <code>marmot_reaction</code> adds/removes a message reaction. The optional presence
 policy and model-issued reactions need one consistent owner so they do not
-compete. See <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/hermes/marmot/README.md#what-you-can-do">the Hermes guide</a>.</li>
+compete. See <a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/hermes/marmot/README.md#what-you-can-do">the Hermes guide</a>.</li>
 <li><strong>OpenClaw:</strong> <code>marmot_group_profile</code> updates the group name or description
 when the account is an admin. The normal <code>message</code> tool supports <code>react</code> with
 an emoji, target message id and chat target; <code>remove: true</code> removes it.</li>
@@ -360,7 +360,7 @@ an emoji, target message id and chat target; <code>remove: true</code> removes i
 shared <code>wn-agent group-profile</code> route for admin name/description updates.
 The backend needs <code>wn-agent</code> on its PATH and shell/sandbox permission to reach
 the selected connector's local socket. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/terminal-harness/README.md#admin-group-profile-updates">admin profile guide</a>.
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/terminal-harness/README.md#admin-group-profile-updates">admin profile guide</a>.
 Harnesses do not provide a built-in reaction tool. A deployment that needs
 progress reactions must separately configure and verify that capability.
 Bind every operation to the actual conversation and connector account; never
@@ -399,37 +399,37 @@ Choose by the features you need:</p>
 </thead>
 <tbody role="rowgroup">
 <tr role="row">
-<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/hermes/marmot/README.md#what-you-can-do">Hermes</a></td>
-<td data-label="Conversation and controls" role="cell">DM/group activation; history, quotes, reactions, own-message deletion, admin group profile updates; optional live previews/presence/approval reactions</td>
+<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/hermes/marmot/README.md#what-you-can-do">Hermes</a></td>
+<td data-label="Conversation and controls" role="cell">DM/group activation; history, quotes, reactions, own-message deletion, admin group profile updates; optional presence/approval reactions</td>
 <td data-label="Files" role="cell">Inbound media; image/document/video/voice sends with approved-root staging</td>
 </tr>
 <tr role="row">
-<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/openclaw/marmot/README.md#what-you-can-do">OpenClaw</a></td>
+<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/openclaw/marmot/README.md#what-you-can-do">OpenClaw</a></td>
 <td data-label="Conversation and controls" role="cell">Gateway routing; DM/group activation; history, quotes, quiet changes, own-message edits and deletion, reactions, admin group profile updates, consent-based public profile naming; current inbound turns are final-only</td>
 <td data-label="Files" role="cell">Host-authorized inbound/outbound media via normal message tool</td>
 </tr>
 <tr role="row">
-<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/claude/marmot/README.md#what-you-can-do">Claude Code</a></td>
+<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/claude/marmot/README.md#what-you-can-do">Claude Code</a></td>
 <td data-label="Conversation and controls" role="cell">Per-chat session/project/goal; shared chat and recovery commands; admin group profile updates; text replies</td>
 <td data-label="Files" role="cell">Text-only; no attachments or generated-file return</td>
 </tr>
 <tr role="row">
-<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/codex/marmot/README.md#what-you-can-do">Codex</a></td>
+<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/codex/marmot/README.md#what-you-can-do">Codex</a></td>
 <td data-label="Conversation and controls" role="cell">Per-chat thread/project/goal; shared chat and recovery commands; admin group profile updates; completed text replies</td>
 <td data-label="Files" role="cell">Native images and supported staged files; opt-in generated-file return with exact grants</td>
 </tr>
 <tr role="row">
-<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/opencode/marmot/README.md#what-you-can-do">OpenCode</a></td>
+<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/opencode/marmot/README.md#what-you-can-do">OpenCode</a></td>
 <td data-label="Conversation and controls" role="cell">Per-chat session/project/goal; shared chat and recovery commands; admin group profile updates; text-event replies</td>
 <td data-label="Files" role="cell">Supported images/PDFs/text; no generated-file return</td>
 </tr>
 <tr role="row">
-<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/pi/marmot/README.md#what-you-can-do">Pi</a></td>
+<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/pi/marmot/README.md#what-you-can-do">Pi</a></td>
 <td data-label="Conversation and controls" role="cell">Per-chat session/project/goal; shared chat and recovery commands; admin group profile updates; completed text replies</td>
 <td data-label="Files" role="cell">Supported images/text; no generated-file return</td>
 </tr>
 <tr role="row">
-<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/goose/marmot/README.md">Goose</a></td>
+<td data-label="Connector" role="cell"><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/goose/marmot/README.md">Goose</a></td>
 <td data-label="Conversation and controls" role="cell">Per-chat session/project/goal; shared chat and recovery commands; text replies between tool calls</td>
 <td data-label="Files" role="cell">Text-only; no attachments or generated-file return</td>
 </tr>
@@ -437,9 +437,9 @@ Choose by the features you need:</p>
 </table>
 <p>For terminal harnesses, start with <code>/cd src/my-project</code>, send an ordinary request,
 then use <code>/status</code>, <code>/goal &lt;instruction&gt;</code> or <code>/new</code> as needed. The complete
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/terminal-harness/README.md#chat-commands">chat-command reference</a> explains
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/terminal-harness/README.md#chat-commands">chat-command reference</a> explains
 recovery, session resets and slash escaping. These harnesses do not add gateway
-mention activation, reaction tools or live previews.</p>
+mention activation or reaction tools.</p>
 <p>For gateway plugins, ask in the current chat and use the runtime's registered
 Marmot tools and media-delivery contract. A file accepted by a connector is not
 a promise that the selected model can interpret it. Voice/audio upload shares
@@ -448,45 +448,45 @@ is not yet implemented. Each linked guide explains opt-ins, restrictions and
 verification steps; installing another connector does not inherit its features.</p>
 <h2 id="first-install-verification">First-install verification</h2>
 <p>For a copied White Noise installation prompt, use the connector's
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/agent-connector/README.md#first-installation-from-a-white-noise-prompt">first-install checklist</a>
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/agent-connector/README.md#first-installation-from-a-white-noise-prompt">first-install checklist</a>
 and the selected runtime's guide. Resolve the actual runtime/profile home,
 choose one owner for each connector socket/service, verify the downloaded
 installer checksum and release cohort, and configure both invitation and
 message-sender authorization. A successful install/bootstrap is not proof of
 an agent reply reaching the phone: finish with an invited, allowed-account
 White Noise round trip.</p>
-<p>Before installing, follow the runtime-specific checklist: <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/hermes/marmot/README.md#first-install-and-profile-selection">Hermes</a>,
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/openclaw/marmot/README.md#first-install-checklist">OpenClaw</a>,
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/claude/marmot/README.md#first-install-checklist">Claude Code</a>,
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/codex/marmot/README.md#first-install-checklist">Codex</a>,
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/opencode/marmot/README.md#first-install-checklist">OpenCode</a>,
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/pi/marmot/README.md#first-install-checklist">Pi</a>, or
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/goose/marmot/README.md#install-goose-already-installed">Goose</a>. The five terminal harnesses also
-share a <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/terminal-harness/README.md#first-installation-and-verification">two-process/environment verification guide</a>.
+<p>Before installing, follow the runtime-specific checklist: <a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/hermes/marmot/README.md#first-install-and-profile-selection">Hermes</a>,
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/openclaw/marmot/README.md#first-install-checklist">OpenClaw</a>,
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/claude/marmot/README.md#first-install-checklist">Claude Code</a>,
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/codex/marmot/README.md#first-install-checklist">Codex</a>,
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/opencode/marmot/README.md#first-install-checklist">OpenCode</a>,
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/pi/marmot/README.md#first-install-checklist">Pi</a>, or
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/goose/marmot/README.md#install-goose-already-installed">Goose</a>. The five terminal harnesses also
+share a <a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/terminal-harness/README.md#first-installation-and-verification">two-process/environment verification guide</a>.
 These guides distinguish invitation authorization from prompt authorization and
 actual backend replies from local setup/status acknowledgements.</p>
 <p>For Hermes files, stage a regular file under the adapter's approved source root
 before returning <code>MEDIA:&lt;absolute-path&gt;</code>; see the
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/hermes/marmot/README.md#sending-a-generated-file">copy-and-send example</a>.
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/hermes/marmot/README.md#sending-a-generated-file">copy-and-send example</a>.
 The default source root is the connector home's <code>dev/inbound-media</code>, not an
 arbitrary workspace. OpenClaw and terminal harnesses have their own documented
 attachment/export contracts; do not apply Hermes's <code>MEDIA:</code> syntax to them.</p>
 <h2 id="how-the-connectors-fit-together">How The Connectors Fit Together</h2>
 <p>Current integrations:</p>
 <ul>
-<li><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/hermes/marmot"><code>hermes/marmot</code></a> - Hermes platform plugin.</li>
-<li><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/openclaw/marmot"><code>openclaw/marmot</code></a> - OpenClaw channel plugin.</li>
-<li><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/claude/marmot"><code>claude/marmot</code></a> - <code>wn-claude</code> Claude Code harness binary.</li>
-<li><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/codex/marmot"><code>codex/marmot</code></a> - <code>wn-codex</code> Codex harness binary.</li>
-<li><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/opencode/marmot"><code>opencode/marmot</code></a> - <code>wn-opencode</code> OpenCode harness binary.</li>
-<li><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/pi/marmot"><code>pi/marmot</code></a> - <code>wn-pi</code> Pi harness binary.</li>
-<li><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/goose/marmot"><code>goose/marmot</code></a> - <code>wn-goose</code> Goose harness binary.</li>
-<li><a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/integrations/terminal-harness"><code>terminal-harness</code></a> - shared hardened runtime for the
+<li><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/hermes/marmot"><code>hermes/marmot</code></a> - Hermes platform plugin.</li>
+<li><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/openclaw/marmot"><code>openclaw/marmot</code></a> - OpenClaw channel plugin.</li>
+<li><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/claude/marmot"><code>claude/marmot</code></a> - <code>wn-claude</code> Claude Code harness binary.</li>
+<li><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/codex/marmot"><code>codex/marmot</code></a> - <code>wn-codex</code> Codex harness binary.</li>
+<li><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/opencode/marmot"><code>opencode/marmot</code></a> - <code>wn-opencode</code> OpenCode harness binary.</li>
+<li><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/pi/marmot"><code>pi/marmot</code></a> - <code>wn-pi</code> Pi harness binary.</li>
+<li><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/goose/marmot"><code>goose/marmot</code></a> - <code>wn-goose</code> Goose harness binary.</li>
+<li><a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/terminal-harness"><code>terminal-harness</code></a> - shared hardened runtime for the
 Claude Code, Codex, OpenCode, Pi, and Goose terminal harnesses.</li>
 </ul>
 <p>All integrations are intentionally thin at the Marmot boundary. They do not own MLS
-state, Nostr transport, local account storage, relay access, QUIC preview
-transport, or durable encrypted sends. <code>wn-agent</code> owns those concerns and exposes
+state, Nostr transport, local account storage, relay access, or durable
+encrypted sends. <code>wn-agent</code> owns those concerns and exposes
 the local <code>marmot.agent-control.v2</code> newline-delimited JSON protocol over a Unix
 socket.</p>
 <h2 id="default-install-topology">Default Install Topology</h2>
@@ -628,10 +628,10 @@ sessions live in the operator's Goose session store, or under
 inbound sender ACL before activation. In multi-party groups they default to
 mention-style activation and always reply in effective DMs. Activation cannot
 widen sender authorization. They also support richer gateway features such as
-live previews, durable reply routing, profile onboarding, and media handling.</li>
+durable reply routing, profile onboarding, and media handling.</li>
 <li><code>wn-claude</code>, <code>wn-codex</code>, <code>wn-opencode</code>, <code>wn-pi</code>, and <code>wn-goose</code> are pure harnesses. They currently support only
 <code>always</code> activation for prompt messages from explicitly allowed senders, and
-have no profile onboarding or live-preview behavior. Their shared runtime
+have no profile onboarding. Their shared runtime
 validates and privately stages bounded ordered attachment batches. <code>wn-codex</code>
 maps image batches to ordered Codex image inputs; <code>wn-opencode</code> passes each
 file as an ordered <code>opencode run --file</code> argument; <code>wn-pi</code> passes each image
@@ -739,4 +739,4 @@ just wn-agent-installer-test
 <p>For release-installer work, test dry-runs and real release assets from the
 <code>wn-agent-v*</code> release family. Do not assume a source checkout script exactly
 matches the published installer.</p>
-`,g={__name:"agents.html",setup(p){return(m,o)=>{const n=s("DocumentationPage");return i(),a("div",null,[o[0]||(o[0]=t("h1",{id:"bots-and-agents",tabindex:"-1"},[t("a",{class:"header-anchor",href:"#bots-and-agents"},[t("span",null,"Bots and agents")])],-1)),r(n,{document:{repo:e(l),version:e(d),sourceUrl:e(c),html:e(h)}},null,8,["document"])])}}},b=JSON.parse('{"path":"/docs/agents.html","title":"Bots and agents","lang":"en-US","frontmatter":{"title":"Bots and agents","description":"Connect a bot or coding agent to White Noise over a local control socket and manage its messaging permissions.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0,"head":[["link",{"rel":"canonical","href":"https://marmot.build/docs/agents.html"}],["link",{"rel":"describedby","href":"https://marmot.build/llms.txt"}],["meta",{"property":"og:type","content":"website"}],["meta",{"property":"og:site_name","content":"Marmot"}],["meta",{"property":"og:title","content":"Bots and agents | Marmot"}],["meta",{"property":"og:description","content":"Connect a bot or coding agent to White Noise over a local control socket and manage its messaging permissions."}],["meta",{"property":"og:url","content":"https://marmot.build/docs/agents.html"}],["meta",{"property":"og:image","content":"https://marmot.build/images/share.png"}],["meta",{"property":"og:image:width","content":"1200"}],["meta",{"property":"og:image:height","content":"630"}],["meta",{"property":"og:image:alt","content":"Marmot wordmark and illustration"}],["meta",{"name":"twitter:card","content":"summary_large_image"}],["link",{"rel":"alternate","type":"text/markdown","href":"https://marmot.build/docs/agents.md"}]]},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1},{"name":"erskingardner","username":"erskingardner","email":"202880+erskingardner@users.noreply.github.com","commits":1,"url":"https://github.com/erskingardner"}],"changelog":[{"hash":"0330b27fbdf24e99917ca75283be54594a9152e3","time":1794986838000,"email":"202880+erskingardner@users.noreply.github.com","author":"Jeff Gardner","message":"Add Marmot analytics and search discovery metadata"},{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/agents.md"}');export{g as comp,b as data};
+`,g={__name:"agents.html",setup(p){return(m,o)=>{const n=s("DocumentationPage");return i(),a("div",null,[o[0]||(o[0]=t("h1",{id:"bots-and-agents",tabindex:"-1"},[t("a",{class:"header-anchor",href:"#bots-and-agents"},[t("span",null,"Bots and agents")])],-1)),r(n,{document:{repo:e(d),version:e(l),sourceUrl:e(c),html:e(h)}},null,8,["document"])])}}},f=JSON.parse('{"path":"/docs/agents.html","title":"Bots and agents","lang":"en-US","frontmatter":{"title":"Bots and agents","description":"Connect a bot or coding agent to White Noise over a local control socket and manage its messaging permissions.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0,"head":[["link",{"rel":"canonical","href":"https://marmot.build/docs/agents.html"}],["link",{"rel":"describedby","href":"https://marmot.build/llms.txt"}],["meta",{"property":"og:type","content":"website"}],["meta",{"property":"og:site_name","content":"Marmot"}],["meta",{"property":"og:title","content":"Bots and agents | Marmot"}],["meta",{"property":"og:description","content":"Connect a bot or coding agent to White Noise over a local control socket and manage its messaging permissions."}],["meta",{"property":"og:url","content":"https://marmot.build/docs/agents.html"}],["meta",{"property":"og:image","content":"https://marmot.build/images/share.png"}],["meta",{"property":"og:image:width","content":"1200"}],["meta",{"property":"og:image:height","content":"630"}],["meta",{"property":"og:image:alt","content":"Marmot wordmark and illustration"}],["meta",{"name":"twitter:card","content":"summary_large_image"}],["link",{"rel":"alternate","type":"text/markdown","href":"https://marmot.build/docs/agents.md"}]]},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1},{"name":"erskingardner","username":"erskingardner","email":"202880+erskingardner@users.noreply.github.com","commits":1,"url":"https://github.com/erskingardner"}],"changelog":[{"hash":"0330b27fbdf24e99917ca75283be54594a9152e3","time":1794986838000,"email":"202880+erskingardner@users.noreply.github.com","author":"Jeff Gardner","message":"Add Marmot analytics and search discovery metadata"},{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/agents.md"}');export{g as comp,f as data};

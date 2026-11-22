@@ -1,4 +1,4 @@
-import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-DgITpRfK.js";const r="mdk",i="0.18.0",l="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
+import{c as a,b as o,d as s,u as e,r as c,o as d}from"./app-Dp0Wmi0L.js";const r="mdk",i="0.19.0",l="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/cli/README.md",u=`<div id="wn" class="mm-source-title">wn</div>
 <p><code>wn</code> is the command-line app for the White Noise/Marmot stack. It manages Nostr-keyed accounts, relay lists,
 KeyPackages, chats, groups, messages, media, live runtime subscriptions, and a terminal UI. Use it to drive Marmot from
 a shell or script, or interactively with <code>wn tui</code>.</p>
@@ -24,7 +24,6 @@ setup, group and message projection, and Nostr directory refresh.</p>
 <li><a href="#messages">Messages</a></li>
 <li><a href="#media">Media</a></li>
 <li><a href="#directory-profile-relays-and-settings">Directory, profile, relays, and settings</a></li>
-<li><a href="#agent-text-streams">Agent text streams</a></li>
 <li><a href="#sync">Sync</a></li>
 </ul>
 </li>
@@ -423,13 +422,14 @@ or <code>failed</code>), counts, <code>media_ciphertext_sha256</code> purge hint
 <code>failure_kind</code>. A running <code>wnd</code> does not schedule this sweep; call it explicitly.</p>
 <p><strong>Custom events.</strong> <code>messages send-event &lt;group-hex&gt; &lt;kind&gt; [content]</code> sends an app-defined event. Kind, tags, and content
 pass through verbatim into the encrypted group message. Kinds MDK owns (chat, reactions, edits, deletes, agent activity,
-agent stream anchors, group system rows, push token records, and the device-group kinds 457, 458, 459, 460, 461, 473, 475 and 476) are rejected with <code>reserved_app_event_kind</code>. Each <code>--tag</code>
+retired agent stream starts (kind 1200), group system rows, push token records, and the device-group kinds 457, 458,
+459, 460, 461, 473, 475 and 476) are rejected with <code>reserved_app_event_kind</code>. Each <code>--tag</code>
 takes a JSON array of strings and is repeatable; a malformed tag fails with <code>invalid_event_tag</code>. Custom events project as
 standalone rows with their own kind and tags and never fold onto a target message. <code>messages list</code> and
 <code>messages subscribe</code> accept repeatable <code>--kind &lt;KIND&gt;</code> filters and return every kind without one. On the subscribe feed
 a custom event arrives as type <code>message</code>; on the timeline feed its change trigger is <code>CustomEvent</code>.</p>
 <p><strong>Timeline.</strong> <code>messages timeline list|search|subscribe</code> read the materialized timeline, which interleaves messages,
-media, and agent-stream anchors/finals. Group lists and subscriptions use canonical conversation order.</p>
+media, and group system rows. Group lists and subscriptions use canonical conversation order.</p>
 <p><strong>Timeline search.</strong> <code>messages timeline search</code> searches retained local history, across the account unless a group
 is supplied. Text is a trimmed, case-insensitive literal substring; query operators and wildcards have no special
 meaning. An empty query (<code>&quot;&quot;</code>) applies only the other filters. <code>--sender</code> accepts an exact npub or hex public key.
@@ -472,18 +472,6 @@ responses with a typed <code>result.type</code>:</p>
 <tr role="row">
 <td data-label="result.type" role="cell"><code>media</code></td>
 <td data-label="Meaning" role="cell">media references</td>
-</tr>
-<tr role="row">
-<td data-label="result.type" role="cell"><code>agent_stream_start</code>, <code>agent_stream_final</code></td>
-<td data-label="Meaning" role="cell">durable agent stream anchors and finals</td>
-</tr>
-<tr role="row">
-<td data-label="result.type" role="cell"><code>agent_stream_delta</code></td>
-<td data-label="Meaning" role="cell">live brokered QUIC chunks</td>
-</tr>
-<tr role="row">
-<td data-label="result.type" role="cell"><code>stream_preview</code></td>
-<td data-label="Meaning" role="cell">runtime-owned QUIC preview summaries</td>
 </tr>
 <tr role="row">
 <td data-label="result.type" role="cell"><code>chat</code></td>
@@ -575,60 +563,13 @@ per-relay first-deliverer and first-event/EOSE timing, and redacted relay health
 when a daemon socket exists. Per-relay rows use opaque device-local indices, never relay URLs.</li>
 <li><code>usage-diagnostics show|enable|disable</code> manages the local combined &quot;Share usage and diagnostics&quot; permission. An active
 <code>wnd</code> owns the update. Audit consent is separate. See the
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/marmot-architecture/usage-diagnostics.md">host and operator contract</a> for disclosure, endpoint/key
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/marmot-architecture/usage-diagnostics.md">host and operator contract</a> for disclosure, endpoint/key
 configuration, and reporting limitations.</li>
 </ul>
-<h3 id="agent-text-streams">Agent text streams</h3>
-<p>Provisional QUIC previews of agent text, anchored by durable Marmot messages:</p>
-<pre><code class="language-sh">marmot-quic-broker --bind 127.0.0.1:4450
-wn --account &lt;npub-or-hex&gt; stream start &lt;group-hex&gt; \\
-  --stream-id &lt;stream-hex&gt; --quic-candidate quic://127.0.0.1:4450
-wn --account &lt;npub-or-hex&gt; stream watch &lt;group-hex&gt; --stream-id &lt;stream-hex&gt; --insecure-local
-wn --account &lt;npub-or-hex&gt; stream watch &lt;group-hex&gt; --stream-id &lt;stream-hex&gt; --insecure-local --background
-wn stream send --broker --connect 127.0.0.1:4450 --insecure-local \\
-  --stream-id &lt;stream-hex&gt; --start-event-id &lt;start-message-id-hex&gt; &quot;hello over quic&quot;
-wn stream send --connect &lt;host:port&gt; --server-name &lt;dns-name&gt; &quot;hello over quic&quot;
-wn stream receive --bind 127.0.0.1:4450
-wn --account &lt;npub-or-hex&gt; stream compose-open &lt;group-hex&gt; \\
-  --stream-id &lt;stream-hex&gt; --quic-candidate quic://127.0.0.1:4450 --insecure-local
-wn --account &lt;npub-or-hex&gt; stream compose-append --stream-id &lt;stream-hex&gt; &quot;hello &quot;
-wn --account &lt;npub-or-hex&gt; stream compose-finish --stream-id &lt;stream-hex&gt;
-wn --account &lt;npub-or-hex&gt; stream compose-cancel --stream-id &lt;stream-hex&gt;
-wn --account &lt;npub-or-hex&gt; stream finish &lt;group-hex&gt; \\
-  --stream-id &lt;stream-hex&gt; --start-event-id &lt;start-message-id-hex&gt; \\
-  --transcript-hash &lt;hash-hex&gt; --chunk-count &lt;n&gt; &quot;hello over quic&quot;
-wn --account &lt;npub-or-hex&gt; stream verify &lt;group-hex&gt; \\
-  --stream-id &lt;stream-hex&gt; --transcript-hash &lt;hash-hex&gt; --chunk-count &lt;n&gt;
-</code></pre>
-<ul>
-<li><code>stream start</code> and <code>stream finish</code> send typed payloads through the normal encrypted Marmot message path. Brokered
-starts include concrete <code>quic://host:port</code> candidates.</li>
-<li><code>stream watch</code> reads the durable start payload, subscribes to the broker candidate, and prints the provisional text
-preview plus transcript hash. With <code>--background</code> and a running <code>wnd</code>, the daemon owns the subscription and the
-command returns immediately; <code>wn daemon status --json</code> reports the running/completed/failed state under
-<code>stream_watches</code>, and <code>messages subscribe</code> emits it as <code>stream_preview</code> updates (individual chunks as
-<code>agent_stream_delta</code>).</li>
-<li><code>stream send --broker</code> publishes ordered <code>TextDelta</code> records through the memory-only broker. Without <code>--broker</code> it
-connects directly to a peer receiver (<code>wn stream receive</code>).</li>
-<li><code>stream verify</code> compares a received QUIC transcript hash and chunk count against the latest durable final payload for
-the same stream id.</li>
-<li><code>stream compose-open|append|finish|cancel</code> are the daemon-owned live composer used by the TUI and agent connectors,
-and require <code>wnd</code>. Opening publishes the durable stream anchor and starts live preview publication; append feeds
-preview text; finish publishes the durable final message; cancel tears down the session without faking a final.</li>
-</ul>
-<p>QUIC chunks are transient preview data; normal Marmot messages remain the durable group history.</p>
-<p><strong>Destination safety.</strong> Explicit <code>--connect</code> destinations must be public unicast addresses. <code>--insecure-local</code> is the
-only exception, and it opens loopback only. A pinned <code>--server-cert-der-hex</code> is TLS trust, not address authorization, so
-unflagged loopback, private, link-local, and CGNAT targets are rejected; local probes therefore need
-<code>wn stream receive --bind 127.0.0.1:4450</code> plus <code>--insecure-local</code> on send. The client source bind is a family-matched
-wildcard (<code>0.0.0.0:0</code> / <code>[::]:0</code>) and does not authorize the remote destination. Use
-<code>quic://quic-broker.ipf.dev:4450</code> with default trust for the shared production broker, and <code>--insecure-local</code> only for
-loopback development with generated self-signed certificates. Default trust verifies broker certificates against the
-bundled Mozilla roots (<code>webpki-roots</code>) that relays and HTTP also use, not the OS trust store.</p>
 <h3 id="sync">Sync</h3>
 <pre><code class="language-sh">wn --account &lt;npub-or-hex&gt; sync
 </code></pre>
-<p><code>sync</code> is a diagnostic and repair command. Normal daemon-backed chat, group, and stream flows use runtime subscriptions
+<p><code>sync</code> is a diagnostic and repair command. Normal daemon-backed chat, group, and message flows use runtime subscriptions
 and should not need it.</p>
 <h2 id="device-linking">Device linking</h2>
 <p>Device groups are on by default in every <code>wn</code>/<code>wnd</code> build, with production settlement/retry timing. Export
@@ -713,7 +654,7 @@ other devices removed it. No new storage migration or background scheduler is in
 <p><code>wn daemon start</code> launches <code>wnd</code> in the background for the selected home. The daemon owns the Unix socket, writes
 <code>dev/wnd.pid</code>, appends startup errors to <code>dev/wnd.log</code>, and hosts one <code>MarmotAppRuntime</code>. The runtime keeps long-lived
 relay subscriptions for local signing accounts using the daemon's discovery and account-relay defaults, and updates them
-automatically after identity, group, message, and stream mutations forwarded through it.</p>
+automatically after identity, group, and message mutations forwarded through it.</p>
 <pre><code class="language-sh">export WN_HOME=&quot;$PWD/dev/data/daemon-demo&quot;
 export WN_SECRET_STORE=file
 export WN_ALLOW_LOOPBACK_RELAYS=1   # loopback relays are dev/test only; unset in production
@@ -747,7 +688,7 @@ daemon.</li>
 seconds. Meanwhile <code>wn daemon status</code> prints <code>daemon starting</code> (<code>&quot;starting&quot;: true</code> in <code>--json</code>), <code>wn daemon stop</code>
 stops it, and other commands wait until the accounts are open.</li>
 <li><code>wn daemon status --json</code> includes <code>device_groups</code> (false when that <code>wnd</code> runs with <code>WN_DEVICE_GROUPS=0</code>),
-<code>last_runtime_activity</code>, background <code>stream_watches</code>, and a redacted <code>relay_health</code>
+<code>last_runtime_activity</code>, and a redacted <code>relay_health</code>
 object with aggregate relay counts and connection-status buckets. It does not include relay URLs, account ids, group
 ids, subscription ids, or message ids.</li>
 <li>Subscription commands (see <a href="#messages">Messages</a>) use the daemon socket directly.</li>
@@ -758,11 +699,11 @@ ids, subscription ids, or message ids.</li>
   --discovery-relays ws://127.0.0.1:27777 \\
   --default-account-relays ws://127.0.0.1:27777
 </code></pre>
-<h3 id="two-terminal-local-stream-demo">Two-terminal local stream demo</h3>
+<h3 id="two-terminal-live-subscription-demo">Two-terminal live subscription demo</h3>
 <p>Terminal 1 owns the daemon and the live subscription:</p>
 <pre><code class="language-sh">just relay-up
 
-export WN_HOME=&quot;$PWD/dev/data/stream-demo&quot;
+export WN_HOME=&quot;$PWD/dev/data/subscription-demo&quot;
 export WN_SECRET_STORE=file
 export WN_ALLOW_LOOPBACK_RELAYS=1   # loopback relays are dev/test only; unset in production
 unset WN_SOCKET
@@ -775,8 +716,8 @@ wn daemon start \\
 # After Terminal 2 creates $BOB and $GROUP, run:
 wn --account &quot;$BOB&quot; messages subscribe &quot;$GROUP&quot; --limit 20
 </code></pre>
-<p>Terminal 2 creates Alice and Bob, starts the durable stream, and sends live broker chunks:</p>
-<pre><code class="language-sh">export WN_HOME=&quot;$PWD/dev/data/stream-demo&quot;
+<p>Terminal 2 creates Alice and Bob and sends a message:</p>
+<pre><code class="language-sh">export WN_HOME=&quot;$PWD/dev/data/subscription-demo&quot;
 export WN_SECRET_STORE=file
 export WN_ALLOW_LOOPBACK_RELAYS=1   # loopback relays are dev/test only; unset in production
 unset WN_SOCKET
@@ -786,18 +727,8 @@ BOB=$(wn --json create-identity | jq -r '.result.account_id')
 
 GROUP=$(wn --account &quot;$ALICE&quot; --json groups create agent &quot;$BOB&quot; | jq -r '.result.group_id')
 wn --account &quot;$ALICE&quot; messages send &quot;$GROUP&quot; &quot;hello bob&quot;
-
-STREAM_ID=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-START_ID=$(wn --account &quot;$ALICE&quot; --json stream start &quot;$GROUP&quot; \\
-  --stream-id &quot;$STREAM_ID&quot; \\
-  --quic-candidate quic://127.0.0.1:4450 | jq -r '.result.message_ids[0]')
-
-wn --account &quot;$BOB&quot; stream watch &quot;$GROUP&quot; --stream-id &quot;$STREAM_ID&quot; --insecure-local --background
-wn stream send --broker --connect 127.0.0.1:4450 --server-name localhost --insecure-local \\
-  --stream-id &quot;$STREAM_ID&quot; --start-event-id &quot;$START_ID&quot; --chunk-bytes 8 &quot;hello from the stream&quot;
 </code></pre>
-<p>Terminal 1 should print typed <code>message</code>, <code>agent_stream_start</code>, <code>agent_stream_delta</code>, and <code>stream_preview</code> JSON lines in
-real time.</p>
+<p>Terminal 1 should print the typed <code>message</code> line in real time.</p>
 <h2 id="tui">TUI</h2>
 <p><code>wn tui</code> is a Ratatui interface over the real <code>wn --json</code> command surface. Its main view is chat-first: the chat list on
 the left, the materialized message timeline on the right (reactions, reply context, deletion tombstones, and inline
@@ -973,12 +904,6 @@ composer. Hidden by default.</li>
 /profile name &lt;display-name&gt;
 /users [query]
 /search [query]
-/stream [--stream-id &lt;hex&gt;] [--quic-candidate &lt;quic-url&gt;]
-/stream start [--stream-id &lt;hex&gt;] --quic-candidate &lt;quic-url&gt;
-/stream watch [--stream-id &lt;hex&gt;] [--insecure-local]
-/stream status
-/stream finish &lt;stream-id&gt; &lt;transcript-hash&gt; &lt;chunk-count&gt; &lt;text&gt;
-/stream verify &lt;stream-id&gt; &lt;transcript-hash&gt; [chunk-count]
 /quit
 </code></pre>
 <ul>
@@ -998,10 +923,6 @@ timeline row without a reload.</li>
 per-message failed-send state.</li>
 <li><code>/image</code> uses the real encrypted media path (<code>wn media upload &lt;group&gt; &lt;file&gt; --send</code>) with the optional caption as
 message text.</li>
-<li>Stream commands operate on the selected chat. <code>/stream watch</code> starts a daemon background watch whose completed preview
-appears as a provisional row. <code>/stream</code> opens the stream composer, publishes the anchor, starts the receiver watch
-through the daemon, and treats the next submitted line as the streamed text. It uses
-<code>quic://quic-broker.ipf.dev:4450</code> when no candidate is supplied.</li>
 <li>There is no <code>/sync</code>; the TUI rejects it because live updates come from subscriptions. Use <code>wn sync</code> outside the TUI
 as a diagnostic/repair escape hatch.</li>
 </ul>
@@ -1020,8 +941,8 @@ depend on the JSON shape, so treat response changes as API changes.</p>
 <pre><code class="language-sh">brew install marmot-protocol/tap/wn
 </code></pre>
 <p>The formula lives in <code>github.com/marmot-protocol/homebrew-tap</code>; the project-side checklist is
-<a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/docs/release/wn-homebrew.md"><code>docs/release/wn-homebrew.md</code></a>. <code>cargo install wn-cli</code> from crates.io is not
+<a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/release/wn-homebrew.md"><code>docs/release/wn-homebrew.md</code></a>. <code>cargo install wn-cli</code> from crates.io is not
 available: the workspace has <code>publish = false</code> and the CLI depends on local workspace crates.</p>
 <h2 id="changelog">Changelog</h2>
-<p>Release notes for the CLI crate live in <a href="https://github.com/marmot-protocol/mdk/blob/34646a577807f2b112ee031f3c164ec58aa18b64/crates/cli/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
+<p>Release notes for the CLI crate live in <a href="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/cli/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
 `,m={__name:"cli.html",setup(h){return(p,t)=>{const n=c("DocumentationPage");return d(),a("div",null,[t[0]||(t[0]=o("h1",{id:"terminal-and-scripts",tabindex:"-1"},[o("a",{class:"header-anchor",href:"#terminal-and-scripts"},[o("span",null,"Terminal and scripts")])],-1)),s(n,{document:{repo:e(r),version:e(i),sourceUrl:e(l),html:e(u)}},null,8,["document"])])}}},w=JSON.parse('{"path":"/docs/cli.html","title":"Terminal and scripts","lang":"en-US","frontmatter":{"title":"Terminal and scripts","description":"Set up the White Noise CLI and use terminal commands or scripts to manage accounts, groups, and encrypted messages.","pageClass":"mm-docs","editLink":false,"sidebarDepth":0,"head":[["link",{"rel":"canonical","href":"https://marmot.build/docs/cli.html"}],["link",{"rel":"describedby","href":"https://marmot.build/llms.txt"}],["meta",{"property":"og:type","content":"website"}],["meta",{"property":"og:site_name","content":"Marmot"}],["meta",{"property":"og:title","content":"Terminal and scripts | Marmot"}],["meta",{"property":"og:description","content":"Set up the White Noise CLI and use terminal commands or scripts to manage accounts, groups, and encrypted messages."}],["meta",{"property":"og:url","content":"https://marmot.build/docs/cli.html"}],["meta",{"property":"og:image","content":"https://marmot.build/images/share.png"}],["meta",{"property":"og:image:width","content":"1200"}],["meta",{"property":"og:image:height","content":"630"}],["meta",{"property":"og:image:alt","content":"Marmot wordmark and illustration"}],["meta",{"name":"twitter:card","content":"summary_large_image"}],["link",{"rel":"alternate","type":"text/markdown","href":"https://marmot.build/docs/cli.md"}]]},"git":{"contributors":[{"name":"Vladimir Krstic","username":"","email":"hello@vladimir.design","commits":1},{"name":"erskingardner","username":"erskingardner","email":"202880+erskingardner@users.noreply.github.com","commits":1,"url":"https://github.com/erskingardner"}],"changelog":[{"hash":"0330b27fbdf24e99917ca75283be54594a9152e3","time":1794986838000,"email":"202880+erskingardner@users.noreply.github.com","author":"Jeff Gardner","message":"Add Marmot analytics and search discovery metadata"},{"hash":"c888f0667b4e8801123658fa88f21a9a1ee5c7b5","time":1794346037000,"email":"hello@vladimir.design","author":"Vladimir Krstic","message":"Refresh Marmot website and sync ecosystem content"}]},"filePathRelative":"docs/cli.md"}');export{m as comp,w as data};
