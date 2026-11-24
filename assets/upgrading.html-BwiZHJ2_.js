@@ -1,4 +1,4 @@
-import{c as o,b as t,d as r,u as e,r as s,o as d}from"./app-Dp0Wmi0L.js";const i="mdk",c="0.19.0",l="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/integration/0.19.0.md",m=`<div id="upgrading-mdk-0180--0190" class="mm-source-title">Upgrading MDK 0.18.0 → 0.19.0</div>
+import{c as o,b as t,d as r,u as e,r as s,o as d}from"./app-VMG2iPpl.js";const i="mdk",c="0.19.0",l="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/integration/0.19.0.md",m=`<div id="upgrading-mdk-0180--0190" class="mm-source-title">Upgrading MDK 0.18.0 → 0.19.0</div>
 <p>The four 0.18.0 tags peel to <code>34646a577807f2b112ee031f3c164ec58aa18b64</code>. This guide compares that release with
 master at <code>8acf460ef2f1d461db7b36e89ec5efb39374f08d</code>, including the URL dependency fix. For the packaged source
 SHA, resolve the final <code>v0.19.0</code> tag and match it to the WN Agent, MarmotKit and Marmot C tags and manifests.

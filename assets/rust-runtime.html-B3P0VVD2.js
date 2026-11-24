@@ -1,4 +1,4 @@
-import{c as a,b as t,d as i,u as e,r,o as s}from"./app-Dp0Wmi0L.js";const c="mdk",d="0.19.0",l="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-app/README.md",h=`<div id="marmot-app" class="mm-source-title">marmot-app</div>
+import{c as a,b as t,d as i,u as e,r,o as s}from"./app-VMG2iPpl.js";const c="mdk",d="0.19.0",l="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/crates/marmot-app/README.md",h=`<div id="marmot-app" class="mm-source-title">marmot-app</div>
 <p><code>marmot-app</code> is the multi-account app runtime for Marmot clients. It wires the app-owned <code>AccountHome</code> to encrypted
 session storage, the Nostr MLS peeler, the Nostr transport adapter, and relay-backed transport state, and exposes the
 result as <code>MarmotApp</code> / <code>MarmotAppRuntime</code>. It sits below presentation layers (<code>wn</code>, the UniFFI and C bindings) and above

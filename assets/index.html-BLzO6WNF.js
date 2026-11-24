@@ -1,4 +1,4 @@
-import{c as r,b as t,d as n,u as e,r as d,o as c}from"./app-Dp0Wmi0L.js";const l="mdk",i="0.19.0",s="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/README.md",m=`<div id="mdk--marmot-development-kit" class="mm-source-title">MDK — Marmot Development Kit</div>
+import{c as r,b as t,d as n,u as e,r as d,o as c}from"./app-VMG2iPpl.js";const l="mdk",i="0.19.0",s="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/README.md",m=`<div id="mdk--marmot-development-kit" class="mm-source-title">MDK — Marmot Development Kit</div>
 <p>MDK is the Rust implementation of <a href="https://github.com/marmot-protocol/marmot">Marmot</a>, an end-to-end encrypted group
 messaging protocol built on <a href="https://www.rfc-editor.org/rfc/rfc9420">MLS (RFC 9420)</a> with Nostr identity. It powers
 White Noise: the protocol engine, encrypted storage, Nostr transport, the app runtime behind the mobile bindings, the

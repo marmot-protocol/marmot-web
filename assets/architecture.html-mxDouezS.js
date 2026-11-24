@@ -1,4 +1,4 @@
-import{c as n,b as t,d as c,u as e,r as a,o as i}from"./app-Dp0Wmi0L.js";const s="mdk",d="0.19.0",l="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/marmot-architecture/index.md",m=`<div id="marmot-architecture--index" class="mm-source-title">Marmot Architecture — Index</div>
+import{c as n,b as t,d as c,u as e,r as a,o as i}from"./app-VMG2iPpl.js";const s="mdk",d="0.19.0",l="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/docs/marmot-architecture/index.md",m=`<div id="marmot-architecture--index" class="mm-source-title">Marmot Architecture — Index</div>
 <p>A technical reference for the Marmot stack: where the current architecture stands, which contracts are becoming spec
 text, and which older notes are kept only for background.</p>
 <p>This wiki is organized in two tiers:</p>

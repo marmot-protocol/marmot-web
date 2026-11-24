@@ -1,0 +1,1 @@
+import a from"./CopyValue-CY8Chtrr.js";import{f as l,g as o,o as m}from"./app-VMG2iPpl.js";const c=l({__name:"EmailLink",props:{email:{}},setup(e){return(r,t)=>(m(),o(a,{value:e.email,label:"Email",href:`mailto:${e.email}`},null,8,["value","href"]))}});export{c as default};

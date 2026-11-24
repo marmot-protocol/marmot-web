@@ -1,4 +1,4 @@
-import{c as a,b as t,d as r,u as e,r as s,o as i}from"./app-Dp0Wmi0L.js";const d="mdk",l="0.19.0",c="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/README.md",h=`<div id="marmot-integrations" class="mm-source-title">Marmot Integrations</div>
+import{c as a,b as t,d as r,u as e,r as s,o as i}from"./app-VMG2iPpl.js";const d="mdk",l="0.19.0",c="https://github.com/marmot-protocol/mdk/blob/3fce95465cdea1edc8456dbd1c6691d1c8dc1f2e/integrations/README.md",h=`<div id="marmot-integrations" class="mm-source-title">Marmot Integrations</div>
 <p>Connectors that let you chat with an agent runtime you already run (Hermes, OpenClaw, Claude Code, Codex, OpenCode,
 Pi, or Goose) from White Noise, over end-to-end encrypted Marmot groups. Each connector runs next to the local <code>wn-agent</code>
 service on your Mac or Linux machine. Start with <a href="#get-started-white-noise--agents">Get Started</a>; the later sections
